@@ -60,6 +60,20 @@ const MenuOptions = ({
     [defaultOpen]
   );
 
+  const sidebarOrder = [
+    "Dashboard",
+    "Launchpad",
+    "Billing",
+    "Settings",
+    "Sub Accounts",
+    "Team",
+    "Funnels",
+    "Media",
+    "Automations",
+    "Pipelines",
+    "Contacts",
+  ];
+
   useEffect(() => {
     setIsMounted(true);
   }, []);
@@ -267,29 +281,38 @@ const MenuOptions = ({
                   <CommandGroup className="overflow-visible">
                     {/*since this sidebarOpt props have associated with AgencySidebarOption[] | SubAccountSidebarOption[];
                     and they have already have data when creating Agency or update Agency through upsertAgency(queries.ts), so we can map it from backend and render  it*/}
-                    {sidebarOpt.map((sidebarOptions) => {
-                      let val;
-                      const result = icons.find(
-                        (icon) => icon.value === sidebarOptions.icon
-                      );
-                      if (result) {
-                        val = <result.path />;
-                      }
-                      return (
-                        <CommandItem
-                          key={sidebarOptions.id}
-                          className="md:w-[320px] w-full"
-                        >
-                          <Link
-                            href={sidebarOptions.link}
-                            className="flex items-center gap-3 hover:bg-transparent rounded-md transition-all md-w-full w-[290px]"
+                    {sidebarOpt
+                      .sort((a, b) => {
+                        const orderA = sidebarOrder.indexOf(a.name);
+                        const orderB = sidebarOrder.indexOf(b.name);
+                        return (
+                          (orderA === -1 ? 999 : orderA) -
+                          (orderB === -1 ? 999 : orderB)
+                        );
+                      })
+                      .map((sidebarOptions) => {
+                        let val;
+                        const result = icons.find(
+                          (icon) => icon.value === sidebarOptions.icon
+                        );
+                        if (result) {
+                          val = <result.path />;
+                        }
+                        return (
+                          <CommandItem
+                            key={sidebarOptions.id}
+                            className="md:w-[320px] w-full"
                           >
-                            {val}
-                            <span>{sidebarOptions.name}</span>
-                          </Link>
-                        </CommandItem>
-                      );
-                    })}
+                            <Link
+                              href={sidebarOptions.link}
+                              className="flex items-center gap-3 hover:bg-transparent rounded-md transition-all md-w-full w-[290px]"
+                            >
+                              {val}
+                              <span>{sidebarOptions.name}</span>
+                            </Link>
+                          </CommandItem>
+                        );
+                      })}
                   </CommandGroup>
                 </CommandList>
               </Command>
@@ -311,7 +334,6 @@ const MenuOptions = ({
           />
         </div>
       </SheetContent>
-     
     </Sheet>
   );
 };

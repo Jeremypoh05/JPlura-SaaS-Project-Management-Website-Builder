@@ -160,7 +160,7 @@ const UserDetails = ({ id, type, userData, subAccounts }: Props) => {
     if (type === 'agency') {
       await saveActivityLogsNotification({
         agencyId: authUserData?.Agency?.id,
-        description: `Gave ${userData?.name} access to | ${subAccountPermissions?.Permissions.find(
+        description: `Gave ${data?.user?.name} access to | ${subAccountPermissions?.Permissions.find(
           (p) => p.subAccountId === subAccountId
         )?.SubAccount.name
           } `,
@@ -207,7 +207,7 @@ const UserDetails = ({ id, type, userData, subAccounts }: Props) => {
       ).forEach(async (subaccount) => {
         await saveActivityLogsNotification({
           agencyId: undefined,
-          description: `Updated ${userData?.name} information`,
+          description: `Updated ${data?.user?.name} information`,
           subaccountId: subaccount.id,
         });
       });
@@ -327,19 +327,32 @@ const UserDetails = ({ id, type, userData, subAccounts }: Props) => {
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="AGENCY_ADMIN">Agency Admin</SelectItem>
-                      {(data?.user?.role === "AGENCY_OWNER" ||
-                        userData?.role === "AGENCY_OWNER") && (
-                        <SelectItem value="AGENCY_OWNER">
-                          Agency Owner
-                        </SelectItem>
+                      {type === "agency" && (
+                        <>
+                          <SelectItem value="AGENCY_ADMIN">Agency Admin</SelectItem>
+                          {(data?.user?.role === "AGENCY_OWNER" ||
+                            userData?.role === "AGENCY_OWNER") && (
+                              <SelectItem value="AGENCY_OWNER">Agency Owner</SelectItem>
+                            )}
+                          <SelectItem value="SUBACCOUNT_USER">Sub Account User</SelectItem>
+                          <SelectItem value="SUBACCOUNT_GUEST">Sub Account Guest</SelectItem>
+                        </>
                       )}
-                      <SelectItem value="SUBACCOUNT_USER">
-                        Sub Account User
-                      </SelectItem>
-                      <SelectItem value="SUBACCOUNT_GUEST">
-                        Sub Account Guest
-                      </SelectItem>
+                      {type === "subaccount" && (
+                        <>
+                          {(data?.user?.role === "AGENCY_OWNER" ||
+                            userData?.role === "AGENCY_OWNER") && (
+                              <SelectItem value="AGENCY_OWNER">Agency Owner</SelectItem>
+                            )}
+
+                          {(data?.user?.role === "AGENCY_ADMIN" ||
+                            userData?.role === "AGENCY_ADMIN") && (
+                            <SelectItem value="AGENCY_ADMIN">Agency Admin</SelectItem>
+                          )}
+                          <SelectItem value="SUBACCOUNT_USER">Sub Account User</SelectItem>
+                          <SelectItem value="SUBACCOUNT_GUEST">Sub Account Guest</SelectItem>
+                        </>
+                      )}
                     </SelectContent>
                   </Select>
                   <p className="text-muted-foreground">{roleState}</p>
@@ -349,6 +362,7 @@ const UserDetails = ({ id, type, userData, subAccounts }: Props) => {
             <Button disabled={form.formState.isSubmitting} type="submit">
               {form.formState.isSubmitting ? <Loading /> : "Save User Details"}
             </Button>
+
             {authUserData?.role === "AGENCY_OWNER" && (
               <div>
                 <Separator className="my-4" />
@@ -374,7 +388,7 @@ const UserDetails = ({ id, type, userData, subAccounts }: Props) => {
                         </div>
                         <Switch
                           disabled={loadingPermissions}
-                          checked={subAccountPermissionsDetails?.access}
+                          checked={subAccountPermissionsDetails?.access} 
                           onCheckedChange={(permission) => {
                             onChangePermission(
                               subAccount.id,

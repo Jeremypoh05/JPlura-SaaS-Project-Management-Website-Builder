@@ -10,6 +10,7 @@ import {
   Prisma,
   Role,
   SubAccount,
+  Tag,
   Ticket,
   User,
 } from "@prisma/client";
@@ -673,6 +674,8 @@ export const updateTicketsOrder = async (tickets: Ticket[]) => {
 export const upsertLane = async (lane: Prisma.LaneUncheckedCreateInput) => {
   let order: number;
 
+  //if the order property of the lane object is defined. If it's not, it retrieves the current order of all Lanes associated with the provided pipelineId. 
+  //If the order property is defined, it uses the value provided in the lane object.
   if (!lane.order) {
     const lanes = await db.lane.findMany({
       where: {
@@ -687,8 +690,8 @@ export const upsertLane = async (lane: Prisma.LaneUncheckedCreateInput) => {
 
   const response = await db.lane.upsert({
     where: { id: lane.id || v4() },
-    update: lane,
-    create: { ...lane, order },
+    update: lane, // The update parameter updates the Lane record if it exists,
+    create: { ...lane, order }, //create parameter creates a new Lane record if it doesn't exist. The ...lane spread operator allows the function to pass all the properties of the lane object to the update or create method of the db.lane.upsert method.
   });
 
   return response;
@@ -696,5 +699,147 @@ export const upsertLane = async (lane: Prisma.LaneUncheckedCreateInput) => {
 
 export const deleteLane = async (laneId: string) => {
   const response = await db.lane.delete({ where: { id: laneId } });
+  return response;
+};
+
+export const getTicketsWithTags = async (pipelineId: string) => {
+  const response = await db.ticket.findMany({
+    where: {
+      //where ticket's Lane model's pipelineId(Lane.pipelineId) equal to the pipelineId we passed here. 
+      Lane: {
+        pipelineId,
+      },
+    },
+    //when we creating tickets, we actually can create custom tags and assigned those tags to each ticket
+    include: { Tags: true, Assigned: true, Customer: true },
+  });
+  return response;
+};
+
+export const _getTicketsWithAllRelations = async (laneId: string) => {
+  const response = await db.ticket.findMany({
+    where: { laneId: laneId },
+    include: {
+      Assigned: true,
+      Customer: true,
+      Lane: true,
+      Tags: true,
+    },
+  });
+  return response;
+};
+
+//fetch all the users who have the "SUBACCOUNT_USER" role and have access to a specific subaccount.
+//can be used to retrieve a list of all team members for a specific subaccount, 
+export const getSubAccountTeamMembers = async (subaccountId: string) => {
+  const subaccountUsersWithAccess = await db.user.findMany({
+    where: {
+      // the users must belong to an agency that has a subaccount with the specified subaccountId
+      Agency: {
+        SubAccount: {
+          some: {
+            id: subaccountId,
+          },
+        },
+      },
+      //and have the "SUBACCOUNT_USER" role.
+      role: "SUBACCOUNT_USER",
+      //the users must have access to the specified subaccountId.
+      Permissions: {
+        some: {
+          subAccountId: subaccountId,
+          access: true,
+        },
+      },
+    },
+  });
+  return subaccountUsersWithAccess;
+};
+
+export const searchContacts = async (searchTerms: string) => {
+  const response = await db.contact.findMany({
+    where: {
+      name: {
+        contains: searchTerms,
+      },
+    },
+  });
+  return response;
+};
+
+export const upsertTicket = async (
+  ticket: Prisma.TicketUncheckedCreateInput,
+  tags: Tag[]
+) => {
+  let order: number;
+  if (!ticket.order) {
+    const tickets = await db.ticket.findMany({
+      where: { laneId: ticket.laneId },
+    });
+    order = tickets.length;
+  } else {
+    order = ticket.order;
+  }
+
+  const response = await db.ticket.upsert({
+    where: {
+      id: ticket.id || v4(),
+    },
+    update: { ...ticket, Tags: { set: tags } },
+    create: { ...ticket, Tags: { connect: tags }, order },
+    include: {
+      Assigned: true,
+      Customer: true,
+      Tags: true,
+      Lane: true,
+    },
+  });
+
+  return response;
+};
+
+export const deleteTicket = async (ticketId: string) => {
+  const response = await db.ticket.delete({
+    where: {
+      id: ticketId,
+    },
+  });
+  return response;
+}
+
+export const upsertTag = async (
+  subaccountId: string,
+  tag: Prisma.TagUncheckedCreateInput
+) => {
+  const response = await db.tag.upsert({
+    where: { id: tag.id || v4(), subAccountId: subaccountId },
+    update: tag,
+    create: { ...tag, subAccountId: subaccountId },
+  });
+
+  return response;
+};
+
+export const deleteTag = async (tagId: string) => {
+  const response = await db.tag.delete({ where: { id: tagId } });
+  return response;
+};
+
+export const getTagsForSubaccount = async (subaccountId: string) => {
+  const response = await db.subAccount.findUnique({
+    where: { id: subaccountId },
+    select: { Tags: true },
+  });
+  return response;
+};
+
+export const upsertContact = async (
+  contact: Prisma.ContactUncheckedCreateInput
+) => {
+  const response = await db.contact.upsert({
+    where: { id: contact.id || v4() },
+    update: contact,
+    create: contact, //CREATE a new contact if doesn't exist
+  });
   return response;
 };

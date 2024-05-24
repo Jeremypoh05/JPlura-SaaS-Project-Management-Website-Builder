@@ -29,6 +29,7 @@ Table Permissions {
 Table Agency {
   id String [pk]
   connectAccountId String [default: '']
+  customerId String [not null, default: '']
   name String [not null]
   agencyLogo String [not null]
   companyEmail String [not null]

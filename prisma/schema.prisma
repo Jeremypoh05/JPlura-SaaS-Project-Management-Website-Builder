@@ -88,7 +88,7 @@ model Permissions {
 model Agency {
   id               String                @id @default(uuid())
   connectAccountId String?               @default("") //needed for Stripe, every user able to connect their own Stripe account inside the application
-//  customerId       String                @default("") //for the subscription
+  customerId       String                @default("") //the person who subscripe for our services.
   name             String
   agencyLogo       String                @db.Text
   companyEmail     String                @db.Text
