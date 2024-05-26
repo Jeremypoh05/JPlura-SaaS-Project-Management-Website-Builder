@@ -41,22 +41,26 @@ export const pricingCards = [
   {
     title: "Unlimited Saas",
     description: "The ultimate agency kit",
-    price: "$199",
+    price: "RM99",
     duration: "month",
     highlight: "Key features",
     features: ["Rebilling", "24/7 Support team"],
-    priceId: "price_1OYxkqFj9oKEERu1KfJGWxgN",
+    priceId: "price_1PKDaPGDEkJRlAjq9pZaOcgH",
   },
   {
     title: "Basic",
     description: "For serious agency owners",
-    price: "$49",
+    price: "RM69",
     duration: "month",
     highlight: "Everything in Starter, plus",
     features: ["Unlimited Sub accounts", "Unlimited Team members"],
-    priceId: "price_1OYxkqFj9oKEERu1NbKUxXxN",
+    priceId: "price_1PKDaPGDEkJRlAjqGHnC55cj",
   },
-]
+];
+
+export const addOnProducts = [
+  { title: "Priority Support", id: "prod_QAZWSMxTLBh1z9" }, //from stripe product id
+];
   
   export const icons = [
   {

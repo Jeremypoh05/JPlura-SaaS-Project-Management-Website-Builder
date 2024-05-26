@@ -55,8 +55,8 @@ enum InvitationStatus {
 }
 
 enum Plan {
-  price_1OYxkqFj9oKEERu1NbKUxXxN
-  price_1OYxkqFj9oKEERu1KfJGWxgN
+  price_1PKDaPGDEkJRlAjqGHnC55cj
+  price_1PKDaPGDEkJRlAjq9pZaOcgH
 }
 
 class User {

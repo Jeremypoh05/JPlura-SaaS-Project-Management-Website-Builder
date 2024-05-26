@@ -107,6 +107,7 @@ const AgencyDetails = ({ data }: Props) => {
       let newUserData;
       let custId;
 
+      // Check if data.id is not present, indicating a new agency creation
       if (!data?.id) {
         const bodyData = {
           email: values.companyEmail,
@@ -129,70 +130,82 @@ const AgencyDetails = ({ data }: Props) => {
             state: values.zipCode,
           },
         };
+
+        //responsible for creating a new Stripe customer when an agency is being created or updated with customerId
+        //fetch API to send a POST request to the /api/stripe/create-customer endpoint with the necessary customer data.
+
+        const customerResponse = await fetch("/api/stripe/create-customer", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(bodyData),
+        });
+
+        const customerData: { customerId: string } =
+          // The response from the server is then parsed into a JSON object
+          await customerResponse.json();
+        //the customerId is assigned to the custId variable. This custId is then used in the subsequent steps to create or update the agency in the database.
+        custId = customerData.customerId;
       }
 
+      //Initialize a new user with the role "AGENCY_OWNER"
       newUserData = await initUser({
         role: "AGENCY_OWNER",
       });
 
+      // If neither customerId from data nor custId is defined, exit the function
+      if (!data?.customerId && !custId) return;
+
+      // Prepare the agency data
+      const agencyData = {
+        id: data?.id ? data.id : v4(),
+        customerId: data?.customerId || custId || "", //the custId will store the customerId which fetch from the api.
+        address: values.address,
+        agencyLogo: values.agencyLogo,
+        city: values.city,
+        companyPhone: values.companyPhone,
+        country: values.country,
+        name: values.name,
+        state: values.state,
+        whiteLabel: values.whiteLabel,
+        zipCode: values.zipCode,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        companyEmail: values.companyEmail,
+        connectAccountId: "",
+        goal: 5,
+      };
+
+      // Check if data.id is not present, indicating a new agency creation
       if (!data?.id) {
-        await upsertAgency({
-          id: data?.id ? data.id : v4(), // generates a new ID if the agency doesn't already have one
-          address: values.address,
-          agencyLogo: values.agencyLogo,
-          city: values.city,
-          companyPhone: values.companyPhone,
-          country: values.country,
-          name: values.name,
-          state: values.state,
-          whiteLabel: values.whiteLabel,
-          zipCode: values.zipCode,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-          companyEmail: values.companyEmail,
-          connectAccountId: "",
-          goal: 5,
-        });
+        // Create a new agency
+        await upsertAgency(agencyData);
         toast({
           title: "Created Agency",
           description: "Your agency has been successfully created.",
         });
-        return router.refresh(); // fetching the updated agency data if necessary.
+        if (data?.id) return router.refresh(); //might unnecessary
+
       } else {
         // Update existing agency
-        await updateAgencyDetails(data.id, {
-          address: values.address,
-          agencyLogo: values.agencyLogo,
-          city: values.city,
-          companyPhone: values.companyPhone,
-          country: values.country,
-          name: values.name,
-          state: values.state,
-          whiteLabel: values.whiteLabel,
-          zipCode: values.zipCode,
-          companyEmail: values.companyEmail,
-        });
+        await updateAgencyDetails(data.id, agencyData);
         toast({
           title: "Updated Agency",
           description: "Your agency details have been successfully updated.",
         });
-        return router.refresh();
       }
+      // Refresh the router to fetch the updated data
+      router.refresh();
     } catch (error) {
       console.log(error);
-      if (!data?.id) {
-        toast({
-          variant: "destructive",
-          title: "Sorry!",
-          description: "Could not create your agency. Please try again later.",
-        });
-      } else {
-        toast({
-          variant: "destructive",
-          title: "Sorry!",
-          description: "Could not update your agency details. Please try again later.",
-        });
-      }
+      toast({
+        variant: "destructive",
+        title: "Sorry!",
+        description: data?.id
+          ? "Could not update your agency details. Please try again later."
+          : "Could not create your agency. Please try again later.",
+      });
     }
   };
 

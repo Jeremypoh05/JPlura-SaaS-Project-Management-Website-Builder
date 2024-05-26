@@ -21,6 +21,7 @@ export const subscriptionCreated = async (
       throw new Error("Could not find and agency to upsert the subscription");
     }
 
+    //if agency exits
     const data = {
       active: subscription.status === "active",
       agencyId: agency.id,
@@ -46,6 +47,7 @@ export const subscriptionCreated = async (
   }
 };
 
+//for the subaccount. When they have a website running and they have products online, that time we want to get their connected account products 
 export const getConnectAccountProducts = async (stripeAccount: string) => {
   const products = await stripe.products.list(
     {

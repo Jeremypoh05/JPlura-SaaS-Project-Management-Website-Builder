@@ -18,6 +18,7 @@ import {
 } from "./queries";
 import { db } from "./db";
 import z from "zod";
+import Stripe from "stripe";
 
 export type NotificationWithUser =
   | ({
@@ -116,7 +117,7 @@ export type TicketWithTags = Prisma.PromiseReturnType<
 const currencyNumberRegex = /^\d+(\.\d{1,2})?$/;
 
 export const TicketFormSchema = z.object({
-  name: z.string().min(1, { message: "Name cannot be empty"}),
+  name: z.string().min(1, { message: "Name cannot be empty" }),
   description: z.string().optional(),
   //The value field is validated using the currencyNumberRegex to ensure that it represents a valid currency value. If the value field does not match the regular expression,
   //the message property of the refine function is used to provide a descriptive error message.
@@ -133,3 +134,26 @@ export const ContactUserFormSchema = z.object({
   name: z.string().min(1, "Required"),
   email: z.string().email(),
 });
+
+//stripe payments thing
+export type Address = {
+  city: string;
+  country: string;
+  line1: string;
+  postal_code: string;
+  state: string;
+};
+
+export type ShippingInfo = {
+  address: Address;
+  name: string;
+};
+
+export type StripeCustomerType = {
+  email: string;
+  name: string;
+  shipping: ShippingInfo;
+  address: Address;
+};
+
+export type PriceList = Stripe.ApiList<Stripe.Price>;
