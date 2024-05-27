@@ -1,35 +1,43 @@
-
-import BookmarkButton from "@/components/global/custom-user-button";
-import { Button } from "@/components/ui/button";
+import { Button } from '@/components/ui/button'
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { db } from "@/lib/db";
-import { CheckCircleIcon } from "lucide-react";
-import Image from "next/image";
-import Link from "next/link";
-import React from "react";
+} from '@/components/ui/card'
+import { db } from '@/lib/db'
+import { getStripeOAuthLink } from '@/lib/utils'
+import { CheckCircleIcon } from 'lucide-react'
+import Image from 'next/image'
+import Link from 'next/link'
+import React from 'react'
+import { stripe } from '@/lib/stripe'
+import { redirect } from 'next/navigation'
 
 type Props = {
   params: {
-    agencyId: string;
-  };
-  searchParams: { code: string };
-};
+    agencyId: string
+  }
+  searchParams: { code: string }
+}
 
-const LaunchPad = async ({ params, searchParams }: Props) => {
+const LaunchPadPage = async ({ params, searchParams }: Props) => {
+  console.log("LaunchPadPage.tsx started")  // 记录开始
+  console.log("Params:", params)  // 记录传入参数
+  console.log("Search Params:", searchParams)  // 记录传入参数
+
   const agencyDetails = await db.agency.findUnique({
     where: { id: params.agencyId },
-  });
+  })
+  console.log("Agency Details:", agencyDetails)  // 记录agencyDetails
 
-  if (!agencyDetails) return;
+  if (!agencyDetails) {
+    console.log("Agency not found")
+    return
+  }
 
   const allDetailsExist =
-    agencyDetails.address &&
     agencyDetails.address &&
     agencyDetails.agencyLogo &&
     agencyDetails.city &&
@@ -38,7 +46,41 @@ const LaunchPad = async ({ params, searchParams }: Props) => {
     agencyDetails.country &&
     agencyDetails.name &&
     agencyDetails.state &&
-    agencyDetails.zipCode;
+    agencyDetails.zipCode
+
+  console.log("All details exist:", allDetailsExist)  // 记录是否所有细节都存在
+
+  const stripeOAuthLink = getStripeOAuthLink(
+    'agency',
+    `launchpad___${agencyDetails.id}`
+  )
+  console.log("Stripe OAuth Link:", stripeOAuthLink)  // 记录stripeOAuthLink
+
+  let connectedStripeAccount = false
+  console.log("searchParamsCode", searchParams.code)
+
+  if (searchParams.code) {
+    console.log("searchParamsCode", searchParams.code)
+    if (!agencyDetails.connectAccountId) {
+      try {
+        const response = await stripe.oauth.token({
+          grant_type: 'authorization_code',
+          code: searchParams.code,
+        })
+        console.log("Stripe OAuth Response:", response)  // 记录stripe OAuth响应
+        await db.agency.update({
+          where: { id: params.agencyId },
+          data: { connectAccountId: response.stripe_user_id },
+        })
+        connectedStripeAccount = true
+        console.log("Successfully connected Stripe account")
+        // Redirect to the launchpad page with the code parameter
+        return redirect(`/agency/${params.agencyId}/launchpad?code=${searchParams.code}`)
+      } catch (error) {
+        console.log('🔴 Could not connect stripe account', error)
+      }
+    }
+  }
 
   return (
     <div className="flex flex-col justify-center items-center">
@@ -60,11 +102,10 @@ const LaunchPad = async ({ params, searchParams }: Props) => {
                   width={80}
                   className="rounded-md object-contain"
                 />
-                <p> Save the website as a shortcut on your devices</p>
+                <p> Save the website as a shortcut on your mobile device</p>
               </div>
-              <BookmarkButton/>
+              <Button>Start</Button>
             </div>
-
             <div className="flex justify-between items-center w-full border p-4 rounded-lg gap-2">
               <div className="flex md:items-center gap-4 flex-col md:!flex-row">
                 <Image
@@ -79,9 +120,20 @@ const LaunchPad = async ({ params, searchParams }: Props) => {
                   dashboard.
                 </p>
               </div>
-              <Button>Start</Button>
+              {agencyDetails.connectAccountId || connectedStripeAccount ? (
+                <CheckCircleIcon
+                  size={50}
+                  className=" text-primary p-2 flex-shrink-0"
+                />
+              ) : (
+                <Link
+                  className="bg-primary py-2 px-4 rounded-md text-white"
+                  href={stripeOAuthLink}
+                >
+                  Start
+                </Link>
+              )}
             </div>
-
             <div className="flex justify-between items-center w-full border p-4 rounded-lg gap-2">
               <div className="flex md:items-center gap-4 flex-col md:!flex-row">
                 <Image
@@ -91,7 +143,7 @@ const LaunchPad = async ({ params, searchParams }: Props) => {
                   width={80}
                   className="rounded-md object-contain"
                 />
-                <p> Fill in all your business details</p>
+                <p> Fill in all your bussiness details</p>
               </div>
               {allDetailsExist ? (
                 <CheckCircleIcon
@@ -111,7 +163,7 @@ const LaunchPad = async ({ params, searchParams }: Props) => {
         </Card>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default LaunchPad;
+export default LaunchPadPage
