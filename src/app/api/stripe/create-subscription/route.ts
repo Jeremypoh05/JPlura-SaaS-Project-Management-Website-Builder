@@ -57,7 +57,7 @@ export async function POST(req: Request) {
       });
     } else {
         //creating a new subscription if does not exist.
-      console.log("Createing a sub");
+      console.log("Creating a sub");
       const subscription = await stripe.subscriptions.create({
         customer: customerId,
         items: [
@@ -67,8 +67,8 @@ export async function POST(req: Request) {
         ],
         payment_behavior: "default_incomplete",
         payment_settings: { save_default_payment_method: "on_subscription" },
-        expand: ["latest_invoice.payment_intent"],
-      });
+         expand: ["latest_invoice.payment_intent"],
+       });
 
       //In both cases, the function returns a NextResponse with the subscription ID and the client secret from the latest invoice's payment intent.
       return NextResponse.json({

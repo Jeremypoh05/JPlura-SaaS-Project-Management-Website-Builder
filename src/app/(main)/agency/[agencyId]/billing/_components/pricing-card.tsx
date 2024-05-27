@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import CustomModal from "@/components/global/custom-modal";
+import SubscriptionFormWrapper from "@/components/forms/subscription-form/subscription-form-wrapper";
 
 type Props = {
   features: string[];
@@ -53,7 +54,10 @@ const PricingCard = ({
         title={"Manage Your Plan"}
         subHeading="You can change your plan at any time from the billings settings"
       >
-       
+        <SubscriptionFormWrapper
+          customerId={customerId}
+          planExists={planExists}
+        />
       </CustomModal>,
       async () => ({
         plans: {
