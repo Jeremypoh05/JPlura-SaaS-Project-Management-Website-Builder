@@ -23,14 +23,14 @@ type Props = {
 }
 
 const LaunchPadPage = async ({ params, searchParams }: Props) => {
-  console.log("LaunchPadPage.tsx started")  // 记录开始
-  console.log("Params:", params)  // 记录传入参数
-  console.log("Search Params:", searchParams)  // 记录传入参数
+  console.log("LaunchPadPage.tsx started")
+  console.log("Params:", params)
+  console.log("Search Params:", searchParams)
 
   const agencyDetails = await db.agency.findUnique({
     where: { id: params.agencyId },
   })
-  console.log("Agency Details:", agencyDetails)  // 记录agencyDetails
+  console.log("Agency Details:", agencyDetails)
 
   if (!agencyDetails) {
     console.log("Agency not found")
@@ -48,26 +48,25 @@ const LaunchPadPage = async ({ params, searchParams }: Props) => {
     agencyDetails.state &&
     agencyDetails.zipCode
 
-  console.log("All details exist:", allDetailsExist)  // 记录是否所有细节都存在
+  console.log("All details exist:", allDetailsExist)
 
   const stripeOAuthLink = getStripeOAuthLink(
     'agency',
     `launchpad___${agencyDetails.id}`
   )
-  console.log("Stripe OAuth Link:", stripeOAuthLink)  // 记录stripeOAuthLink
+  console.log("Stripe OAuth Link:", stripeOAuthLink)
 
   let connectedStripeAccount = false
-  console.log("searchParamsCode", searchParams.code)
 
   if (searchParams.code) {
-    console.log("searchParamsCode", searchParams.code)
+    console.log("Received OAuth code:", searchParams.code)
     if (!agencyDetails.connectAccountId) {
       try {
         const response = await stripe.oauth.token({
           grant_type: 'authorization_code',
           code: searchParams.code,
         })
-        console.log("Stripe OAuth Response:", response)  // 记录stripe OAuth响应
+        console.log("Stripe OAuth Response:", response)
         await db.agency.update({
           where: { id: params.agencyId },
           data: { connectAccountId: response.stripe_user_id },
@@ -80,6 +79,8 @@ const LaunchPadPage = async ({ params, searchParams }: Props) => {
         console.log('🔴 Could not connect stripe account', error)
       }
     }
+  } else {
+    console.log("No OAuth code received")
   }
 
   return (
@@ -143,7 +144,7 @@ const LaunchPadPage = async ({ params, searchParams }: Props) => {
                   width={80}
                   className="rounded-md object-contain"
                 />
-                <p> Fill in all your bussiness details</p>
+                <p> Fill in all your business details</p>
               </div>
               {allDetailsExist ? (
                 <CheckCircleIcon

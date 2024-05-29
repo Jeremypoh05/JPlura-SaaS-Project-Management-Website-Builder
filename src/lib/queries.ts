@@ -320,87 +320,117 @@ export const getNotificationAndUser = async (agencyId: string) => {
 
 export const upsertSubAccount = async (subAccount: SubAccount) => {
   if (!subAccount.companyEmail) return null;
+
   //find the agency owner associated with the provided agencyId. This is necessary to assign appropriate
   //permissions to the agency owner for the newly created or updated subaccount.
   const agencyOwner = await db.user.findFirst({
     where: {
       // specifies that the user must be associated with an agency whose ID matches the agencyId property of the subAccount object.
       Agency: {
-        id: subAccount.agencyId, //because our subAccount also have agencyId, so they must match.
+        id: subAccount.agencyId,
       },
       role: "AGENCY_OWNER", //specifying that the user must have the role of "AGENCY_OWNER".
     },
   });
+
+  // If no agency owner found, return an error
   if (!agencyOwner) return console.log("🔴Error, could not create subaccount");
+
   const permissionId = v4(); //If an agency owner is found, a unique permission ID is generated using v4() from the uuid library.
-  const response = await db.subAccount.upsert({
-    where: { id: subAccount.id },
-    update: subAccount, //If a subaccount with the provided ID already exists in the database, it updates the existing record with the new data provided in the subAccount object.
-    create: {
-      // If no subaccount with the provided ID exists, it creates a new subaccount using the data provided in the subAccount object.
-      ...subAccount,
-      Permissions: {
-        create: {
-          access: true,
-          email: agencyOwner.email,
-          id: permissionId,
+
+  try {
+    let existingSubAccount = await db.subAccount.findUnique({
+      where: { id: subAccount.id },
+    });
+
+    if (existingSubAccount) {
+      await db.subAccount.update({
+        where: { id: subAccount.id },
+        data: subAccount,
+      });
+
+      const updatedSubAccount = await db.subAccount.findUnique({
+        where: { id: subAccount.id },
+      });
+
+      console.log("Updated subaccount:", updatedSubAccount);
+      return updatedSubAccount; //If a subaccount with the provided ID already exists in the database, it updates the existing record with the new data provided in the subAccount object.
+    } else {
+      // If the subaccount does not exist, create it
+      const response = await db.subAccount.create({
+        data: {
+          // If no subaccount with the provided ID exists, it creates a new subaccount using the data provided in the subAccount object.
+          ...subAccount,
+          Permissions: {
+            create: {
+              access: true,
+              email: agencyOwner.email,
+              id: permissionId,
+            },
+            connect: {
+              subAccountId: subAccount.id,
+              id: permissionId,
+            },
+          },
+          //when a new subaccount is created or updated, a new pipeline is also created if it doesn't already exist.
+          Pipeline: {
+            create: { name: "Lead Cycle" },
+          },
+          SidebarOption: {
+            create: [
+              {
+                name: "Launchpad",
+                icon: "clipboardIcon",
+                link: `/subaccount/${subAccount.id}/launchpad`,
+              },
+              {
+                name: "Settings",
+                icon: "settings",
+                link: `/subaccount/${subAccount.id}/settings`,
+              },
+              {
+                name: "Funnels",
+                icon: "pipelines",
+                link: `/subaccount/${subAccount.id}/funnels`,
+              },
+              {
+                name: "Media",
+                icon: "database",
+                link: `/subaccount/${subAccount.id}/media`,
+              },
+              {
+                name: "Automations",
+                icon: "chip",
+                link: `/subaccount/${subAccount.id}/automations`,
+              },
+              {
+                name: "Pipelines",
+                icon: "flag",
+                link: `/subaccount/${subAccount.id}/pipelines`,
+              },
+              {
+                name: "Contacts",
+                icon: "person",
+                link: `/subaccount/${subAccount.id}/contacts`,
+              },
+              {
+                name: "Dashboard",
+                icon: "category",
+                link: `/subaccount/${subAccount.id}`,
+              },
+            ],
+          },
         },
-        connect: {
-          subAccountId: subAccount.id,
-          id: permissionId,
-        },
-      },
-      //when a new subaccount is created or updated, a new pipeline is also created if it doesn't already exist.
-      Pipeline: {
-        create: { name: "Lead Cycle" },
-      },
-      SidebarOption: {
-        create: [
-          {
-            name: "Launchpad",
-            icon: "clipboardIcon",
-            link: `/subaccount/${subAccount.id}/launchpad`,
-          },
-          {
-            name: "Settings",
-            icon: "settings",
-            link: `/subaccount/${subAccount.id}/settings`,
-          },
-          {
-            name: "Funnels",
-            icon: "pipelines",
-            link: `/subaccount/${subAccount.id}/funnels`,
-          },
-          {
-            name: "Media",
-            icon: "database",
-            link: `/subaccount/${subAccount.id}/media`,
-          },
-          {
-            name: "Automations",
-            icon: "chip",
-            link: `/subaccount/${subAccount.id}/automations`,
-          },
-          {
-            name: "Pipelines",
-            icon: "flag",
-            link: `/subaccount/${subAccount.id}/pipelines`,
-          },
-          {
-            name: "Contacts",
-            icon: "person",
-            link: `/subaccount/${subAccount.id}/contacts`,
-          },
-          {
-            name: "Dashboard",
-            icon: "category",
-            link: `/subaccount/${subAccount.id}`,
-          },
-        ],
-      },
-    },
-  });
-  return response;
+      });
+
+      console.log("Created subaccount:", response);
+      return response;
+    }
+    // Catch any errors during the operation and log them
+  } catch (error) {
+    console.error("🔴Error during upsert operation:", error);
+    return null;
+  }
 };
 
 export const getUserPermissions = async (userId: string) => {
@@ -842,4 +872,29 @@ export const upsertContact = async (
     create: contact, //CREATE a new contact if doesn't exist
   });
   return response;
+};
+
+//get all the funnels
+export const getFunnels = async (subacountId: string) => {
+  const funnels = await db.funnel.findMany({
+    where: { subAccountId: subacountId },
+    include: { FunnelPages: true },
+  });
+
+  return funnels;
+};
+
+export const getFunnel = async (funnelId: string) => {
+  const funnel = await db.funnel.findUnique({
+    where: { id: funnelId },
+    include: {
+      FunnelPages: {
+        orderBy: {
+          order: "asc",
+        },
+      },
+    },
+  });
+
+  return funnel;
 };

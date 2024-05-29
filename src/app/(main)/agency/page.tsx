@@ -10,26 +10,25 @@ const Page = async ({
 }: {
   searchParams: { plan: Plan; state: string; code: string }
 }) => {
-  console.log("Page.tsx started") 
-  console.log("Search Params:", searchParams)  
+  console.log("Page.tsx started")
+  console.log("Search Params:", searchParams)
 
   const agencyId = await verifyAndAcceptInvitation()
-  console.log("Agency ID:", agencyId)  
 
-  //获取用户详细信息
-  const user = await getAuthUserDetails()
-  console.log("User details:", user) 
+  const user = await getAuthUserDetails();
+  console.log("User details:", user)
 
   if (agencyId) {
     if (user?.role === 'SUBACCOUNT_GUEST' || user?.role === 'SUBACCOUNT_USER') {
-      console.log("Redirecting to /subaccount")
       return redirect('/subaccount')
     } else if (user?.role === 'AGENCY_OWNER' || user?.role === 'AGENCY_ADMIN') {
       if (searchParams.plan) {
-        console.log(`Redirecting to /agency/${agencyId}/billing?plan=${searchParams.plan}`)
         return redirect(`/agency/${agencyId}/billing?plan=${searchParams.plan}`)
       }
-      if (searchParams.state && searchParams.code) {
+      console.log("searchParams.state:", searchParams.state)
+      console.log("searchParams.code:", searchParams.code)
+
+      if (searchParams.state) {
         const statePath = searchParams.state.split('___')[0]
         const stateAgencyId = searchParams.state.split('___')[1]
         console.log("State Path:", statePath)
@@ -54,7 +53,7 @@ const Page = async ({
   }
 
   const authUser = await currentUser()
-  console.log("Auth user:", authUser)  
+  console.log("Auth user:", authUser)
 
   return (
     <div className="flex justify-center items-center mt-4">

@@ -55,7 +55,6 @@ const SubscriptionForm = ({ selectedPriceId }: Props) => {
                     title: "Payment successful",
                     description: "Your payment has been successfully processed.",
                 });
-                // 手动重定向到包含 agencyId 的 URL
                 setClose();
                 setTimeout(() => {
                     router.replace(`${process.env.NEXT_PUBLIC_URL}/agency`);

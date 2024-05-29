@@ -11,6 +11,7 @@ import {
 import {
   _getTicketsWithAllRelations,
   getAuthUserDetails,
+  getFunnels,
   getMedia,
   getPipelineDetails,
   getTicketsWithTags,
@@ -93,13 +94,6 @@ export const CreatePipelineFormSchema = z.object({
   name: z.string().min(1),
 });
 
-export const CreateFunnelFormSchema = z.object({
-  name: z.string().min(1),
-  description: z.string(),
-  subDomainName: z.string().optional(),
-  favicon: z.string().optional(),
-});
-
 export type PipelineDetailsWithLanesCardsTagsTickets = Prisma.PromiseReturnType<
   typeof getPipelineDetails
 >;
@@ -156,4 +150,17 @@ export type StripeCustomerType = {
   address: Address;
 };
 
-export type PriceList = Stripe.ApiList<Stripe.Price>;
+export type PricesList = Stripe.ApiList<Stripe.Price>;
+
+export const CreateFunnelFormSchema = z.object({
+  name: z.string().min(1),
+  description: z.string(),
+  subDomainName: z.string().optional(),
+  favicon: z.string().optional(),
+});
+
+export type FunnelsForSubAccount = Prisma.PromiseReturnType<
+  typeof getFunnels
+>[0];
+
+export type UpsertFunnelPage = Prisma.FunnelPageCreateWithoutFunnelInput;

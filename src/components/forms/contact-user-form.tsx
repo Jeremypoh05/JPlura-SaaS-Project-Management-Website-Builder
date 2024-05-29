@@ -62,6 +62,7 @@ const ContactUserForm: React.FC<ContactUserFormProps> = ({ subaccountId }) => {
         subAccountId: subaccountId,
         name: values.name,
       });
+      console.log("contact response", response);
       await saveActivityLogsNotification({
         agencyId: undefined,
         description: `Updated a contact | ${response?.name}`,

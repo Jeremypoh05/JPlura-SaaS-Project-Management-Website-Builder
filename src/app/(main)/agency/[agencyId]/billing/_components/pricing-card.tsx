@@ -1,5 +1,5 @@
 "use client";
-import { PriceList } from "@/lib/types";
+import { PricesList } from "@/lib/types";
 import { useModal } from "@/providers/modal-provider";
 import { useSearchParams } from "next/navigation";
 import React from "react";
@@ -25,7 +25,7 @@ type Props = {
   highlightTitle: string;
   highlightDescription: string;
   customerId: string;
-  prices: PriceList["data"];
+  prices: PricesList["data"];
   planExists: boolean;
 };
 
@@ -49,6 +49,7 @@ const PricingCard = ({
   const plan = searchParams.get("plan");
 
   const handleManagePlan = async () => {
+
     setOpen(
       <CustomModal
         title={"Manage Your Plan"}

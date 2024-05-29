@@ -169,6 +169,7 @@ const UserDetails = ({ id, type, userData, subAccounts }: Props) => {
         )?.SubAccount.id,
       })
     }
+    console.log("user details response", response)
     if (response) {
       toast({
         title: "Success",
@@ -203,7 +204,7 @@ const UserDetails = ({ id, type, userData, subAccounts }: Props) => {
           authUserData.Permissions.find(
             (p) => p.subAccountId === subacc.id && p.access
           )
-        //for each of them, we create an acitity log
+        //for each of them, we create an activity log
       ).forEach(async (subaccount) => {
         await saveActivityLogsNotification({
           agencyId: undefined,
@@ -211,6 +212,7 @@ const UserDetails = ({ id, type, userData, subAccounts }: Props) => {
           subaccountId: subaccount.id,
         });
       });
+      console.log("data user name", data?.user?.name)
 
       //if successfully updated, use toast message
       if (updatedUser) {
@@ -347,8 +349,8 @@ const UserDetails = ({ id, type, userData, subAccounts }: Props) => {
 
                           {(data?.user?.role === "AGENCY_ADMIN" ||
                             userData?.role === "AGENCY_ADMIN") && (
-                            <SelectItem value="AGENCY_ADMIN">Agency Admin</SelectItem>
-                          )}
+                              <SelectItem value="AGENCY_ADMIN">Agency Admin</SelectItem>
+                            )}
                           <SelectItem value="SUBACCOUNT_USER">Sub Account User</SelectItem>
                           <SelectItem value="SUBACCOUNT_GUEST">Sub Account Guest</SelectItem>
                         </>
@@ -388,7 +390,7 @@ const UserDetails = ({ id, type, userData, subAccounts }: Props) => {
                         </div>
                         <Switch
                           disabled={loadingPermissions}
-                          checked={subAccountPermissionsDetails?.access} 
+                          checked={subAccountPermissionsDetails?.access}
                           onCheckedChange={(permission) => {
                             onChangePermission(
                               subAccount.id,
