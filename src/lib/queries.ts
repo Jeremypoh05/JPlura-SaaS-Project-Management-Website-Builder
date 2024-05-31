@@ -15,8 +15,9 @@ import {
   User,
 } from "@prisma/client";
 import { v4 } from "uuid";
-import { CreateFunnelFormSchema, CreateMediaType } from "./types";
+import { CreateFunnelFormSchema, CreateMediaType, UpsertFunnelPage } from "./types";
 import z from "zod";
+import { revalidatePath } from "next/cache";
 
 export const getAuthUserDetails = async () => {
   const user = await currentUser();
@@ -626,29 +627,6 @@ export const upsertPipeline = async (
   return response;
 };
 
-export const upsertFunnel = async (
-  subaccountId: string,
-  //funnel is an object that contains the data needed to create or update a funnel.
-  funnel: z.infer<typeof CreateFunnelFormSchema> & { liveProducts: string },
-  funnelId: string
-) => {
-  //either update or create a funnel record in the database. If a funnel with the provided funnelId already exists in the database,
-  //the existing record is updated with the new data provided in the funnel object. If no funnel with the provided funnelId exists,
-  //a new funnel record is created using the data provided in the funnel object.
-  const response = await db.funnel.upsert({
-    where: { id: funnelId },
-    update: funnel,
-    create: {
-      //spread operator that allows the function to pass all the properties of the funnel object to the create or update method of the db.funnel.upsert method.
-      ...funnel,
-      id: funnelId || v4(), // generates a unique ID for the funnel if one is not provided in the funnel object
-      subAccountId: subaccountId,
-    },
-  });
-
-  return response;
-};
-
 export const deletePipeline = async (pipelineId: string) => {
   const response = await db.pipeline.delete({
     where: { id: pipelineId },
@@ -704,7 +682,7 @@ export const updateTicketsOrder = async (tickets: Ticket[]) => {
 export const upsertLane = async (lane: Prisma.LaneUncheckedCreateInput) => {
   let order: number;
 
-  //if the order property of the lane object is defined. If it's not, it retrieves the current order of all Lanes associated with the provided pipelineId. 
+  //if the order property of the lane object is defined. If it's not, it retrieves the current order of all Lanes associated with the provided pipelineId.
   //If the order property is defined, it uses the value provided in the lane object.
   if (!lane.order) {
     const lanes = await db.lane.findMany({
@@ -735,7 +713,7 @@ export const deleteLane = async (laneId: string) => {
 export const getTicketsWithTags = async (pipelineId: string) => {
   const response = await db.ticket.findMany({
     where: {
-      //where ticket's Lane model's pipelineId(Lane.pipelineId) equal to the pipelineId we passed here. 
+      //where ticket's Lane model's pipelineId(Lane.pipelineId) equal to the pipelineId we passed here.
       Lane: {
         pipelineId,
       },
@@ -760,7 +738,7 @@ export const _getTicketsWithAllRelations = async (laneId: string) => {
 };
 
 //fetch all the users who have the "SUBACCOUNT_USER" role and have access to a specific subaccount.
-//can be used to retrieve a list of all team members for a specific subaccount, 
+//can be used to retrieve a list of all team members for a specific subaccount,
 export const getSubAccountTeamMembers = async (subaccountId: string) => {
   const subaccountUsersWithAccess = await db.user.findMany({
     where: {
@@ -835,7 +813,7 @@ export const deleteTicket = async (ticketId: string) => {
     },
   });
   return response;
-}
+};
 
 export const upsertTag = async (
   subaccountId: string,
@@ -875,6 +853,8 @@ export const upsertContact = async (
 };
 
 //get all the funnels
+//including both the funnel model information and the related FunnelPages information. 
+//The include: { FunnelPages: true } part of the query ensures that the returned data includes the related FunnelPages for each funnel.
 export const getFunnels = async (subacountId: string) => {
   const funnels = await db.funnel.findMany({
     where: { subAccountId: subacountId },
@@ -884,6 +864,7 @@ export const getFunnels = async (subacountId: string) => {
   return funnels;
 };
 
+//specific funnel
 export const getFunnel = async (funnelId: string) => {
   const funnel = await db.funnel.findUnique({
     where: { id: funnelId },
@@ -897,4 +878,114 @@ export const getFunnel = async (funnelId: string) => {
   });
 
   return funnel;
+};
+
+export const upsertFunnel = async (
+  subaccountId: string,
+  //funnel is an object that contains the data needed to create or update a funnel.
+  funnel: z.infer<typeof CreateFunnelFormSchema> & { liveProducts: string },
+  funnelId: string
+) => {
+  //either update or create a funnel record in the database. If a funnel with the provided funnelId already exists in the database,
+  //the existing record is updated with the new data provided in the funnel object. If no funnel with the provided funnelId exists,
+  //a new funnel record is created using the data provided in the funnel object.
+  const response = await db.funnel.upsert({
+    where: { id: funnelId },
+    update: funnel,
+    create: {
+      //spread operator that allows the function to pass all the properties of the funnel object to the create or update method of the db.funnel.upsert method.
+      ...funnel,
+      id: funnelId || v4(), // generates a unique ID for the funnel if one is not provided in the funnel object
+      subAccountId: subaccountId,
+    },
+  });
+
+  return response;
+};
+
+//
+export const updateFunnelProducts = async (
+  products: string,
+  funnelId: string
+) => {
+  const data = await db.funnel.update({
+    where: { id: funnelId },
+    data: { liveProducts: products },
+  });
+  return data;
+};
+
+//either update an existing funnel page or create a new one if it doesn't exist
+export const upsertFunnelPage = async (
+  subaccountId: string, // The ID of the subaccount to which the funnel page belongs.
+  funnelPage: UpsertFunnelPage,
+  funnelId: string, //The ID of the funnel to which the page belongs.
+) => {
+  // checks if subaccountId and funnelId are provided. If either is missing, the function returns early without doing anything.
+  if (!subaccountId || !funnelId) return;
+  // update an existing record or create a new one.
+  const response = await db.funnelPage.upsert({
+    //where:  If funnelPage.id is provided, it uses that ID; otherwise, it uses an empty string, which means no existing record will be found.
+    where: { id: funnelPage.id || "" }, //if where clause match the condition, update part is executed, else run the create part.
+    update: { ...funnelPage }, // specifies the fields to update if an existing record is found. It spreads the funnelPage object, updating all its properties.
+    create: {
+      //specifies the fields to create a new record if no existing record is found. It also spreads the funnelPage object but includes additional logic for the content field:
+      ...funnelPage,
+      content: funnelPage.content //If funnelPage.content is provided, it uses that value.
+        ? funnelPage.content //If funnelPage.content is not provided, it sets a default content value, which is a JSON string representing a basic structure with a Body element.
+        : JSON.stringify([
+            {
+              content: [],
+              id: "__body",
+              name: "Body",
+              styles: { backgroundColor: "white" },
+              type: "__body",
+            },
+          ]),
+      funnelId,
+    },
+  });
+  //This line calls a function revalidatePath to revalidate the cache for the specified path. This ensures that any cached data for the funnel page is updated to reflect the latest changes.
+  //The second parameter "page" indicates that the revalidation is for a page.
+  //This is crucial in scenarios where data changes frequently, and you want to make sure users always see the latest information.
+  revalidatePath(`/subaccount/${subaccountId}/funnels/${funnelId}`, "page");
+  return response; //returns the response from the upsert operation, which contains the details of the upserted funnel page.
+};
+
+/* 
+Suppose a user updates the content of a funnel page via a form in your web application.
+The upsertFunnelPage function is called with the updated content.
+The function performs the upsert operation, updating the database with the new content.
+The revalidatePath function is then called with the path of the updated funnel page.
+This ensures that any cached version of this funnel page is invalidated.
+The next time a user accesses this funnel page, the latest content is fetched and displayed.
+*/
+export const deleteFunnel = async (funnelId: string) => {
+  try {
+    const response = await db.funnel.delete({
+      where: {
+        id: funnelId,
+      },
+    });
+    return response;
+  } catch (error) {
+    console.error("Error deleting funnel:", error);
+    throw error;
+  }
+};
+
+export const deleteFunnelPage = async (funnelPageId: string) => {
+  const response = await db.funnelPage.delete({ where: { id: funnelPageId } });
+
+  return response;
+};
+
+export const getFunnelPageDetails = async (funnelPageId: string) => {
+  const response = await db.funnelPage.findUnique({
+    where: {
+      id: funnelPageId,
+    },
+  });
+
+  return response;
 };

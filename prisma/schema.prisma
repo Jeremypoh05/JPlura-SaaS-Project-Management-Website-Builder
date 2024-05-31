@@ -410,8 +410,8 @@ model Notification {
 }
 
 enum Plan {
-  price_1PKDaPGDEkJRlAjqGHnC55cj
-  price_1PKDaPGDEkJRlAjq9pZaOcgH
+  price_1PM5gVD0wO7R6BkEBM41V3WR
+  price_1PM5gVD0wO7R6BkEa3kAkPnS
 }
 
 //for Stripe

@@ -28,16 +28,17 @@ const Page = async ({
       console.log("searchParams.state:", searchParams.state)
       console.log("searchParams.code:", searchParams.code)
 
-      if (searchParams.state) {
-        const statePath = searchParams.state.split('___')[0]
-        const stateAgencyId = searchParams.state.split('___')[1]
+      if (searchParams.state) { //e.g., launchpad___7d07d1d9-d15e-441d-8a04-a6c84f305a53
+        const statePath = searchParams.state.split('___')[0] //will be launchpad 
+        const stateAgencyId = searchParams.state.split('___')[1] //will be 7d07d1d9-d15e-441d-8a04-a6c84f305a53
         console.log("State Path:", statePath)
         console.log("State Agency ID:", stateAgencyId)
         if (!stateAgencyId) {
           console.log("Not authorized: Missing stateAgencyId")
           return <div>Not authorized</div>
         }
-
+        //if stateAgencyId exists
+        //so it will redirect to /agency/7d07d1d9-d15e-441d-8a04-a6c84f305a53/launchpad?code=ac_QCVPxehRi9IqTgvjBcTqhRXWffNAQxNJ
         console.log(`Redirecting to /agency/${stateAgencyId}/${statePath}?code=${searchParams.code}`)
         return redirect(
           `/agency/${stateAgencyId}/${statePath}?code=${searchParams.code}`

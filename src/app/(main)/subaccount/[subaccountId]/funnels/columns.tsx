@@ -4,7 +4,11 @@ import { FunnelsForSubAccount } from '@/lib/types'
 import { ColumnDef } from '@tanstack/react-table'
 import { ExternalLink } from 'lucide-react'
 import Link from 'next/link'
+import DeleteFunnelButton from './delete-funnel-button'
+ // Adjust the import path as necessary
 
+ //this ColumnDef will get all the funnels details 
+ //Each row in the table represents a funnel, and the data for each row includes the funnelId.
 export const columns: ColumnDef<FunnelsForSubAccount>[] = [
   {
     accessorKey: 'name',
@@ -41,4 +45,14 @@ export const columns: ColumnDef<FunnelsForSubAccount>[] = [
       )
     },
   },
-]
+  {
+    accessorKey: 'action',
+    header: 'Action',
+    cell: ({ row }) => {
+      console.log("Funnels Data", row.original);
+      const funnelId = row.original.id; //In the "Action" column, access the data for the current row using row.original.
+      return <DeleteFunnelButton funnelId={funnelId} />; //extract the funnelId from the current row's data.
+      //funnelId to DeleteFunnelButton: Pass the extracted funnelId to the DeleteFunnelButton component as a prop.
+    },
+  },
+];

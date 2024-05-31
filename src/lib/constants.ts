@@ -45,7 +45,7 @@ export const pricingCards = [
     duration: "month",
     highlight: "Key features",
     features: ["Rebilling", "24/7 Support team"],
-    priceId: "price_1PKDaPGDEkJRlAjq9pZaOcgH",
+    priceId: "price_1PM5gVD0wO7R6BkEa3kAkPnS",
   },
   {
     title: "Basic",
@@ -54,12 +54,12 @@ export const pricingCards = [
     duration: "month",
     highlight: "Everything in Starter, plus",
     features: ["Unlimited Sub accounts", "Unlimited Team members"],
-    priceId: "price_1PKDaPGDEkJRlAjqGHnC55cj",
+    priceId: "price_1PM5gVD0wO7R6BkEBM41V3WR",
   },
 ];
 
 export const addOnProducts = [
-  { title: "Priority Support", id: "prod_QAZWSMxTLBh1z9" }, //from stripe product id
+  { title: "Priority Support", id: "prod_QCUndDQ5Q13SX4" }, //from stripe product id
 ];
   
   export const icons = [
@@ -209,3 +209,17 @@ export const addOnProducts = [
     path: ClipboardIcon,
   },
 ]
+
+export type EditorBtns =
+  | "text"
+  | "container"
+  | "section"
+  | "contactForm"
+  | "paymentForm"
+  | "link"
+  | "2Col"
+  | "video"
+  | "__body"
+  | "image"
+  | null
+  | "3Col";

@@ -159,8 +159,14 @@ export const CreateFunnelFormSchema = z.object({
   favicon: z.string().optional(),
 });
 
+//This type will include both the properties of the funnel model and the related FunnelPages model. 
 export type FunnelsForSubAccount = Prisma.PromiseReturnType<
   typeof getFunnels
 >[0];
 
 export type UpsertFunnelPage = Prisma.FunnelPageCreateWithoutFunnelInput;
+
+export const FunnelPageSchema = z.object({
+  name: z.string().min(1),
+  pathName: z.string().optional(),
+});
