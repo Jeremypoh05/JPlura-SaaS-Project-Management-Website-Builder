@@ -14,8 +14,7 @@ import clsx from "clsx";
 import React from "react";
 import TabList from "./tabs";
 import SettingsTab from "./tabs/settings-tab";
-// import SettingsTab from "./tabs/settings-tab";
-// import MediaBucketTab from "./tabs/media-bucket-tab";
+import MediaBucketTab from "./tabs/media-bucket";
 // import ComponentsTab from "./tabs/components-tab";
 
 type Props = {
@@ -62,7 +61,7 @@ const FunnelEditorSidebar = ({ subaccountId }: Props) => {
             </TabsContent>
 
             <TabsContent value="Media">
-              sss{/* <MediaBucketTab subaccountId={subaccountId} /> */}
+              <MediaBucketTab subaccountId={subaccountId} />
             </TabsContent>
 
             <TabsContent value="Components">

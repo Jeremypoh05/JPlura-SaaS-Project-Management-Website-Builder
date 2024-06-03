@@ -91,7 +91,7 @@ const UploadMediaForm = ({ subaccountId }: Props) => {
                 <FormItem className="flex-1">
                   <FormLabel className="text-black dark:text-white font-semibold">File Name</FormLabel>
                   <FormControl> 
-                    <Input placeholder="Your agency name" {...field} />
+                    <Input placeholder="Your file name" {...field} />
                   </FormControl>
                   <FormMessage/>
                 </FormItem>

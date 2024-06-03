@@ -19,9 +19,11 @@ import {
   AlignLeft,
   AlignRight,
   AlignVerticalJustifyCenter,
+  AlignVerticalJustifyEndIcon,
   AlignVerticalJustifyStart,
   ChevronsLeftRightIcon,
   LucideImageDown,
+  StretchVertical,
 } from "lucide-react";
 import { Tabs, TabsTrigger, TabsList } from "@/components/ui/tabs";
 import {
@@ -35,7 +37,12 @@ import {
 } from "@/components/ui/select";
 import { useEditor } from "@/providers/editor/editor-provider";
 import { Slider } from "@/components/ui/slider";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 type Props = {};
 
@@ -210,7 +217,7 @@ const SettingsTab = (props: Props) => {
                 onChange={handleColorChange}
                 value={colorCode}
                 placeholder="#000000"
-                style={{ boxShadow: 'none' }}
+                style={{ boxShadow: "none" }}
               />
             </div>
           </div>
@@ -464,16 +471,16 @@ const SettingsTab = (props: Props) => {
                 id="backgroundColor"
                 onChange={handleBackgroundColorChange}
                 value={backgroundColorCode}
-                style={{ padding: 0, margin: 0}}
+                style={{ padding: 0, margin: 0 }}
               />
               <Input
                 type="text"
                 className="w-full h-10"
                 id="backgroundColor"
-                onChange={handleColorChange}
+                onChange={handleBackgroundColorChange}
                 value={backgroundColorCode}
                 placeholder="#000000"
-                style={{ boxShadow: 'none' }}
+                style={{ boxShadow: "none" }}
               />
             </div>
           </div>
@@ -531,10 +538,66 @@ const SettingsTab = (props: Props) => {
               </TabsList>
             </Tabs>
           </div>
+          <div className="flex flex-col gap-2">
+            <Label className="text-muted-foreground">Box Shadow</Label>
+            <Input
+              placeholder="e.g., 0px 4px 6px rgba(0, 0, 0, 0.1)"
+              id="boxShadow"
+              onChange={handleOnChanges}
+              value={state.editor.selectedElement.styles.boxShadow}
+            />
+          </div>
+          <div className="flex flex-col gap-2">
+            <Label className="text-muted-foreground">Border Width</Label>
+            <Input
+              placeholder="px"
+              id="borderWidth"
+              onChange={handleOnChanges}
+              value={state.editor.selectedElement.styles.borderWidth}
+            />
+          </div>
+          <div className="flex flex-col gap-2">
+            <Label className="text-muted-foreground">Border Style</Label>
+            <Select
+              onValueChange={(e) =>
+                handleOnChanges({
+                  target: {
+                    id: "borderStyle",
+                    value: e,
+                  },
+                })
+              }
+            >
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Select a style" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectGroup>
+                  <SelectLabel>Border Styles</SelectLabel>
+                  <SelectItem value="solid">Solid</SelectItem>
+                  <SelectItem value="dashed">Dashed</SelectItem>
+                  <SelectItem value="dotted">Dotted</SelectItem>
+                </SelectGroup>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="flex flex-col gap-2">
+            <Label className="text-muted-foreground">Border Color</Label>
+            <Input
+              type="color"
+              className="w-10 h-10"
+              id="borderColor"
+              onChange={handleOnChanges}
+              value={
+                state.editor.selectedElement.styles.borderColor || "#000000"
+              }
+              style={{ padding: 0, margin: 0 }}
+            />
+          </div>
         </AccordionContent>
       </AccordionItem>
 
-      <AccordionItem value="Flexbox" className="px-6 py-0  ">
+      <AccordionItem value="Flexbox" className="pl-6 pr-8 py-0  ">
         <AccordionTrigger className="!no-underline">Flexbox</AccordionTrigger>
         <AccordionContent>
           <Label className="text-muted-foreground">Justify Content</Label>
@@ -550,36 +613,47 @@ const SettingsTab = (props: Props) => {
             value={state.editor.selectedElement.styles.justifyContent}
           >
             <TabsList className="flex items-center flex-row justify-between border-[1px] rounded-md bg-transparent h-fit gap-4">
-              <TabsTrigger
-                value="space-between"
-                className="w-10 h-10 p-0 data-[state=active]:bg-muted"
-              >
-                <AlignHorizontalSpaceBetween size={18} />
-              </TabsTrigger>
-              <TabsTrigger
-                value="space-evenly"
-                className="w-10 h-10 p-0 data-[state=active]:bg-muted"
-              >
-                <AlignHorizontalSpaceAround size={18} />
-              </TabsTrigger>
-              <TabsTrigger
-                value="center"
-                className="w-10 h-10 p-0 data-[state=active]:bg-muted"
-              >
-                <AlignHorizontalJustifyCenterIcon size={18} />
-              </TabsTrigger>
-              <TabsTrigger
-                value="start"
-                className="w-10 h-10 p-0 data-[state=active]:bg-muted "
-              >
-                <AlignHorizontalJustifyStart size={18} />
-              </TabsTrigger>
-              <TabsTrigger
-                value="end"
-                className="w-10 h-10 p-0 data-[state=active]:bg-muted "
-              >
-                <AlignHorizontalJustifyEndIcon size={18} />
-              </TabsTrigger>
+              {[
+                {
+                  value: "space-between",
+                  icon: <AlignHorizontalSpaceBetween size={18} />,
+                  label: "Space Between",
+                },
+                {
+                  value: "space-evenly",
+                  icon: <AlignHorizontalSpaceAround size={18} />,
+                  label: "Space Evenly",
+                },
+                {
+                  value: "center",
+                  icon: <AlignHorizontalJustifyCenterIcon size={18} />,
+                  label: "Center",
+                },
+                {
+                  value: "start",
+                  icon: <AlignHorizontalJustifyStart size={18} />,
+                  label: "Start",
+                },
+                {
+                  value: "end",
+                  icon: <AlignHorizontalJustifyEndIcon size={18} />,
+                  label: "End",
+                },
+              ].map((item) => (
+                <TooltipProvider key={item.value} delayDuration={100}>
+                  <Tooltip>
+                    <TooltipTrigger>
+                      <TabsTrigger
+                        value={item.value}
+                        className="w-10 h-10 p-0 data-[state=active]:bg-muted"
+                      >
+                        {item.icon}
+                      </TabsTrigger>
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom">{item.label}</TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              ))}
             </TabsList>
           </Tabs>
           <Label className="text-muted-foreground">Align Items</Label>
@@ -595,18 +669,42 @@ const SettingsTab = (props: Props) => {
             value={state.editor.selectedElement.styles.alignItems}
           >
             <TabsList className="flex items-center flex-row justify-between border-[1px] rounded-md bg-transparent h-fit gap-4">
-              <TabsTrigger
-                value="center"
-                className="w-10 h-10 p-0 data-[state=active]:bg-muted"
-              >
-                <AlignVerticalJustifyCenter size={18} />
-              </TabsTrigger>
-              <TabsTrigger
-                value="normal"
-                className="w-10 h-10 p-0 data-[state=active]:bg-muted "
-              >
-                <AlignVerticalJustifyStart size={18} />
-              </TabsTrigger>
+              {[
+                {
+                  value: "center",
+                  icon: <AlignVerticalJustifyCenter size={18} />,
+                  label: "Center",
+                },
+                {
+                  value: "start",
+                  icon: <AlignVerticalJustifyStart size={18} />,
+                  label: "Start",
+                },
+                {
+                  value: "end",
+                  icon: <AlignVerticalJustifyEndIcon size={18} />,
+                  label: "End",
+                },
+                {
+                  value: "stretch",
+                  icon: <StretchVertical size={18} />,
+                  label: "Stretch",
+                },
+              ].map((item) => (
+                <TooltipProvider key={item.value} delayDuration={100}>
+                  <Tooltip>
+                    <TooltipTrigger>
+                      <TabsTrigger
+                        value={item.value}
+                        className="w-10 h-10 p-0 data-[state=active]:bg-muted"
+                      >
+                        {item.icon}
+                      </TabsTrigger>
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom">{item.label}</TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              ))}
             </TabsList>
           </Tabs>
           <div className="flex items-center gap-2">
@@ -633,6 +731,95 @@ const SettingsTab = (props: Props) => {
               id="flexDirection"
               onChange={handleOnChanges}
               value={state.editor.selectedElement.styles.flexDirection}
+            />
+          </div>
+        </AccordionContent>
+      </AccordionItem>
+
+      <AccordionItem value="Positioning" className="pl-6 pr-8 py-0 ">
+        <AccordionTrigger className="!no-underline">
+          Positioning
+        </AccordionTrigger>
+        <AccordionContent className="flex flex-col gap-4">
+          <div className="flex flex-col gap-2">
+            <Label className="text-muted-foreground">Position</Label>
+            <Select
+              onValueChange={(e) =>
+                handleOnChanges({
+                  target: {
+                    id: "position",
+                    value: e,
+                  },
+                })
+              }
+            >
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Select a position" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectGroup>
+                  <SelectLabel>Position Types</SelectLabel>
+                  <SelectItem value="static">Static</SelectItem>
+                  <SelectItem value="relative">Relative</SelectItem>
+                  <SelectItem value="absolute">Absolute</SelectItem>
+                  <SelectItem value="fixed">Fixed</SelectItem>
+                </SelectGroup>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="flex gap-4">
+            <div>
+              <Label className="text-muted-foreground">Top</Label>
+              <Input
+                placeholder="px"
+                id="top"
+                onChange={handleOnChanges}
+                value={state.editor.selectedElement.styles.top}
+              />
+            </div>
+            <div>
+              <Label className="text-muted-foreground">Right</Label>
+              <Input
+                placeholder="px"
+                id="right"
+                onChange={handleOnChanges}
+                value={state.editor.selectedElement.styles.right}
+              />
+            </div>
+          </div>
+          <div className="flex gap-4">
+            <div>
+              <Label className="text-muted-foreground">Bottom</Label>
+              <Input
+                placeholder="px"
+                id="bottom"
+                onChange={handleOnChanges}
+                value={state.editor.selectedElement.styles.bottom}
+              />
+            </div>
+            <div>
+              <Label className="text-muted-foreground">Left</Label>
+              <Input
+                placeholder="px"
+                id="left"
+                onChange={handleOnChanges}
+                value={state.editor.selectedElement.styles.left}
+              />
+            </div>
+          </div>
+        </AccordionContent>
+      </AccordionItem>
+
+      <AccordionItem value="Transform" className="pl-6 pr-8 py-0 ">
+        <AccordionTrigger className="!no-underline">Transform</AccordionTrigger>
+        <AccordionContent className="flex flex-col gap-4">
+          <div className="flex flex-col gap-2">
+            <Label className="text-muted-foreground">Transform</Label>
+            <Input
+              placeholder="e.g., rotate(45deg) scale(1.5)"
+              id="transform"
+              onChange={handleOnChanges}
+              value={state.editor.selectedElement.styles.transform}
             />
           </div>
         </AccordionContent>
