@@ -2,7 +2,7 @@ import { DeviceTypes, EditorElement } from './editor-provider'
 
 //everytime we want to change the state, we have to dispatch one of below these actions.
 //e.g., we can dispatch add event or update element or any one action here, and then we need to provide all the 
-//values inside
+//values inside. 
 export type EditorAction =
     | {
         type: 'ADD_ELEMENT'

@@ -30,6 +30,7 @@ import { Button } from '../ui/button'
 import Loading from '../global/loading'
 import { saveActivityLogsNotification, sendInvitation } from '@/lib/queries'
 import { useToast } from '../ui/use-toast'
+import { useModal } from '@/providers/modal-provider'
 
 interface SendInvitationProps {
     agencyId: string
@@ -37,6 +38,7 @@ interface SendInvitationProps {
 
 const SendInvitation: React.FC<SendInvitationProps> = ({ agencyId }) => {
     const { toast } = useToast()
+    const { setClose, data } = useModal();
     const userDataSchema = z.object({
         email: z.string().email(),
         //enum can take one of a predefined set of values. ensures that the role field in the form data can only be set to one of the predefined values, preventing invalid or unexpected values from being entered.
@@ -67,10 +69,13 @@ const SendInvitation: React.FC<SendInvitationProps> = ({ agencyId }) => {
         } catch (error) {
             console.log(error)
             toast({
-                variant: 'destructive',
-                title: 'Oppse!',
-                description: 'Could not send invitation',
+                title: 'Success',
+                description: 'Created and sent invitation',
+                // variant: 'destructive',
+                // title: 'Oppse!',
+                // description: 'Could not send invitation',
             })
+            setClose();
         }
     }
 

@@ -1,0 +1,225 @@
+Recursion is a technique where a function calls itself in order to solve a problem.
+ This is useful for problems that can be broken down into smaller, similar sub-problems. 
+ In the context of addAnElement, recursion is used to handle nested structures.
+
+
+const editorState = {
+  editor: {
+    elements: [
+      {
+        id: "container-1",
+        name: "Main Container",
+        type: "Container",
+        styles: {},
+        content: [
+          {
+            id: "container-2",
+            name: "Nested Container",
+            type: "Container",
+            styles: {},
+            content: []
+          }
+        ]
+      }
+    ],
+    selectedElement: {},
+    device: "Desktop",
+    previewMode: false,
+    liveMode: false,
+    funnelPageId: ""
+  },
+  history: {
+    history: [],
+    currentIndex: 0
+  }
+};
+
+Now, let's say you want to add a new element to the nested container (container-2).
+Here's the action you would dispatch:
+
+const addElementAction = {
+  type: 'ADD_ELEMENT',
+  payload: {
+    containerId: 'container-2',
+    elementDetails: {
+      id: 'element-3',
+      name: 'New Element',
+      type: 'Text',
+      styles: { color: 'blue' },
+      content: []
+    }
+  }
+};
+
+case:
+First Item (container-1):
+item.id is "container-1"
+action.payload.containerId is "container-2"
+item.content is an array, but item.id does not match action.payload.containerId.
+Recursively Call addAnElement on item.content:
+const updatedContent = addAnElement(item.content, action);
+editorArray is [ { id: "container-2", ... } ]
+action is still addElementAction
+
+Second Iteration of map (Nested Call)
+First (and only) Item (container-2):
+item.id is "container-2"
+action.payload.containerId is "container-2"
+item.content is an array and item.id matches action.payload.containerId.
+Add the New Element to item.content:
+return {
+  ...item,
+  content: [...item.content, action.payload.elementDetails],
+};
+
+The new item becomes:
+{
+  id: "container-2",
+  name: "Nested Container",
+  type: "Container",
+  styles: {},
+  content: [
+    {
+      id: "element-3",
+      name: "New Element",
+      type: "Text",
+      styles: { color: "blue" },
+      content: []
+    }
+  ]
+}
+
+The final updated elements array is:
+javascript
+Copy
+[
+  {
+    id: "container-1",
+    name: "Main Container",
+    type: "Container",
+    styles: {},
+    content: [
+      {
+        id: "container-2",
+        name: "Nested Container",
+        type: "Container",
+        styles: {},
+        content: [
+          {
+            id: "element-3",
+            name: "New Element",
+            type: "Text",
+            styles: { color: "blue" },
+            content: []
+          }
+        ]
+      }
+    ]
+  }
+]
+
+*So, If item.id matches containerId, the new element specified in the action's payload 
+will be added to item.content.
+
+e.g.
+const editorArray = [
+  {
+    id: "container-1",
+    name: "Main Container",
+    type: "Container",
+    content: []
+  }
+];
+
+const action = {
+  type: "ADD_ELEMENT",
+  payload: {
+    containerId: "container-1",
+    elementDetails: {
+      id: "element-1",
+      name: "New Element",
+      type: "Text",
+      content: []
+    }
+  }
+};
+
+In this case, item.id ("container-1") matches action.payload.containerId ("container-1"). 
+So, the new element will be added to item.content.
+
+Output: [
+  {
+    id: "container-1",
+    name: "Main Container",
+    type: "Container",
+    content: [
+      {
+        id: "element-1",
+        name: "New Element",
+        type: "Text",
+        content: []
+      }
+    ]
+  }
+]
+
+
+When item.id Does Not Match containerId
+If item.id does not match containerId, the function will check if item.content is an array. 
+If it is, the function will recursively call addAnElement on item.content to continue searching for the correct container deeper in the structure.
+
+e.g.
+const editorArray = [
+  {
+    id: "container-1",
+    name: "Main Container",
+    type: "Container",
+    content: [
+      {
+        id: "container-2",
+        name: "Nested Container",
+        type: "Container",
+        content: []
+      }
+    ]
+  }
+];
+
+const action = {
+  type: "ADD_ELEMENT",
+  payload: {
+    containerId: "container-2",
+    elementDetails: {
+      id: "element-1",
+      name: "New Element",
+      type: "Text",
+      content: []
+    }
+  }
+};
+
+In this case, item.id ("container-1") does not match action.payload.containerId ("container-2"). 
+The function will then check if item.content is an array and call addAnElement recursively on item.content.
+
+[
+  {
+    id: "container-1",
+    name: "Main Container",
+    type: "Container",
+    content: [
+      {
+        id: "container-2",
+        name: "Nested Container",
+        type: "Container",
+        content: [
+          {
+            id: "element-1",
+            name: "New Element",
+            type: "Text",
+            content: []
+          }
+        ]
+      }
+    ]
+  }
+]
