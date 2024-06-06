@@ -47,7 +47,7 @@ const layout = async ({
         type='agency'
       />
       <div className='md:pl-[320px]'>
-        <InfoBar notifications={allNoti} />
+        <InfoBar notifications={allNoti} role={allNoti.User?.role} />
         <div className='relative -ml-1'>
           <BlurPage>{children}</BlurPage>
         </div>

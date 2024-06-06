@@ -88,6 +88,14 @@ B (255 */
 
     --ring: 220 100% 44%;
   }
+
+     /* Add the gradient text class here */
+     .gradient-text {
+       background-clip: text;
+       -webkit-background-clip: text;
+       color: transparent;
+       -webkit-text-fill-color: transparent;
+     }
 }
 
 @layer base {

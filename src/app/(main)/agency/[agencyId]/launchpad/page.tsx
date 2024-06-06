@@ -14,6 +14,7 @@ import Link from 'next/link'
 import React from 'react'
 import { stripe } from '@/lib/stripe'
 import { redirect } from 'next/navigation'
+import BookmarkButton from '@/components/global/custom-user-button'
 
 type Props = {
   params: {
@@ -105,7 +106,7 @@ const LaunchPadPage = async ({ params, searchParams }: Props) => {
                 />
                 <p> Save the website as a shortcut on your mobile device</p>
               </div>
-              <Button>Start</Button>
+              <BookmarkButton />
             </div>
             <div className="flex justify-between items-center w-full border p-4 rounded-lg gap-2">
               <div className="flex md:items-center gap-4 flex-col md:!flex-row">

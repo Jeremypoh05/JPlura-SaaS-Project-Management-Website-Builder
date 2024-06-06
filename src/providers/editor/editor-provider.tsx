@@ -18,7 +18,7 @@ export type EditorElement = {
   styles: React.CSSProperties;
   name: string;
   type: EditorBtns;
-  content: EditorElement[] | { href?: string; innerText?: string }; //it will be either editor element and an array of them or it will be a special objects
+  content: EditorElement[] | { href?: string; innerText?: string; src?: string }; //it will be either editor element and an array of them or it will be a special objects
   //href?: string is a custom properties, that will be used in the settings-tab (custom)
 };
 

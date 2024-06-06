@@ -10,7 +10,11 @@ type Props = {
 const MediaPage = async ({ params }: Props) => {
   const data = await getMedia(params.subaccountId);
 
-  return <MediaComponent data={data} subaccountId={params.subaccountId} />;
+  return (
+    <BlurPage>
+      <MediaComponent data={data} subaccountId={params.subaccountId} />
+    </BlurPage>
+  );
 };
 
 export default MediaPage;

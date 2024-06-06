@@ -15,7 +15,8 @@ import React from "react";
 import TabList from "./tabs";
 import SettingsTab from "./tabs/settings-tab";
 import MediaBucketTab from "./tabs/media-bucket";
-// import ComponentsTab from "./tabs/components-tab";
+import ComponentsTab from "./tabs/components-tab";
+import LayersTab from "./tabs/layers-tab";
 
 type Props = {
   subaccountId: string;
@@ -64,6 +65,10 @@ const FunnelEditorSidebar = ({ subaccountId }: Props) => {
               <MediaBucketTab subaccountId={subaccountId} />
             </TabsContent>
 
+            <TabsContent value="Layers">
+              <LayersTab/>
+            </TabsContent>
+
             <TabsContent value="Components">
               <SheetHeader className="text-left p-6 ">
                 <SheetTitle>Components</SheetTitle>
@@ -71,7 +76,7 @@ const FunnelEditorSidebar = ({ subaccountId }: Props) => {
                   You can drag and drop components on the canvas
                 </SheetDescription>
               </SheetHeader>
-              {/* <ComponentsTab /> */}
+              <ComponentsTab />
             </TabsContent>
           </div>
         </SheetContent>
