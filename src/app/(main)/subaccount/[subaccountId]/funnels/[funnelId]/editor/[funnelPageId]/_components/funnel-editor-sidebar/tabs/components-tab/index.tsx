@@ -13,6 +13,7 @@ import LinkPlaceholder from "./link-placeholder";
 import TwoColumnsPlaceholder from "./two-columns-placeholder";
 import ContactFormComponentPlaceholder from "./contact-form-placeholder";
 import CheckoutPlaceholder from "./checkout-placeholder";
+import IconComponentPlaceholder from "./icon-placeholder";
 
 const ComponentsTab = () => {
   const elements: {
@@ -61,6 +62,12 @@ const ComponentsTab = () => {
       Component: <LinkPlaceholder />,
       label: "Link",
       id: "link",
+      group: "elements",
+    },
+    {
+      Component: <IconComponentPlaceholder />, // Add the new icon placeholder
+      label: "Icon",
+      id: "icon",
       group: "elements",
     },
   ];

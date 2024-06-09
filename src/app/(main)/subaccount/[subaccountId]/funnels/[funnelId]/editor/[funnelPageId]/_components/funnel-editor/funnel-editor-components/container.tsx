@@ -4,51 +4,77 @@ import { EditorBtns, defaultStyles } from "@/lib/constants";
 import { EditorElement, useEditor } from "@/providers/editor/editor-provider";
 import clsx from "clsx";
 import React from "react";
-import { v4 } from "uuid";
 import Recursive from "./recursive";
 import { Trash } from "lucide-react";
-
-type Props = { element: EditorElement };
+import { v4 } from "uuid";
 
 // This container is recursive. A container inside can have other elements or even another container.
+type Props = { element: EditorElement };
+
 const Container = ({ element }: Props) => {
   const { id, content, name, styles, type } = element;
   const { dispatch, state } = useEditor();
 
-  const handleOnDrop = (e: React.DragEvent) => {
-    e.stopPropagation();
+  const calculateDropIndex = (e: React.DragEvent): number => {
+    // e.clientY: The vertical coordinate within the application's client area at which the event occurred.
+    // It is used to determine the drop position relative to the viewport.
+    const dropY = e.clientY;
 
-    // Retrieve the serialized element data
+    // Converts the children of the current target (container) into an array and finds the index where the new element should be inserted
+    const dropIndex = Array.from(e.currentTarget.children).findIndex(
+      (child) => {
+        // Returns the size of an element and its position relative to the viewport.
+        const childRect = child.getBoundingClientRect();
+        // Checks if the drop position (dropY) is above the midpoint of the child element.
+        // This helps in determining whether to insert the new element before or after the current child element.
+        return dropY < childRect.top + childRect.height / 2;
+      }
+    );
+
+    // Return the calculated drop index
+    return dropIndex;
+  };
+
+  //The event object of type React.DragEvent which provides information about the drag-and-drop event.
+  const handleOnDrop = (e: React.DragEvent) => {
+    e.preventDefault(); //Prevents the default behavior of the browser, which might be to open the dragged item.
+    e.stopPropagation(); //Stops the event from propagating (bubbling up) to parent elements.
+
+    // Retrieves the data associated with the drag event. In this case, it gets the serialized data of the component being dragged.
     const componentData = e.dataTransfer.getData("componentData");
 
+    //If componentData exists, it deserializes the data using JSON.parse.
+    //With componentData: This typically means an element is being moved within the same container or between different containers,
+    //and its details are serialized in componentData.
     if (componentData) {
       // Deserialize the element data
       const elementDetails = JSON.parse(componentData);
+      const dropIndex = calculateDropIndex(e); // Calculate the drop index
 
-      // Function to generate new IDs for the duplicated element
-      const generateNewIds = (element: EditorElement) => {
-        element.id = v4();
-        if (Array.isArray(element.content)) {
-          element.content.forEach(generateNewIds);
-        }
-      };
-
-      // Generate new IDs for the duplicated element
-      generateNewIds(elementDetails);
-
+      //Converts content to an array if it isn't already.
+      //Dispatches the MOVE_ELEMENT action with the containerId, elementDetails, and dropIndex.
+      //If dropIndex is -1, it adds the element to the end of the content array.
+      const contentArray = Array.isArray(content) ? content : [];
       dispatch({
-        type: "ADD_ELEMENT",
+        type: "MOVE_ELEMENT",
         payload: {
-          containerId: id, // ID of the current container.
-          elementDetails, // Use the deserialized element details with new IDs.
+          containerId: id,
+          elementDetails,
+          dropIndex: dropIndex === -1 ? contentArray.length : dropIndex,
         },
       });
     } else {
-      // Fallback to component type if component data does not exist
+      //means a new element is being dragged from a sidebar or palette and dropped into the container. The type of the new element is identified by componentType.
       //when we drag an element form the sidebar, there is a thing called "dataTransfer, we can basically
       //attach metadata or any type of data into event when it is dragged across the page.
-      //And the handleOnDrop event basically gives access to that data transfer"
-      const componentType = e.dataTransfer.getData("componentType") as EditorBtns;
+      const componentType = e.dataTransfer.getData(
+        "componentType"
+      ) as EditorBtns;
+      const dropIndex = calculateDropIndex(e); // Calculate the drop index
+
+      const contentArray = Array.isArray(content) ? content : [];
+      //calculated based on the dropIndex. If dropIndex is -1, the new element is added at the end of the container's content array.
+      const positionIndex = dropIndex === -1 ? contentArray.length : dropIndex;
 
       // Switch statement to handle different types of components being dropped.
       switch (componentType) {
@@ -64,10 +90,11 @@ const Container = ({ element }: Props) => {
                 name: "Text",
                 styles: {
                   color: "black",
-                  ...defaultStyles, // Applying default styles.
+                  ...defaultStyles,
                 },
-                type: "text", // Type of the new element
+                type: "text", // Applying default styles.
               },
+              positionIndex,
             },
           });
           break;
@@ -75,7 +102,7 @@ const Container = ({ element }: Props) => {
           dispatch({
             type: "ADD_ELEMENT",
             payload: {
-              containerId: id, //specific containerId equal to current id 
+              containerId: id,
               elementDetails: {
                 content: {
                   innerText: "Link Element",
@@ -89,6 +116,7 @@ const Container = ({ element }: Props) => {
                 },
                 type: "link",
               },
+              positionIndex,
             },
           });
           break;
@@ -106,6 +134,7 @@ const Container = ({ element }: Props) => {
                 styles: {},
                 type: "video",
               },
+              positionIndex,
             },
           });
           break;
@@ -121,6 +150,7 @@ const Container = ({ element }: Props) => {
                 styles: { ...defaultStyles },
                 type: "container",
               },
+              positionIndex,
             },
           });
           break;
@@ -136,6 +166,7 @@ const Container = ({ element }: Props) => {
                 styles: {},
                 type: "contactForm",
               },
+              positionIndex,
             },
           });
           break;
@@ -151,6 +182,7 @@ const Container = ({ element }: Props) => {
                 styles: {},
                 type: "paymentForm",
               },
+              positionIndex,
             },
           });
           break;
@@ -181,9 +213,25 @@ const Container = ({ element }: Props) => {
                 styles: { ...defaultStyles, display: "flex" },
                 type: "2Col",
               },
+              positionIndex,
             },
           });
           break;
+        case "icon":
+          dispatch({
+            type: "ADD_ELEMENT",
+            payload: {
+              containerId: id,
+              elementDetails: {
+                content: [],
+                id: v4(),
+                name: "Icon",
+                styles: { icon: "star" }, // Default icon
+                type: "icon",
+              },
+              positionIndex,
+            },
+          });
         // Add cases for other component types if needed
         default:
           console.warn(`Unhandled component type: ${componentType}`);
@@ -197,11 +245,8 @@ const Container = ({ element }: Props) => {
   };
 
   const handleDragStart = (e: React.DragEvent, element: EditorElement) => {
-    if (element.type === "__body") return;  // If the type is "__body", do nothing.
-
-    // Serialize the element data
     const elementData = JSON.stringify(element);
-    e.dataTransfer.setData("componentData", elementData); // Sets the component data in the data transfer object.
+    e.dataTransfer.setData("componentData", elementData);
   };
 
   // Handles the click event on the container body.
@@ -210,11 +255,10 @@ const Container = ({ element }: Props) => {
     dispatch({
       type: "CHANGE_CLICKED_ELEMENT",
       payload: {
-        elementDetails: element,  // Sets the clicked element
+        elementDetails: element, // Sets the clicked element
       },
     });
   };
-
   // Handles the delete element event.
   const handleDeleteElement = () => {
     dispatch({
@@ -227,12 +271,13 @@ const Container = ({ element }: Props) => {
 
   return (
     <div
-      style={styles}  // Applying styles to the container.
-      className={clsx("relative p-4 transition-all group", {
+      style={styles} // Applying styles to the container.
+      className={clsx("relative p-4 transition-all group m-[5px]", {
         "max-w-full w-full": type === "container" || type === "2Col", // Applying full width styles for container or 2Col types.
         "h-fit": type === "container", // Applying fit height for container type.
-        "h-full": type === "__body",  // Applying full height for __body type.
-        "custom-scrollbar mb-10": type === "__body",  // Applying overflow auto for __body type.
+        "h-full": type === "__body", // Applying full height for __body type.
+        "overflow-y-scroll custom-scrollbar overflow-x-hidden mb-[150px]":
+          type === "__body", // Applying overflow auto for __body type.
         "flex flex-col md:!flex-row": type === "2Col", // Applying flex layout for 2Col type.
         "!border-blue-500":
           state.editor.selectedElement.id === id &&
@@ -243,23 +288,20 @@ const Container = ({ element }: Props) => {
           !state.editor.liveMode &&
           state.editor.selectedElement.type === "__body", // Applying yellow border for selected element if not in live mode and is __body type.
         "!border-solid":
-          state.editor.selectedElement.id === id && !state.editor.liveMode,  // Applying solid border for selected element if not in live mode.
+          state.editor.selectedElement.id === id && !state.editor.liveMode, // Applying solid border for selected element if not in live mode.
         "border-dashed border-[1px] border-slate-300": !state.editor.liveMode, // Applying dashed border if not in live mode.
       })}
       onDrop={handleOnDrop} // Handling drop event.
       onDragOver={handleDragOver} // Handling drag over event.
-      draggable={type !== "__body"} // Making the container draggable if it's not __body type.
-      onClick={handleOnClickBody}  // Handling click event on the container body.
-      onDragStart={(e) => handleDragStart(e, element)} // Handling drag start event with element data.
+      onClick={handleOnClickBody} // Handling click event on the container body.
     >
-
       <Badge
         className={clsx(
           "absolute -top-[23px] -left-[1px] rounded-none rounded-t-lg hidden",
           {
             block:
               state.editor.selectedElement.id === element.id &&
-              !state.editor.liveMode, // Displaying the badge if the element is selected and not in live mode.
+              !state.editor.liveMode, // Displaying the badge if the element is selected and not in live mode
           }
         )}
       >

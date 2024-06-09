@@ -16,9 +16,25 @@ const TwoColumns = (props: Props) => {
   const { id, content, type } = props.element;
   const { dispatch, state } = useEditor();
 
+  const calculateDropIndex = (e: React.DragEvent): number => {
+    const dropY = e.clientY;
+    const dropIndex = Array.from(e.currentTarget.children).findIndex(
+      (child) => {
+        const childRect = child.getBoundingClientRect();
+        return dropY < childRect.top + childRect.height / 2;
+      }
+    );
+    return dropIndex;
+  };
+
   const handleOnDrop = (e: React.DragEvent, type: string) => {
     e.stopPropagation();
     const componentType = e.dataTransfer.getData("componentType") as EditorBtns;
+    const dropIndex = calculateDropIndex(e); // Calculate the drop index
+
+    const contentArray = Array.isArray(content) ? content : [];
+    const positionIndex = dropIndex === -1 ? contentArray.length : dropIndex; // If dropIndex is -1, add to the end
+
     switch (componentType) {
       case "text":
         dispatch({
@@ -35,6 +51,7 @@ const TwoColumns = (props: Props) => {
               },
               type: "text",
             },
+            positionIndex,
           },
         });
         break;
@@ -50,6 +67,7 @@ const TwoColumns = (props: Props) => {
               styles: { ...defaultStyles },
               type: "container",
             },
+            positionIndex,
           },
         });
         break;
@@ -65,6 +83,7 @@ const TwoColumns = (props: Props) => {
               styles: { ...defaultStyles },
               type: "2Col",
             },
+            positionIndex,
           },
         });
         break;

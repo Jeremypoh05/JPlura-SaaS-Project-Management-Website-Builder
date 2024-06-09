@@ -140,8 +140,20 @@ const SettingsTab = (props: Props) => {
                 />
               </div>
             )}
+          {state.editor.selectedElement.type === "icon" && (
+            <div className="flex flex-col gap-2">
+              <p className="text-muted-foreground">Icon Name</p>
+              <Input
+                id="icon"
+                placeholder="e.g., fa-solid fa-star"
+                onChange={handleOnChanges}
+                value={state.editor.selectedElement.styles.icon || ""}
+              />
+            </div>
+          )}
         </AccordionContent>
       </AccordionItem>
+
       <AccordionItem
         value="Typography"
         className="pl-6 pr-8 py-0 border-y-[1px]"
@@ -394,13 +406,13 @@ const SettingsTab = (props: Props) => {
             <div className="flex items-center justify-end">
               <small className="p-2">
                 {typeof state.editor.selectedElement.styles?.opacity ===
-                "number"
+                  "number"
                   ? state.editor.selectedElement.styles?.opacity
                   : parseFloat(
-                      (
-                        state.editor.selectedElement.styles?.opacity || "0"
-                      ).replace("%", "")
-                    ) || 0}
+                    (
+                      state.editor.selectedElement.styles?.opacity || "0"
+                    ).replace("%", "")
+                  ) || 0}
                 %
               </small>
             </div>
@@ -417,10 +429,10 @@ const SettingsTab = (props: Props) => {
                 typeof state.editor.selectedElement.styles?.opacity === "number"
                   ? state.editor.selectedElement.styles?.opacity
                   : parseFloat(
-                      (
-                        state.editor.selectedElement.styles?.opacity || "0"
-                      ).replace("%", "")
-                    ) || 0,
+                    (
+                      state.editor.selectedElement.styles?.opacity || "0"
+                    ).replace("%", "")
+                  ) || 0,
               ]}
               max={100}
               step={1}
@@ -431,13 +443,13 @@ const SettingsTab = (props: Props) => {
             <div className="flex items-center justify-end">
               <small className="">
                 {typeof state.editor.selectedElement.styles?.borderRadius ===
-                "number"
+                  "number"
                   ? state.editor.selectedElement.styles?.borderRadius
                   : parseFloat(
-                      (
-                        state.editor.selectedElement.styles?.borderRadius || "0"
-                      ).replace("px", "")
-                    ) || 0}
+                    (
+                      state.editor.selectedElement.styles?.borderRadius || "0"
+                    ).replace("px", "")
+                  ) || 0}
                 px
               </small>
             </div>
@@ -452,13 +464,13 @@ const SettingsTab = (props: Props) => {
               }}
               defaultValue={[
                 typeof state.editor.selectedElement.styles?.borderRadius ===
-                "number"
+                  "number"
                   ? state.editor.selectedElement.styles?.borderRadius
                   : parseFloat(
-                      (
-                        state.editor.selectedElement.styles?.borderRadius || "0"
-                      ).replace("%", "")
-                    ) || 0,
+                    (
+                      state.editor.selectedElement.styles?.borderRadius || "0"
+                    ).replace("%", "")
+                  ) || 0,
               ]}
               max={100}
               step={1}
@@ -808,6 +820,15 @@ const SettingsTab = (props: Props) => {
                 value={state.editor.selectedElement.styles.left}
               />
             </div>
+          </div>
+          <div className="flex flex-col gap-2">
+            <Label className="text-muted-foreground">Z-Index</Label>
+            <Input
+              placeholder="Enter z-index"
+              id="zIndex"
+              onChange={handleOnChanges}
+              value={state.editor.selectedElement.styles.zIndex}
+            />
           </div>
         </AccordionContent>
       </AccordionItem>

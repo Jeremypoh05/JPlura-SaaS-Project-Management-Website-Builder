@@ -9,6 +9,7 @@ export type EditorAction =
         payload: {
             containerId: string
             elementDetails: EditorElement
+            positionIndex: number;
         }
     }
     | {
@@ -67,3 +68,12 @@ export type EditorAction =
             funnelPageId: string
         }
     }
+    | {
+        type: 'MOVE_ELEMENT'
+        payload: {
+            containerId: string
+            elementDetails: EditorElement
+            dropIndex: number
+        }
+    }
+  

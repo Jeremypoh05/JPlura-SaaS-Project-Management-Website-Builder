@@ -11,12 +11,9 @@ type Props = { funnelPageId: string; liveMode?: boolean };
 
 const FunnelEditor = ({ funnelPageId, liveMode }: Props) => {
 
-  //A custom hook that provides access to the editor's state and dispatch function.
   const { dispatch, state } = useEditor();
 
-  // useEffect hook runs when the component mounts or when liveMode changes.
   useEffect(() => {
-    //If liveMode is true, it dispatches an action to toggle live mode in the editor.
     if (liveMode) {
       dispatch({
         type: "TOGGLE_LIVE_MODE",
@@ -25,14 +22,11 @@ const FunnelEditor = ({ funnelPageId, liveMode }: Props) => {
     }
   }, [liveMode]);
 
-  //hook runs when the component mounts or when funnelPageId changes.
   useEffect(() => {
     const fetchData = async () => {
-      //defines and calls an asynchronous fetchData function that fetches funnel page details using getFunnelPageDetails.
       const response = await getFunnelPageDetails(funnelPageId);
       if (!response) return;
 
-      //if have response, dispatch the LOAD_DATA. then set the elements to the response.content
       dispatch({
         type: "LOAD_DATA",
         payload: {
@@ -45,7 +39,6 @@ const FunnelEditor = ({ funnelPageId, liveMode }: Props) => {
     fetchData();
   }, [funnelPageId]);
 
-  // Dispatches an action to change the clicked element in the editor.
   const handleClick = () => {
     dispatch({
       type: "CHANGE_CLICKED_ELEMENT",
@@ -53,15 +46,15 @@ const FunnelEditor = ({ funnelPageId, liveMode }: Props) => {
     });
   };
 
-  // Dispatches actions to toggle both preview mode and live mode.
   const handleUnpreview = () => {
     dispatch({ type: "TOGGLE_PREVIEW_MODE" });
     dispatch({ type: "TOGGLE_LIVE_MODE" });
   };
+
   return (
     <div
       className={clsx(
-        "use-automation-zoom-in h-full overflow-auto custom-scrollbar mr-[385px] bg-background transition-all rounded-md",
+        "use-automation-zoom-in h-full overflow-auto custom-scrollbar mr-[385px] bg-background transition-all rounded-md editor-container",
         {
           "!p-0 !mr-0":
             state.editor.previewMode === true || state.editor.liveMode === true,
@@ -82,8 +75,7 @@ const FunnelEditor = ({ funnelPageId, liveMode }: Props) => {
           <EyeOff />
         </Button>
       )}
-      
-      {/* if it is true, we're gonna map over those elements */}
+
       {Array.isArray(state.editor.elements) &&
         state.editor.elements.map((childElement) => (
           <Recursive key={childElement.id} element={childElement} />

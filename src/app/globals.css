@@ -52,11 +52,6 @@ B (255 */
   }
 
   .dark {
-    /* Name: custom color palette
-       Author: Ilias Ism
-       URL: https://gradient.page */
-
-    /* CSS: .bg-gradient { background: var(--gradient) } */
     --gradient: linear-gradient(to top left, #007adf, #00ecbc);
 
     --background: 220 65% 3.52%;
@@ -89,13 +84,12 @@ B (255 */
     --ring: 220 100% 44%;
   }
 
-     /* Add the gradient text class here */
-     .gradient-text {
-       background-clip: text;
-       -webkit-background-clip: text;
-       color: transparent;
-       -webkit-text-fill-color: transparent;
-     }
+  .gradient-text {
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+    -webkit-text-fill-color: transparent;
+  }
 }
 
 @layer base {
@@ -138,7 +132,7 @@ B (255 */
 
   .custom-scrollbar::-webkit-scrollbar {
     width: 8px;
-    height: 8px;
+    height: 3px;
   }
 
   .custom-scrollbar::-webkit-scrollbar-track {

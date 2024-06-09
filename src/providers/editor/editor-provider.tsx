@@ -4,6 +4,7 @@ import { EditorBtns } from "@/lib/constants";
 import { EditorAction } from "./editor-actions";
 import { createContext, Dispatch, useContext, useReducer } from "react";
 import { FunnelPage } from "@prisma/client";
+import { CustomStyles } from "@/lib/types";
 
 /*
 This code is part of an editor application where users can create and manage elements (like a page builder). 
@@ -15,11 +16,13 @@ export type DeviceTypes = "Desktop" | "Mobile" | "Tablet"; //Represents the type
 //Represents an element in the editor.
 export type EditorElement = {
   id: string;
-  styles: React.CSSProperties;
+  // styles: React.CSSProperties;
+  styles: CustomStyles; // Use the new CustomStyles type here
   name: string;
   type: EditorBtns;
-  content: EditorElement[] | { href?: string; innerText?: string; src?: string }; //it will be either editor element and an array of them or it will be a special objects
-  //href?: string is a custom properties, that will be used in the settings-tab (custom)
+  content:
+    | EditorElement[]
+    | { href?: string; innerText?: string; src?: string }; //it will be either editor element and an array of them or it will be a special objects  //href?: string is a custom properties, that will be used in the settings-tab (custom)
 };
 
 //Represents the state of the editor
@@ -98,6 +101,7 @@ const addAnElement = (
   editorArray: EditorElement[], //The array of EditorElement objects where the new element should be added.
   action: EditorAction //  The action object containing the type and payload for adding an element.
 ): EditorElement[] => {
+  //This check ensures that the function is only called with the ADD_ELEMENT action type. If the action type is not ADD_ELEMENT, it throws an error.
   if (action.type !== "ADD_ELEMENT")
     throw Error(
       "You sent the wrong action type to the Add Element editor State"
@@ -106,8 +110,20 @@ const addAnElement = (
   return editorArray.map((item) => {
     //If the item's id matches the containerId from the action payload and its content is an array:
     // Return a new object with the same properties as the item but with the new element added to its content.
-
     if (item.id === action.payload.containerId && Array.isArray(item.content)) {
+      // Create a new array with the new element inserted at the specified position
+      // a copy of the current item.content array. We create a new array to avoid mutating the original array directly,
+      const newContent = [...item.content];
+      // splice method is used to insert the new element at the specified position (positionIndex) within the newContent array.
+      //splice syntax: array.splice(startIndex, deleteCount, item1, item2, ...)
+      //startIndex: The index at which to start changing the array.
+      //deleteCount: The number of elements to remove(0 in this case, as we are only inserting).
+      newContent.splice(
+        action.payload.positionIndex,
+        0,
+        action.payload.elementDetails
+      );
+      // Return a new object with the same properties as the item but with the new element added to its content.
       return {
         ...item,
         content: [...item.content, action.payload.elementDetails],
@@ -153,6 +169,107 @@ const updateAnElement = (
   });
 };
 
+/*
+ move an element within a nested array of EditorElement objects.
+ Removing the element from its original location.
+ Inserting the element into its new location.
+*/
+
+const moveElement = (
+  editorArray: EditorElement[],
+  action: EditorAction //The action object containing the details of the move operation.
+): EditorElement[] => {
+  if (action.type !== "MOVE_ELEMENT") {
+    throw Error(
+      "You sent the wrong action type to the Move Element editor State"
+    );
+  }
+
+  //Extracts containerId, elementDetails, and dropIndex from the action payload. These are the parameters needed to move the element.
+  const { containerId, elementDetails, dropIndex } = action.payload;
+
+  // Function to remove the element from the array
+  const removeElement = (
+    elements: EditorElement[],
+    elementId: string // The ID of the element to remove
+  ): {
+    updatedElements: EditorElement[];
+    removedElement: EditorElement | null;
+  } => {
+    let removedElement: EditorElement | null = null; // Variable to store the removed element
+    //If the element matches elementId, it sets removedElement and excludes it from the returned array.
+    const updatedElements = elements.reduce<EditorElement[]>((acc, el) => {
+      if (el.id === elementId) {
+        // If the current element matches the ID
+        removedElement = el; // Store the element in removedElement
+        return acc; // Do not include this element in the updated array
+      }
+      //If the element has nested content (i.e., Array.isArray(el.content)),
+      //it recursively calls removeElement on the nested content.
+      if (Array.isArray(el.content)) {
+        // If the element has nested content
+        const result = removeElement(el.content, elementId); // Recursively call removeElement on the nested content
+        if (result.removedElement) {
+          // If an element was removed from the nested content
+          removedElement = result.removedElement; // Store the removed element
+          return [...acc, { ...el, content: result.updatedElements }]; // Update the current element's content and include it in the updated array
+        }
+      }
+      return [...acc, el]; //Include the current element in the updated array
+    }, []);
+    return { updatedElements, removedElement }; // Return the updated array and the removed element
+  };
+
+  // Function to insert the element into the array
+  const insertElementAt = (
+    elements: EditorElement[], // The array of elements to search through
+    containerId: string, // The ID of the container to insert the element into
+    element: EditorElement, // The element to insert
+    index: number //The index at which to insert the element
+  ): EditorElement[] => {
+    return elements.map((el) => {
+      if (el.id === containerId) {
+        // If the current element matches the container ID
+        const newContent = Array.isArray(el.content) ? [...el.content] : []; // Ensure the content is an array
+        newContent.splice(index, 0, element); // Insert the element at the specified index
+        return {
+          ...el,
+          content: newContent, // Update the current element's content
+        };
+      }
+      if (Array.isArray(el.content)) {
+        // If the element has nested content
+        return {
+          ...el,
+          content: insertElementAt(el.content, containerId, element, index), // Recursively call insertElementAt on the nested content
+        };
+      }
+      return el; //if nothing matches, return the current element unchanged
+    });
+  };
+
+  // Remove the element from its original location
+  const { updatedElements, removedElement } = removeElement(
+    editorArray,
+    elementDetails.id
+  );
+
+  if (!removedElement) {
+    // If the element was not found
+    return editorArray; // Return the original array
+  }
+
+  // Insert the element into its new location
+  const result = insertElementAt(
+    updatedElements,
+    containerId,
+    removedElement,
+    dropIndex
+  );
+
+  return result; // Return the updated array
+};
+
 const deleteAnElement = (
   editorArray: EditorElement[],
   action: EditorAction
@@ -182,6 +299,8 @@ const editorReducer = (
   state: EditorState = initialState, // The current state of the editor.
   action: EditorAction // The action being dispatched to get the updated elements.
 ): EditorState => {
+  console.log("Action:", action);
+  console.log("State before:", state);
   switch (action.type) {
     case "ADD_ELEMENT":
       // Call addAnElement with the current elements and the action
@@ -253,6 +372,42 @@ const editorReducer = (
 
       // Return the new state object
       return updatedEditor;
+
+    case "MOVE_ELEMENT":
+      console.log("Action payload:", action.payload); // Log the payload here
+      //Calls the moveElement function with the current array of editor elements and the action.
+      // The moveElement function handles the logic of removing the element from its original location and inserting it into its new location.
+      // The result is the updated array of elements after the move operation.
+      const movedElements = moveElement(state.editor.elements, action);
+      // Create a new editor state with the updated elements array
+      const movedEditorState = {
+        ...state.editor, // Copy the existing editor state
+        elements: movedElements, // Update the elements array with the moved elements
+      };
+      // Update the history array to include the new editor state
+      const movedHistory = [
+        ...state.history.history.slice(0, state.history.currentIndex + 1), // Keep the history up to the current index
+        { ...movedEditorState }, // Add the new editor state to the history
+      ];
+      console.log("State after:", {
+        ...state, // Copy the existing state
+        editor: movedEditorState, // Update the editor state
+        history: {
+          ...state.history, // Copy the existing history state
+          history: movedHistory, // Update the history array with the new editor state
+          currentIndex: movedHistory.length - 1, // Update the current index to point to the latest state
+        },
+      });
+      // Return the new state with the updated editor state and history
+      return {
+        ...state,
+        editor: movedEditorState,
+        history: {
+          ...state.history,
+          history: movedHistory,
+          currentIndex: movedHistory.length - 1,
+        },
+      };
 
     case "DELETE_ELEMENT":
       // Call deleteAnElement to handle deleting an existing element
@@ -456,39 +611,37 @@ export type EditorContextData = {
   setDevice: (device: DeviceTypes) => void; // Function to set the device type.
 };
 
-
-//Context:Context provides a way to pass data through the component tree without having to pass props down manually at every level. It is useful for global data that many components need, 
+//Context:Context provides a way to pass data through the component tree without having to pass props down manually at every level. It is useful for global data that many components need,
 //such as user authentication, theme, or application settings.
 
 //It wraps its children with the EditorContext.Provider, passing down the state, dispatch function,
 // and additional properties (subaccountId, funnelId, pageDetails).
 export const EditorContext = createContext<{
   state: EditorState; // The current state of the editor.
-  dispatch: Dispatch<EditorAction>;  // The dispatch function to send actions to the reducer,  which then updates the state based on the action received.
+  dispatch: Dispatch<EditorAction>; // The dispatch function to send actions to the reducer,  which then updates the state based on the action received.
   subaccountId: string;
   funnelId: string;
-  pageDetails: FunnelPage | null;  // The details of the current funnel page.
+  pageDetails: FunnelPage | null; // The details of the current funnel page.
 }>({
   state: initialState,
   dispatch: () => undefined, // Default initial state.
   subaccountId: "", // Default dispatch function (no-op).
   funnelId: "",
   pageDetails: null, // Default page details.
-}); 
+});
 
 // defines the shape of the props that the EditorProvider component expects to receive
 type EditorProps = {
   children: React.ReactNode; // The child components that will be wrapped by the provider.
   subaccountId: string;
   funnelId: string; // The ID of the funnel.
-  pageDetails: FunnelPage;  // The details of the current funnel page
+  pageDetails: FunnelPage; // The details of the current funnel page
 };
 
-//Initializes the state using useReducer and provides the state and dispatch function to its children through the context. 
+//Initializes the state using useReducer and provides the state and dispatch function to its children through the context.
 //This component wraps the part of the application that needs access to the editor state.
 const EditorProvider = (props: EditorProps) => {
-
-  //1. editorReducer: This is the reducer function that specifies how the state should be updated based on the dispatched actions. 
+  //1. editorReducer: This is the reducer function that specifies how the state should be updated based on the dispatched actions.
   //It takes two arguments: the current state and an action, and it returns a new state.
 
   //2. initialState: This is the initial state of your component.It defines the starting values for state.

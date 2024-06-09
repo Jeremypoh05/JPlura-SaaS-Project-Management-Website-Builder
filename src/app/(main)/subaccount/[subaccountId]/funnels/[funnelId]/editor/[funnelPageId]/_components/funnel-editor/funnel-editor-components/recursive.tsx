@@ -6,6 +6,7 @@ import VideoComponent from './video'
 import LinkComponent from './link'
 import ContactFormComponent from './contact-form-component'
 import Checkout from './checkout'
+import IconComponent from './icon-component'
 // import Checkout from './checkout'
 
 type Props = {
@@ -30,7 +31,8 @@ const Recursive = ({ element }: Props) => {
       return <Checkout element={element} />
     case '2Col':
       return <Container element={element} />
-
+    case 'icon': // Handle the new icon type
+      return <IconComponent element={element} />
     default:
       return null
   }
