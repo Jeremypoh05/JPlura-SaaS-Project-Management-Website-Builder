@@ -57,7 +57,14 @@ const SettingsTab = (props: Props) => {
 
   const handleOnChanges = (e: any) => {
     const styleSettings = e.target.id;
-    let value = e.target.value; //wherever the target value they want
+    let value =
+      e.target.type === "checkbox" ? e.target.checked : e.target.value; // Handle checkbox separately
+
+    // Handle empty value for iconFontSize
+    if (styleSettings === "iconFontSize" && value === "") {
+      value = "";
+    }
+
     const styleObject = {
       [styleSettings]: value, //get the id equal to the value they want.
     };
@@ -140,6 +147,7 @@ const SettingsTab = (props: Props) => {
                 />
               </div>
             )}
+
           {state.editor.selectedElement.type === "icon" && (
             <div className="flex flex-col gap-2">
               <p className="text-muted-foreground">Icon Name</p>
@@ -148,6 +156,70 @@ const SettingsTab = (props: Props) => {
                 placeholder="e.g., fa-solid fa-star"
                 onChange={handleOnChanges}
                 value={state.editor.selectedElement.styles.icon || ""}
+              />
+              <p className="text-muted-foreground">Icon Color</p>
+              <Input
+                type="color"
+                id="iconColor"
+                onChange={handleOnChanges}
+                value={
+                  state.editor.selectedElement.styles.iconColor || "#000000"
+                }
+              />
+              <p className="text-muted-foreground">Icon Font Size</p>
+              <Input
+                type="number"
+                id="iconFontSize"
+                onChange={handleOnChanges}
+                value={state.editor.selectedElement.styles.iconFontSize || ""}
+                placeholder="Font Size in px"
+              />
+              <div className="flex justify-between mr-4">
+                <p className="text-muted-foreground">Enable Hover Icon Color</p>
+                <input
+                  type="checkbox"
+                  id="enableHover"
+                  onChange={handleOnChanges}
+                  checked={
+                    state.editor.selectedElement.styles.enableHover || false
+                  }
+                />
+              </div>
+
+              <p className="text-muted-foreground">Hover Icon Color</p>
+              <Input
+                type="color"
+                id="hoverIconColor"
+                onChange={handleOnChanges}
+                value={
+                  state.editor.selectedElement.styles.hoverIconColor ||
+                  "#000000"
+                }
+                disabled={!state.editor.selectedElement.styles.enableHover}
+              />
+
+              <p className="text-muted-foreground">Transition Duration</p>
+              <Input
+                type="text"
+                id="transitionDuration"
+                onChange={handleOnChanges}
+                value={
+                  state.editor.selectedElement.styles.transitionDuration ||
+                  "0.3s"
+                }
+                placeholder="e.g., 0.3s"
+              />
+
+              <p className="text-muted-foreground">Link Path</p>
+              <Input
+                id="href"
+                placeholder="https://domain.example.com/pathname"
+                onChange={handleChangeCustomValues}
+                value={
+                  !Array.isArray(state.editor.selectedElement.content)
+                    ? state.editor.selectedElement.content.href || ""
+                    : ""
+                }
               />
             </div>
           )}
@@ -210,7 +282,6 @@ const SettingsTab = (props: Props) => {
               onChange={handleOnChanges}
               value={state.editor.selectedElement.styles.fontFamily}
               placeholder="e.g., Arial, 'DM Sans', sans-serif"
-
             />
           </div>
           <div className="flex flex-col gap-2">
@@ -406,13 +477,13 @@ const SettingsTab = (props: Props) => {
             <div className="flex items-center justify-end">
               <small className="p-2">
                 {typeof state.editor.selectedElement.styles?.opacity ===
-                  "number"
+                "number"
                   ? state.editor.selectedElement.styles?.opacity
                   : parseFloat(
-                    (
-                      state.editor.selectedElement.styles?.opacity || "0"
-                    ).replace("%", "")
-                  ) || 0}
+                      (
+                        state.editor.selectedElement.styles?.opacity || "0"
+                      ).replace("%", "")
+                    ) || 0}
                 %
               </small>
             </div>
@@ -429,10 +500,10 @@ const SettingsTab = (props: Props) => {
                 typeof state.editor.selectedElement.styles?.opacity === "number"
                   ? state.editor.selectedElement.styles?.opacity
                   : parseFloat(
-                    (
-                      state.editor.selectedElement.styles?.opacity || "0"
-                    ).replace("%", "")
-                  ) || 0,
+                      (
+                        state.editor.selectedElement.styles?.opacity || "0"
+                      ).replace("%", "")
+                    ) || 0,
               ]}
               max={100}
               step={1}
@@ -443,13 +514,13 @@ const SettingsTab = (props: Props) => {
             <div className="flex items-center justify-end">
               <small className="">
                 {typeof state.editor.selectedElement.styles?.borderRadius ===
-                  "number"
+                "number"
                   ? state.editor.selectedElement.styles?.borderRadius
                   : parseFloat(
-                    (
-                      state.editor.selectedElement.styles?.borderRadius || "0"
-                    ).replace("px", "")
-                  ) || 0}
+                      (
+                        state.editor.selectedElement.styles?.borderRadius || "0"
+                      ).replace("px", "")
+                    ) || 0}
                 px
               </small>
             </div>
@@ -464,13 +535,13 @@ const SettingsTab = (props: Props) => {
               }}
               defaultValue={[
                 typeof state.editor.selectedElement.styles?.borderRadius ===
-                  "number"
+                "number"
                   ? state.editor.selectedElement.styles?.borderRadius
                   : parseFloat(
-                    (
-                      state.editor.selectedElement.styles?.borderRadius || "0"
-                    ).replace("%", "")
-                  ) || 0,
+                      (
+                        state.editor.selectedElement.styles?.borderRadius || "0"
+                      ).replace("%", "")
+                    ) || 0,
               ]}
               max={100}
               step={1}

@@ -3,7 +3,6 @@ import { Badge } from "@/components/ui/badge";
 import { EditorElement, useEditor } from "@/providers/editor/editor-provider";
 import clsx from "clsx";
 import { Trash } from "lucide-react";
-import Link from "next/link";
 import React from "react";
 
 type Props = {
@@ -28,8 +27,6 @@ const LinkComponent = (props: Props) => {
     });
   };
 
-  const styles = props.element.styles;
-
   const handleDeleteElement = () => {
     dispatch({
       type: "DELETE_ELEMENT",
@@ -37,9 +34,26 @@ const LinkComponent = (props: Props) => {
     });
   };
 
+  const isValidUrl = (url: string) => {
+    return /^https?:\/\//i.test(url);
+  };
+
+  const href = !Array.isArray(props.element.content)
+    ? props.element.content.href
+    : null;
+
+  // const formattedHref = href && isValidUrl(href) ? href : null;
+  const formattedHref = href && !isValidUrl(href) ? `http://${href}` : href;
+
+
+  const hasBackgroundImage = props.element.styles.backgroundImage;
+
   return (
     <div
-      style={styles}
+      style={{
+        ...props.element.styles,
+        cursor: formattedHref ? 'pointer' : 'default',
+      }}
       draggable
       onDragStart={(e) => handleDragStart(e, props.element)}
       onClick={handleOnClickBody}
@@ -48,7 +62,6 @@ const LinkComponent = (props: Props) => {
         {
           "!border-blue-500":
             state.editor.selectedElement.id === props.element.id,
-
           "!border-solid": state.editor.selectedElement.id === props.element.id,
           "border-dashed border-[1px] border-slate-300": !state.editor.liveMode,
         }
@@ -61,12 +74,25 @@ const LinkComponent = (props: Props) => {
           </Badge>
         )}
       {!Array.isArray(props.element.content) &&
-        (state.editor.previewMode || state.editor.liveMode) && (
-          <Link href={props.element.content.href || "#"}>
-            {props.element.content.innerText}
-          </Link>
-        )}
-      {!state.editor.previewMode && !state.editor.liveMode && (
+        (state.editor.previewMode || state.editor.liveMode) && formattedHref ? (
+        <a
+          href={formattedHref}
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{
+            display: "block",
+            width: "100%",
+            height: "100%",
+            backgroundImage: hasBackgroundImage ? `url(${props.element.styles.backgroundImage})` : 'none',
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+          }}
+        >
+          {props.element.content.innerText && !hasBackgroundImage && (
+            <span>{props.element.content.innerText}</span>
+          )}
+        </a>
+      ) : (
         <span
           contentEditable={!state.editor.liveMode}
           onBlur={(e) => {
@@ -77,11 +103,20 @@ const LinkComponent = (props: Props) => {
                 elementDetails: {
                   ...props.element,
                   content: {
+                    ...props.element.content,
                     innerText: spanElement.innerText,
                   },
                 },
               },
             });
+          }}
+          style={{
+            display: "block",
+            width: "100%",
+            height: "100%",
+            backgroundImage: hasBackgroundImage ? `url(${props.element.styles.backgroundImage})` : 'none',
+            backgroundSize: "cover",
+            backgroundPosition: "center",
           }}
         >
           {!Array.isArray(props.element.content) &&

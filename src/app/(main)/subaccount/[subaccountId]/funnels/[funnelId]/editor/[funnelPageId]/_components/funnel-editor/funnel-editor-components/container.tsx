@@ -272,7 +272,7 @@ const Container = ({ element }: Props) => {
   return (
     <div
       style={styles} // Applying styles to the container.
-      className={clsx("relative p-4 transition-all group m-[5px]", {
+      className={clsx("relative p-2 transition-all group mx-[5px]", {
         "max-w-full w-full": type === "container" || type === "2Col", // Applying full width styles for container or 2Col types.
         "h-fit": type === "container", // Applying fit height for container type.
         "h-full": type === "__body", // Applying full height for __body type.

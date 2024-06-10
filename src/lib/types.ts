@@ -175,4 +175,9 @@ export const FunnelPageSchema = z.object({
 
 export interface CustomStyles extends CSSProperties {
   icon?: IconName;
+  iconColor?: string;
+  iconFontSize?: number;
+  hoverIconColor?: string;
+  transitionDuration?: string;
+  enableHover?: boolean;
 }
