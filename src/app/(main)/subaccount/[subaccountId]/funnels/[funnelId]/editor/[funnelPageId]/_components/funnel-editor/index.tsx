@@ -54,7 +54,7 @@ const FunnelEditor = ({ funnelPageId, liveMode }: Props) => {
   return (
     <div
       className={clsx(
-        "use-automation-zoom-in h-full overflow-auto custom-scrollbar mr-[385px] bg-background transition-all rounded-md editor-container",
+        "use-automation-zoom-in h-full overflow-auto custom-scrollbar mr-[385px] bg-background transition-all rounded-md",
         {
           "!p-0 !mr-0":
             state.editor.previewMode === true || state.editor.liveMode === true,

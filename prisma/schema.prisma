@@ -129,7 +129,7 @@ model SubAccount {
   country          String
   agencyId         String
   Agency           Agency                    @relation(fields: [agencyId], references: [id], onDelete: Cascade)
-  SidebarOption    SubAccountSidebarOption[] 
+  SidebarOption    SubAccountSidebarOption[]
   Permissions      Permissions[]
   Funnels          Funnel[] //each sub account will have multiple websites
   Media            Media[] //all the media files will be stored 
@@ -410,8 +410,8 @@ model Notification {
 }
 
 enum Plan {
-  price_1PM5gVD0wO7R6BkEBM41V3WR
-  price_1PM5gVD0wO7R6BkEa3kAkPnS
+  price_1PQ8HWRqpSbtJ03827K2PbCM
+  price_1PQ8HVRqpSbtJ038LxC6uWrX
 }
 
 //for Stripe

@@ -280,8 +280,17 @@ const SettingsTab = (props: Props) => {
             <Input
               id="fontFamily"
               onChange={handleOnChanges}
-              value={state.editor.selectedElement.styles.fontFamily}
-              placeholder="e.g., Arial, 'DM Sans', sans-serif"
+              value={state.editor.selectedElement.styles.fontFamily || ''}
+              placeholder="e.g., Arial, 'Tiny5', sans-serif"
+            />
+          </div>
+          <div className="flex flex-col gap-2">
+            <p className="text-muted-foreground">Import Font Library</p>
+            <Input
+              id="fontImport"
+              onChange={handleOnChanges}
+              value={state.editor.selectedElement.styles.fontImport || ''}
+              placeholder="e.g., https://fonts.googleapis.com/css2?family=Tiny5&display=swap"
             />
           </div>
           <div className="flex flex-col gap-2">
@@ -341,6 +350,32 @@ const SettingsTab = (props: Props) => {
                 value={state.editor.selectedElement.styles.fontSize}
               />
             </div>
+          </div>
+          <div className="flex flex-col gap-2">
+            <Label className="text-muted-foreground">Text Decoration</Label>
+            <Select
+              onValueChange={(e) =>
+                handleOnChanges({
+                  target: {
+                    id: "textDecoration",
+                    value: e,
+                  },
+                })
+              }
+            >
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Select a decoration" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectGroup>
+                  <SelectLabel>Text Decorations</SelectLabel>
+                  <SelectItem value="none">None</SelectItem>
+                  <SelectItem value="underline">Underline</SelectItem>
+                  <SelectItem value="overline">Overline</SelectItem>
+                  <SelectItem value="line-through">Line Through</SelectItem>
+                </SelectGroup>
+              </SelectContent>
+            </Select>
           </div>
         </AccordionContent>
       </AccordionItem>

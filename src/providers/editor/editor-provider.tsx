@@ -126,7 +126,8 @@ const addAnElement = (
       // Return a new object with the same properties as the item but with the new element added to its content.
       return {
         ...item,
-        content: [...item.content, action.payload.elementDetails],
+        content: newContent,
+        // content: [...item.content, action.payload.elementDetails],
       };
       // If the item's content is an array but the id does not match:
       //Recursively call addAnElement on the content array to potentially find the correct container deeper in the structure.

@@ -3,7 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { EditorElement, useEditor } from "@/providers/editor/editor-provider";
 import clsx from "clsx";
 import { Trash } from "lucide-react";
-import React from "react";
+import React, { useEffect } from "react";
 
 type Props = {
   element: EditorElement;
@@ -18,8 +18,24 @@ const TextComponent = (props: Props) => {
       payload: { elementDetails: props.element },
     });
   };
-  const styles = props.element.styles;
+  const styles = {
+    ...props.element.styles,
+    fontFamily: props.element.styles.fontFamily || "inherit",
+  };
 
+  // Dynamically load the font import
+  useEffect(() => {
+    if (props.element.styles.fontImport) {
+      const link = document.createElement("link");
+      link.href = props.element.styles.fontImport;
+      link.rel = "stylesheet";
+      document.head.appendChild(link);
+
+      return () => {
+        document.head.removeChild(link);
+      };
+    }
+  }, [props.element.styles.fontImport]);
   const handleOnClickBody = (e: React.MouseEvent) => {
     e.stopPropagation();
     dispatch({
@@ -45,7 +61,7 @@ const TextComponent = (props: Props) => {
       onDragStart={(e) => handleDragStart(e, props.element)}
       onClick={handleOnClickBody}
       className={clsx(
-        "p-[2px] w-full m-[5px] relative text-[16px] transition-all",
+        "p-[2px] w-full m-[2px] my-[5px] relative text-[16px] transition-all",
         {
           "!border-blue-500":
             state.editor.selectedElement.id === props.element.id,

@@ -180,4 +180,5 @@ export interface CustomStyles extends CSSProperties {
   hoverIconColor?: string;
   transitionDuration?: string;
   enableHover?: boolean;
+  fontImport?: string;
 }
