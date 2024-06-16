@@ -269,6 +269,9 @@ const Container = ({ element }: Props) => {
     });
   };
 
+  // Determine if dragging should be enabled
+  const isDraggable = !state.editor.previewMode && !state.editor.liveMode;
+
   return (
     <div
       style={styles} // Applying styles to the container.
@@ -276,8 +279,9 @@ const Container = ({ element }: Props) => {
         "max-w-full w-full": type === "container" || type === "2Col", // Applying full width styles for container or 2Col types.
         "h-fit": type === "container", // Applying fit height for container type.
         "h-full": type === "__body", // Applying full height for __body type.
-        "overflow-y-scroll custom-scrollbar overflow-x-hidden mb-[150px]":
+        "overflow-y-scroll custom-scrollbar overflow-x-hidden ":
           type === "__body", // Applying overflow auto for __body type.
+        "mb-[100px]": !state.editor.liveMode,
         "flex flex-col md:!flex-row": type === "2Col", // Applying flex layout for 2Col type.
         "!border-blue-500":
           state.editor.selectedElement.id === id &&
@@ -291,9 +295,10 @@ const Container = ({ element }: Props) => {
           state.editor.selectedElement.id === id && !state.editor.liveMode, // Applying solid border for selected element if not in live mode.
         "border-dashed border-[1px] border-slate-300": !state.editor.liveMode, // Applying dashed border if not in live mode.
       })}
-      onDrop={handleOnDrop} // Handling drop event.
-      onDragOver={handleDragOver} // Handling drag over event.
+      onDrop={isDraggable ? handleOnDrop : undefined} // Handling drop event only if draggable
+      onDragOver={isDraggable ? handleDragOver : undefined} // Handling drag over event only if draggable
       onClick={handleOnClickBody} // Handling click event on the container body.
+      draggable={isDraggable}
     >
       <Badge
         className={clsx(

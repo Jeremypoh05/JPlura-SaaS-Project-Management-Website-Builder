@@ -29,16 +29,16 @@ export async function POST(req: Request) {
 
   // Not needed unless we want to send payments to this account.
   //CHALLENGE Transfer money to a connected
-  // const agencyIdConnectedAccountId = await db.subAccount.findUnique({
-  //   where: { id: subaccountId },
-  //   include: { Agency: true },
-  // })
+  const agencyIdConnectedAccountId = await db.subAccount.findUnique({
+    where: { id: subaccountId },
+    include: { Agency: true },
+  })
 
   const subscriptionPriceExists = prices.find((price) => price.recurring);
-  // if (!agencyIdConnectedAccountId?.Agency.connectAccountId) {
-  //   console.log('Agency is not connected')
-  //   return NextResponse.json({ error: 'Agency account is not connected' })
-  // }
+  if (!agencyIdConnectedAccountId?.Agency.connectAccountId) {
+    console.log('Agency is not connected')
+    return NextResponse.json({ error: 'Agency account is not connected' })
+  }
 
   try {
     const session = await stripe.checkout.sessions.create(

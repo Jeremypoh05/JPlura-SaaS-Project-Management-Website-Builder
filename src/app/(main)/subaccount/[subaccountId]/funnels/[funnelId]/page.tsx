@@ -28,7 +28,7 @@ const FunnelPage = async ({ params }: Props) => {
       </Link>
       <h1 className="text-3xl mb-8">{funnelPages.name}</h1>
       <Tabs defaultValue="steps" className="w-full">
-        <TabsList className="grid  grid-cols-2 w-[50%] bg-transparent ">
+        <TabsList className="grid grid-cols-2 w-[50%] bg-transparent ">
           <TabsTrigger value="steps">Steps</TabsTrigger>
           <TabsTrigger value="settings">Settings</TabsTrigger>
         </TabsList>
