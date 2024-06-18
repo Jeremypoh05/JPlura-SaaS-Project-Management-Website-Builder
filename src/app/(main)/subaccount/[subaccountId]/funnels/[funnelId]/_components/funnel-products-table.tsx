@@ -21,7 +21,7 @@ import { Button } from "@/components/ui/button";
 
 interface FunnelProductsTableProps {
   defaultData: Funnel;
-  products?: Stripe.Product[];
+  products: Stripe.Product[];
 }
 
 const FunnelProductsTable: React.FC<FunnelProductsTableProps> = ({
@@ -89,7 +89,7 @@ const FunnelProductsTable: React.FC<FunnelProductsTableProps> = ({
         </TableHeader>
         <TableBody className="font-medium truncate">
             {/* check whether it go lives or not */}
-          {products?.map((product) => (
+          {products.map((product) => (
             <TableRow key={product.id}>
               <TableCell>
                 <Input

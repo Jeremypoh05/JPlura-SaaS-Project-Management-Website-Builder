@@ -53,7 +53,7 @@ const FunnelSettings: React.FC<FunnelSettingsProps> = async ({
                         {subaccountDetails.connectAccountId ? (
                             <FunnelProductsTable
                                 defaultData={defaultData}
-                                // products={products}
+                                products={products}
                             />
                         ) : (
                             "Connect your stripe account to sell products."
