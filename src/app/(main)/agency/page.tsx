@@ -29,7 +29,7 @@ const Page = async ({
       console.log("searchParams.code:", searchParams.code)
 
       if (searchParams.state) { //e.g., launchpad___7d07d1d9-d15e-441d-8a04-a6c84f305a53
-        const statePath = searchParams.state.split('___')[0] //will be launchpad 
+        const statePath = searchParams.state.split('__')[0] //will be launchpad 
         const stateAgencyId = searchParams.state.split('___')[1] //will be 7d07d1d9-d15e-441d-8a04-a6c84f305a53
         console.log("State Path:", statePath)
         console.log("State Agency ID:", stateAgencyId)

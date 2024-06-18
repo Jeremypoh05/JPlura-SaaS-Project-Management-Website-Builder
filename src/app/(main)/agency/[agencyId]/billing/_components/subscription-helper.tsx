@@ -14,7 +14,7 @@ type Props = {
 
 const SubscriptionHelper = ({ customerId, planExists, prices }: Props) => {
   const { setOpen } = useModal()
-  const searchParams = useSearchParams()
+  const searchParams = useSearchParams() //get from the params
   const plan = searchParams.get('plan')
 
   useEffect(() => {
