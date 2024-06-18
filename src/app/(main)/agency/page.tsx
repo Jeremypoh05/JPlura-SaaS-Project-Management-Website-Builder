@@ -15,6 +15,7 @@ const Page = async ({
 
   const agencyId = await verifyAndAcceptInvitation()
 
+  //get user detailss 
   const user = await getAuthUserDetails();
   console.log("User details:", user)
 

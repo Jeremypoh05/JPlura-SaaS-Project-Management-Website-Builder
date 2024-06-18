@@ -27,8 +27,8 @@ const BookmarkButton = () => {
   const handleBookmark = () => {
     if (isDesktopDevice()) {
       if (window.external && "AddFavorite" in window.external) {
-        // For IE
-        window.external.AddFavorite(window.location.href, document.title);
+        // // For IE
+        // window.external.AddFavorite(window.location.href, document.title);
       } else {
         // For other browsers
         setOpen(true);
