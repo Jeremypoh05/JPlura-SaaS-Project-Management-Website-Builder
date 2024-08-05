@@ -199,7 +199,7 @@ const Page = async ({
         <div className="flex gap-4 xl:!flex-row flex-col">
           <Card className="p-4 flex-1">
             <CardHeader>
-              <CardTitle>Transaction History</CardTitle>
+              <CardTitle>Transaction Historyy</CardTitle>
             </CardHeader>
             <AreaChart
               className="text-sm stroke-primary"
