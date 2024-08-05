@@ -188,7 +188,10 @@ const Page = async ({
                   </span>
                 </div>
                 <Progress
+                  color="green"
+                  indicatorColor="bg-blue-300"
                   value={(subaccounts.length / agencyDetails.goal) * 100}
+                  className="h-2"
                 />
               </div>
             </CardFooter>

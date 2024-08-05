@@ -10,7 +10,7 @@ generator client {
 }
 
 datasource db {
-  provider     = "postgresql"
+  provider     = "postgresql" 
   url          = env("DATABASE_URL")
   relationMode = "prisma"
 }
@@ -69,6 +69,7 @@ model User {
   Permissions  Permissions[] //can a User see a sub account? by default the agency owner has permission to to all accounts, but the sub account users only have access to those sub accounts that agency owner has given access or permissions to.
   Tickets      Ticket[]
   Notification Notification[] //An user can have multiple notification and the notification can only have only one user 
+
   @@index([agencyId])
 }
 
@@ -132,6 +133,8 @@ model SubAccount {
   Funnels          Funnel[] //each sub account will have multiple websites
   Media            Media[] //all the media files will be stored 
   Contact          Contact[] //all the contact for the sub account will be stored
+  Trigger          Trigger[]
+  Automation       Automation[]
   Pipeline         Pipeline[]
   Tags             Tag[] //Tags for the Tickets, assigned tags to the tickets
   Notification     Notification[]
@@ -201,8 +204,68 @@ model Ticket {
   @@index([assignedUserId])
 }
 
+//here until model Action is for future funtion 
+enum TriggerTypes {
+  CONTACT_FORM
+}
+
+model Trigger {
+  id           String       @id @default(uuid())
+  name         String
+  type         TriggerTypes
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+  subAccountId String
+  Subaccount   SubAccount   @relation(fields: [subAccountId], references: [id], onDelete: Cascade)
+  Automations  Automation[]
+
+  @@index([subAccountId])
+}
+
+model Automation {
+  id                 String               @id @default(uuid())
+  name               String
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
+  triggerId          String?
+  published          Boolean              @default(false)
+  Trigger            Trigger?             @relation(fields: [triggerId], references: [id], onDelete: Cascade)
+  subAccountId       String
+  Subaccount         SubAccount           @relation(fields: [subAccountId], references: [id], onDelete: Cascade)
+  Action             Action[]
+  AutomationInstance AutomationInstance[]
+
+  @@index([triggerId])
+  @@index([subAccountId])
+}
+
+model AutomationInstance {
+  id           String     @id @default(uuid())
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  automationId String
+  Automation   Automation @relation(fields: [automationId], references: [id], onDelete: Cascade)
+  active       Boolean    @default(false)
+
+  @@index([automationId])
+}
+
 enum ActionType {
   CREATE_CONTACT
+}
+
+model Action {
+  id           String     @id @default(uuid())
+  name         String
+  type         ActionType
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  automationId String
+  order        Int
+  Automation   Automation @relation(fields: [automationId], references: [id], onDelete: Cascade)
+  laneId       String     @default("0")
+
+  @@index([automationId])
 }
 
 model Contact {
@@ -246,8 +309,22 @@ model Funnel {
   SubAccount    SubAccount   @relation(fields: [subAccountId], references: [id], onDelete: Cascade) //each funnel belongs to one sub account
   FunnelPages   FunnelPage[]
   liveProducts  String?      @default("[]")
+  ClassName     ClassName[]
 
   @@index([subAccountId])
+}
+
+model ClassName {
+  id         String   @id @default(uuid())
+  name       String
+  color      String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  funnelId   String
+  customData String?  @db.Text //@db.LongText
+  Funnel     Funnel   @relation(fields: [funnelId], references: [id], onDelete: Cascade)
+
+  @@index([funnelId])
 }
 
 //each Funnel (websites) have their Funnel Page
@@ -355,3 +432,5 @@ model Subscription {
 
   @@index([customerId])
 }
+
+

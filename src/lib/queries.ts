@@ -15,7 +15,11 @@ import {
   User,
 } from "@prisma/client";
 import { v4 } from "uuid";
-import { CreateFunnelFormSchema, CreateMediaType, UpsertFunnelPage } from "./types";
+import {
+  CreateFunnelFormSchema,
+  CreateMediaType,
+  UpsertFunnelPage,
+} from "./types";
 import z from "zod";
 import { revalidatePath } from "next/cache";
 
@@ -398,11 +402,6 @@ export const upsertSubAccount = async (subAccount: SubAccount) => {
                 name: "Media",
                 icon: "database",
                 link: `/subaccount/${subAccount.id}/media`,
-              },
-              {
-                name: "Automations",
-                icon: "chip",
-                link: `/subaccount/${subAccount.id}/automations`,
               },
               {
                 name: "Pipelines",
@@ -853,7 +852,7 @@ export const upsertContact = async (
 };
 
 //get all the funnels
-//including both the funnel model information and the related FunnelPages information. 
+//including both the funnel model information and the related FunnelPages information.
 //The include: { FunnelPages: true } part of the query ensures that the returned data includes the related FunnelPages for each funnel.
 export const getFunnels = async (subacountId: string) => {
   const funnels = await db.funnel.findMany({
@@ -919,7 +918,7 @@ export const updateFunnelProducts = async (
 export const upsertFunnelPage = async (
   subaccountId: string, // The ID of the subaccount to which the funnel page belongs.
   funnelPage: UpsertFunnelPage,
-  funnelId: string, //The ID of the funnel to which the page belongs.
+  funnelId: string //The ID of the funnel to which the page belongs.
 ) => {
   // checks if subaccountId and funnelId are provided. If either is missing, the function returns early without doing anything.
   if (!subaccountId || !funnelId) return;
@@ -990,7 +989,6 @@ export const getFunnelPageDetails = async (funnelPageId: string) => {
   return response;
 };
 
-
 export const getDomainContent = async (subDomainName: string) => {
   const response = await db.funnel.findUnique({
     where: {
@@ -1009,6 +1007,6 @@ export const getPipelines = async (subaccountId: string) => {
         include: { Tickets: true },
       },
     },
-  })
-  return response
-}
+  });
+  return response;
+};

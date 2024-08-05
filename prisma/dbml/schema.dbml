@@ -49,7 +49,6 @@ Table Agency {
   Invitation Invitation [not null]
   Notification Notification [not null]
   Subscription Subscription
-  AddOns AddOns [not null]
 }
 
 Table SubAccount {
@@ -74,8 +73,6 @@ Table SubAccount {
   Funnels Funnel [not null]
   Media Media [not null]
   Contact Contact [not null]
-  Trigger Trigger [not null]
-  Automation Automation [not null]
   Pipeline Pipeline [not null]
   Tags Tag [not null]
   Notification Notification [not null]
@@ -130,52 +127,6 @@ Table Ticket {
   Assigned User
 }
 
-Table Trigger {
-  id String [pk]
-  name String [not null]
-  type TriggerTypes [not null]
-  createdAt DateTime [default: `now()`, not null]
-  updatedAt DateTime [not null]
-  subAccountId String [not null]
-  Subaccount SubAccount [not null]
-  Automations Automation [not null]
-}
-
-Table Automation {
-  id String [pk]
-  name String [not null]
-  createdAt DateTime [default: `now()`, not null]
-  updatedAt DateTime [not null]
-  triggerId String
-  published Boolean [not null, default: false]
-  Trigger Trigger
-  subAccountId String [not null]
-  Subaccount SubAccount [not null]
-  Action Action [not null]
-  AutomationInstance AutomationInstance [not null]
-}
-
-Table AutomationInstance {
-  id String [pk]
-  createdAt DateTime [default: `now()`, not null]
-  updatedAt DateTime [not null]
-  automationId String [not null]
-  Automation Automation [not null]
-  active Boolean [not null, default: false]
-}
-
-Table Action {
-  id String [pk]
-  name String [not null]
-  type ActionType [not null]
-  createdAt DateTime [default: `now()`, not null]
-  updatedAt DateTime [not null]
-  automationId String [not null]
-  order Int [not null]
-  Automation Automation [not null]
-  laneId String [not null, default: '0']
-}
-
 Table Contact {
   id String [pk]
   name String [not null]
@@ -211,18 +162,6 @@ Table Funnel {
   SubAccount SubAccount [not null]
   FunnelPages FunnelPage [not null]
   liveProducts String [default: '[]']
-  ClassName ClassName [not null]
-}
-
-Table ClassName {
-  id String [pk]
-  name String [not null]
-  color String [not null]
-  createdAt DateTime [default: `now()`, not null]
-  updatedAt DateTime [not null]
-  funnelId String [not null]
-  customData String
-  Funnel Funnel [not null]
 }
 
 Table FunnelPage {
@@ -298,17 +237,6 @@ Table Subscription {
   Agency Agency
 }
 
-Table AddOns {
-  id String [pk]
-  createdAt DateTime [default: `now()`, not null]
-  updatedAt DateTime [not null]
-  name String [not null]
-  active Boolean [not null, default: false]
-  priceId String [unique, not null]
-  agencyId String
-  Agency Agency
-}
-
 Table TagToTicket {
   ticketId String [ref: > Ticket.id]
   tagsId String [ref: > Tag.id]
@@ -354,10 +282,6 @@ Enum Icon {
   clipboardIcon
 }
 
-Enum TriggerTypes {
-  CONTACT_FORM
-}
-
 Enum ActionType {
   CREATE_CONTACT
 }
@@ -393,23 +317,11 @@ Ref: Ticket.customerId > Contact.id [delete: Set Null]
 
 Ref: Ticket.assignedUserId > User.id [delete: Set Null]
 
-Ref: Trigger.subAccountId > SubAccount.id [delete: Cascade]
-
-Ref: Automation.triggerId > Trigger.id [delete: Cascade]
-
-Ref: Automation.subAccountId > SubAccount.id [delete: Cascade]
-
-Ref: AutomationInstance.automationId > Automation.id [delete: Cascade]
-
-Ref: Action.automationId > Automation.id [delete: Cascade]
-
 Ref: Contact.subAccountId > SubAccount.id [delete: Cascade]
 
 Ref: Media.subAccountId > SubAccount.id [delete: Cascade]
 
 Ref: Funnel.subAccountId > SubAccount.id [delete: Cascade]
-
-Ref: ClassName.funnelId > Funnel.id [delete: Cascade]
 
 Ref: FunnelPage.funnelId > Funnel.id [delete: Cascade]
 
@@ -426,5 +338,3 @@ Ref: Notification.agencyId > Agency.id [delete: Cascade]
 Ref: Notification.subAccountId > SubAccount.id [delete: Cascade]
 
 Ref: Subscription.agencyId - Agency.id
-
-Ref: AddOns.agencyId > Agency.id

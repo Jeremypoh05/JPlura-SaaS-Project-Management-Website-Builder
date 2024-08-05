@@ -69,7 +69,6 @@ const MenuOptions = ({
     "Team",
     "Funnels",
     "Media",
-    "Automations",
     "Pipelines",
     "Contacts",
   ];
