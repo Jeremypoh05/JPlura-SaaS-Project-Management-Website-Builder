@@ -15,7 +15,11 @@ import {
   User,
 } from "@prisma/client";
 import { v4 } from "uuid";
-import { CreateFunnelFormSchema, CreateMediaType, UpsertFunnelPage } from "./types";
+import {
+  CreateFunnelFormSchema,
+  CreateMediaType,
+  UpsertFunnelPage,
+} from "./types";
 import z from "zod";
 import { revalidatePath } from "next/cache";
 
@@ -56,9 +60,11 @@ export const saveActivityLogsNotification = async ({
   description: string;
   subaccountId?: string;
 }) => {
+  console.log("Starting saveActivityLogsNotification");
   const authUser = await currentUser();
   let userData;
   if (!authUser) {
+    console.log("No authUser found, finding user by subaccountId");
     const response = await db.user.findFirst({
       where: {
         Agency: {
@@ -70,11 +76,13 @@ export const saveActivityLogsNotification = async ({
     });
     if (response) {
       userData = response;
+      console.log("User found by subaccountId:", userData);
     }
   } else {
     userData = await db.user.findUnique({
       where: { email: authUser?.emailAddresses[0].emailAddress },
     });
+    console.log("User found by authUser email:", userData);
   }
 
   if (!userData) {
@@ -86,7 +94,7 @@ export const saveActivityLogsNotification = async ({
   if (!foundAgencyId) {
     if (!subaccountId) {
       throw new Error(
-        "You need to provide atleast an agency Id or subaccount Id"
+        "You need to provide at least an agency Id or subaccount Id"
       );
     }
 
@@ -95,43 +103,52 @@ export const saveActivityLogsNotification = async ({
     });
 
     if (response) foundAgencyId = response.agencyId;
+    console.log("Found agencyId from subaccountId:", foundAgencyId);
   }
 
-  if (subaccountId) {
-    await db.notification.create({
-      data: {
-        notification: `${userData.name} | ${description}`,
-        User: {
-          connect: {
-            id: userData.id,
+  try {
+    if (subaccountId) {
+      console.log("Creating notification with subaccountId");
+      await db.notification.create({
+        data: {
+          notification: `${userData.name} | ${description}`,
+          User: {
+            connect: {
+              id: userData.id,
+            },
+          },
+          Agency: {
+            connect: {
+              id: foundAgencyId,
+            },
+          },
+          SubAccount: {
+            connect: { id: subaccountId },
           },
         },
-        Agency: {
-          connect: {
-            id: foundAgencyId,
+      });
+      console.log("Notification created with subaccountId");
+    } else {
+      console.log("Creating notification without subaccountId");
+      await db.notification.create({
+        data: {
+          notification: `${userData.name} | ${description}`,
+          User: {
+            connect: {
+              id: userData.id,
+            },
+          },
+          Agency: {
+            connect: {
+              id: foundAgencyId,
+            },
           },
         },
-        SubAccount: {
-          connect: { id: subaccountId },
-        },
-      },
-    });
-  } else {
-    await db.notification.create({
-      data: {
-        notification: `${userData.name} | ${description}`,
-        User: {
-          connect: {
-            id: userData.id,
-          },
-        },
-        Agency: {
-          connect: {
-            id: foundAgencyId,
-          },
-        },
-      },
-    });
+      });
+      console.log("Notification created without subaccountId");
+    }
+  } catch (error) {
+    console.error("Error saving notification:", error);
   }
 };
 
@@ -853,7 +870,7 @@ export const upsertContact = async (
 };
 
 //get all the funnels
-//including both the funnel model information and the related FunnelPages information. 
+//including both the funnel model information and the related FunnelPages information.
 //The include: { FunnelPages: true } part of the query ensures that the returned data includes the related FunnelPages for each funnel.
 export const getFunnels = async (subacountId: string) => {
   const funnels = await db.funnel.findMany({
@@ -919,7 +936,7 @@ export const updateFunnelProducts = async (
 export const upsertFunnelPage = async (
   subaccountId: string, // The ID of the subaccount to which the funnel page belongs.
   funnelPage: UpsertFunnelPage,
-  funnelId: string, //The ID of the funnel to which the page belongs.
+  funnelId: string //The ID of the funnel to which the page belongs.
 ) => {
   // checks if subaccountId and funnelId are provided. If either is missing, the function returns early without doing anything.
   if (!subaccountId || !funnelId) return;
@@ -990,7 +1007,6 @@ export const getFunnelPageDetails = async (funnelPageId: string) => {
   return response;
 };
 
-
 export const getDomainContent = async (subDomainName: string) => {
   const response = await db.funnel.findUnique({
     where: {
@@ -1009,6 +1025,6 @@ export const getPipelines = async (subaccountId: string) => {
         include: { Tickets: true },
       },
     },
-  })
-  return response
-}
+  });
+  return response;
+};
