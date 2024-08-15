@@ -159,6 +159,7 @@ export const CreateFunnelFormSchema = z.object({
   description: z.string(),
   subDomainName: z.string().optional(),
   favicon: z.string().optional(),
+  published: z.boolean().default(false), 
 });
 
 //This type will include both the properties of the funnel model and the related FunnelPages model. 

@@ -38,7 +38,7 @@ const SubscriptionHelper = ({ customerId, planExists, prices }: Props) => {
       )
   }, [plan])
 
-  return <div>SubscriptionHelper</div>
+  return <div className='hidden'>SubscriptionHelper</div>
 }
 
 export default SubscriptionHelper

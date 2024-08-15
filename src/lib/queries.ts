@@ -920,6 +920,18 @@ export const upsertFunnel = async (
   return response;
 };
 
+export const updateFunnelPublishedStatus = async (
+  funnelId: string,
+  published: boolean
+) => {
+  const response = await db.funnel.update({
+    where: { id: funnelId },
+    data: { published },
+  });
+
+  return response;
+};  
+
 //
 export const updateFunnelProducts = async (
   products: string,

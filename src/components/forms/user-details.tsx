@@ -337,7 +337,7 @@ const UserDetails = ({ id, type, userData, subAccounts }: Props) => {
                               <SelectItem value="AGENCY_OWNER">Agency Owner</SelectItem>
                             )}
                           <SelectItem value="SUBACCOUNT_USER">Sub Account User</SelectItem>
-                          <SelectItem value="SUBACCOUNT_GUEST">Sub Account Guest</SelectItem>
+                          {/* <SelectItem value="SUBACCOUNT_GUEST">Sub Account Guest</SelectItem> */}
                         </>
                       )}
                       {type === "subaccount" && (
@@ -352,7 +352,7 @@ const UserDetails = ({ id, type, userData, subAccounts }: Props) => {
                               <SelectItem value="AGENCY_ADMIN">Agency Admin</SelectItem>
                             )}
                           <SelectItem value="SUBACCOUNT_USER">Sub Account User</SelectItem>
-                          <SelectItem value="SUBACCOUNT_GUEST">Sub Account Guest</SelectItem>
+                          {/* <SelectItem value="SUBACCOUNT_GUEST">Sub Account Guest</SelectItem> */}
                         </>
                       )}
                     </SelectContent>

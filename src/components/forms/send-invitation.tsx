@@ -133,9 +133,9 @@ const SendInvitation: React.FC<SendInvitationProps> = ({ agencyId }) => {
                                             <SelectItem value="SUBACCOUNT_USER">
                                                 Sub Account User
                                             </SelectItem>
-                                            <SelectItem value="SUBACCOUNT_GUEST">
+                                            {/* <SelectItem value="SUBACCOUNT_GUEST">
                                                 Sub Account Guest
-                                            </SelectItem>
+                                            </SelectItem> */}
                                         </SelectContent>
                                     </Select>
                                     <FormMessage />

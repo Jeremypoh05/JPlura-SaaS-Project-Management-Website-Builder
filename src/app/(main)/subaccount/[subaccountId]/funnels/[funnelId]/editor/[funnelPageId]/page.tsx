@@ -1,7 +1,7 @@
+import React, { useEffect, useState } from "react";
 import { db } from "@/lib/db";
 import EditorProvider from "@/providers/editor/editor-provider";
 import { redirect } from "next/navigation";
-import React from "react";
 import FunnelEditorNavigation from "./_components/funnel-editor-navigation";
 import FunnelEditorSidebar from "./_components/funnel-editor-sidebar";
 import FunnelEditor from "./_components/funnel-editor";
@@ -20,7 +20,12 @@ const Page = async ({ params }: Props) => {
       id: params.funnelPageId,
     },
   });
-  if (!funnelPageDetails) {
+
+  const funnel = await db.funnel.findUnique({
+    where: { id: params.funnelId },
+  });
+
+  if (!funnelPageDetails || !funnel) {
     return redirect(
       `/subaccount/${params.subaccountId}/funnels/${params.funnelId}`
     );
@@ -37,14 +42,14 @@ const Page = async ({ params }: Props) => {
           funnelId={params.funnelId}
           funnelPageDetails={funnelPageDetails}
           subaccountId={params.subaccountId}
+          isPublished={funnel.published} // Pass published state here  
         />
 
         <div className="h-full flex justify-center">
-          <FunnelEditor funnelPageId={params.funnelPageId}/>
+          <FunnelEditor funnelPageId={params.funnelPageId} />
         </div>
-        
+
         <FunnelEditorSidebar subaccountId={params.subaccountId} />
-      
       </EditorProvider>
     </div>
   );

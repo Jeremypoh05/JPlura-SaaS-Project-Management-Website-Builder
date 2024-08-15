@@ -9,7 +9,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { saveActivityLogsNotification, upsertFunnelPage } from "@/lib/queries";
+import { saveActivityLogsNotification, getFunnel, upsertFunnelPage, upsertFunnel } from "@/lib/queries";
 import { DeviceTypes, useEditor } from "@/providers/editor/editor-provider";
 import { FunnelPage } from "@prisma/client";
 import clsx from "clsx";
@@ -24,37 +24,101 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import React, { FocusEventHandler, useEffect } from "react";
+import React, { FocusEventHandler, useEffect, useState } from "react";
 import { toast } from "sonner";
 
+// Props type defines the expected properties passed down to the FunnelEditorNavigation component  
 type Props = {
-  funnelId: string; //this is come from the funnelPageId/page.tsx (we get from the params)
-  funnelPageDetails: FunnelPage;
-  subaccountId: string; //this is come from the funnelPageId/page.tsx(we get from the params)
+  funnelId: string; // Funnel ID from the params  
+  funnelPageDetails: FunnelPage; // Funnel page details  
+  subaccountId: string; // Subaccount ID from the params  
+  isPublished: boolean; // Initial published state  
+};
+
+// Define a type for the FunnelData  
+type FunnelData = {
+  id: string;
+  name: string;
+  description: string | null;
+  published: boolean;
+  liveProducts: string | null;
+  subDomainName?: string | null;
+  favicon?: string | null;
 };
 
 const FunnelEditorNavigation = ({
   funnelId,
   funnelPageDetails,
   subaccountId,
+  isPublished,
 }: Props) => {
   const router = useRouter();
-  const { state, dispatch } = useEditor();
+  const { state, dispatch } = useEditor(); // Custom hook to access state and dispatch from editor context  
+  const [isPublishedState, setIsPublishedState] = useState(isPublished); // State to track published status  
+  const [funnelData, setFunnelData] = useState<FunnelData | null>(null); // State to track fetched funnel data  
 
   useEffect(() => {
+    // Fetch funnel data once on component mount  
+    async function fetchFunnelData() {
+      try {
+        const currentFunnel = await getFunnel(funnelId);
+        if (currentFunnel) {
+          // Destructure relevant data from the fetched funnel  
+          const {
+            id,
+            name,
+            description,
+            published,
+            liveProducts,
+            subDomainName,
+            favicon,
+          } = currentFunnel;
+
+          // Log fetched funnel data  
+          console.log('Fetched Funnel Data:', currentFunnel);
+
+          // Set the fetched funnel data into component state for later use  
+          setFunnelData({
+            id,
+            name,
+            description,
+            published,
+            liveProducts,
+            subDomainName,
+            favicon,
+          });
+        } else {
+          // Display error if no funnel data is found  
+          toast("Error", {
+            description: "Could not load funnel data",
+          });
+        }
+      } catch (error) {
+        // Log and display error if fetching data fails  
+        console.error("Error fetching funnel data:", error);
+        toast("Error", {
+          description: "Failed to fetch funnel data",
+        });
+      }
+    }
+
+    fetchFunnelData();
+
+    // Set the funnel page ID for the editor context  
     dispatch({
       type: "SET_FUNNELPAGE_ID",
       payload: { funnelPageId: funnelPageDetails.id },
     });
-  }, [funnelPageDetails]);
+  }, [funnelPageDetails]); // Dependency array ensures useEffect runs when funnelPageDetails change  
 
-  //this will save the path if clicking out this input field
+  // Save the title when input loses focus  
   const handleOnBlurTitleChange: FocusEventHandler<HTMLInputElement> = async (
     event
   ) => {
-    //if the value is same as the funnelPageDetails.name, means nothing have changed, then just return.
+    // Return early if the title hasn't changed  
     if (event.target.value === funnelPageDetails.name) return;
-    //else, upsert the page.
+
+    // If title has changed, update the funnel page  
     if (event.target.value) {
       await upsertFunnelPage(
         subaccountId,
@@ -66,55 +130,87 @@ const FunnelEditorNavigation = ({
         funnelId
       );
 
+      // Notify success and refresh the page to reflect changes  
       toast("Success", {
         description: "Saved Funnel Page title",
       });
       router.refresh();
     } else {
-      toast("Oppse!", {
+      // Warn user if title is empty and revert to original name  
+      toast("Oops!", {
         description: "You need to have a title!",
       });
       event.target.value = funnelPageDetails.name;
     }
   };
 
+  // Toggle preview and live mode  
   const handlePreviewClick = () => {
     dispatch({ type: "TOGGLE_PREVIEW_MODE" });
-    dispatch({ type: "TOGGLE_LIVE_MODE" }); //removes all the border of elements when live mode
+    dispatch({ type: "TOGGLE_LIVE_MODE" });
   };
 
+  // Undo the last state change  
   const handleUndo = () => {
     dispatch({ type: "UNDO" });
   };
 
+  // Redo the last undone state change  
   const handleRedo = () => {
     dispatch({ type: "REDO" });
   };
 
+  // Save changes made in the editor  
   const handleOnSave = async () => {
-    //Convert State to JSON
-    //The state.editor.elements is likely a complex JavaScript object representing the current state of the editor. 
-    //Converting it to a JSON string allows it to be easily stored or transmitted over a network.
+    // Convert editor state to a JSON string for storage  
     const content = JSON.stringify(state.editor.elements);
     try {
-      const response = await upsertFunnelPage(
+      // Update the funnel page with the current content  
+      const responsePage = await upsertFunnelPage(
         subaccountId,
         {
-          ...funnelPageDetails, //ensures that all other properties of funnelPageDetails are included in the update.
+          ...funnelPageDetails,
           content,
         },
         funnelId
       );
+
+      // Ensure funnel data is available before updating  
+      if (!funnelData) {
+        toast("Error", {
+          description: "Funnel data not loaded",
+        });
+        return;
+      }
+
+      // Merge funnel data with current published status and update  
+      await upsertFunnel(
+        subaccountId,
+        {
+          ...funnelData,
+          description: funnelData.description || "", // Use empty string if null  
+          liveProducts: funnelData.liveProducts || "", // Use empty string if null  
+          published: isPublishedState,
+          subDomainName: funnelData.subDomainName || undefined, // Use undefined if null  
+          favicon: funnelData.favicon || undefined, // Use undefined if null  
+        },
+        funnelId
+      );
+
+      // Log the funnel page update action  
       await saveActivityLogsNotification({
         agencyId: undefined,
-        description: `Updated a funnel page | ${response?.name}`,
+        description: `Updated a funnel page | ${responsePage?.name} with published status: ${isPublishedState}`,
         subaccountId: subaccountId,
       });
+
+      // Notify success  
       toast("Success", {
         description: "Saved Editor",
       });
     } catch (error) {
-      toast("Oppse!", {
+      // Notify user of saving failure  
+      toast("Oops!", {
         description: "Could not save editor",
       });
     }
@@ -125,11 +221,11 @@ const FunnelEditorNavigation = ({
       <nav
         className={clsx(
           "border-b-[1px] flex items-center justify-between p-6 gap-2 transition-all",
-          { "!h-0 !p-0 !overflow-hidden": state.editor.previewMode } //only if the preview mode is true.
+          { "!h-0 !p-0 !overflow-hidden": state.editor.previewMode } // Hides nav when preview mode is enabled  
         )}
       >
         <aside className="flex items-center gap-4 max-w-[260px] w-[300px]">
-          {/* this arrow will go back to the funnels */}
+          {/* Back arrow goes back to the funnels list */}
           <Link href={`/subaccount/${subaccountId}/funnels/${funnelId}`}>
             <ArrowLeftCircle />
           </Link>
@@ -137,7 +233,7 @@ const FunnelEditorNavigation = ({
             <Input
               defaultValue={funnelPageDetails.name}
               className="border-none h-5 m-0 p-0 text-lg"
-              onBlur={handleOnBlurTitleChange} //allow user to save the title when user clicks inside it.
+              onBlur={handleOnBlurTitleChange}
             />
             <span className="text-sm text-muted-foreground">
               Path: /{funnelPageDetails.pathName}
@@ -153,11 +249,12 @@ const FunnelEditorNavigation = ({
             onValueChange={(value) => {
               dispatch({
                 type: "CHANGE_DEVICE",
-                payload: { device: value as DeviceTypes }, //change device to whatever we selected.
+                payload: { device: value as DeviceTypes }, // Update editor state with selected device  
               });
             }}
           >
             <TabsList className="grid w-full grid-cols-3 bg-transparent h-fit">
+              {/* Tabs for selecting device view with tooltips */}
               <Tooltip>
                 <TooltipTrigger>
                   <TabsTrigger
@@ -211,10 +308,7 @@ const FunnelEditorNavigation = ({
             <EyeIcon />
           </Button>
           <Button
-            //The undo button should be enabled only if there are previous states to go back to.
-            //If currentIndex is greater than 0, it means there are previous states available for undo.
-            //If currentIndex is 0, it means we are at the initial state, and there's nothing to undo
-            //so ! > 0 means we less than 0.
+            // Enable undo button only if there is a previous state  
             disabled={!(state.history.currentIndex > 0)}
             onClick={handleUndo}
             variant={"ghost"}
@@ -224,11 +318,7 @@ const FunnelEditorNavigation = ({
             <Undo2 />
           </Button>
           <Button
-            //state.history.currentIndex: This represents the current position in the history stack.
-            //state.history.history: This is an array that holds the history of states.
-            //The redo button should be enabled only if there are future states to go forward to.
-            //If currentIndex is less than history.length - 1, it means there are future states available for redo.
-            //If currentIndex is equal to history.length - 1, it means we are at the most recent state, and there's nothing to redo.
+            // Enable redo button only if there's a future state available  
             disabled={
               !(state.history.currentIndex < state.history.history.length - 1)
             }
@@ -242,7 +332,10 @@ const FunnelEditorNavigation = ({
           <div className="flex flex-col item-center mr-4">
             <div className="flex flex-row items-center gap-4">
               Draft
-              <Switch disabled defaultChecked={true} />
+              <Switch
+                checked={isPublishedState}
+                onCheckedChange={setIsPublishedState}
+              />
               Publish
             </div>
             <span className="text-muted-foreground text-sm">
