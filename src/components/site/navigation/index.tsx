@@ -15,12 +15,12 @@ const Navigation = ({ user }: Props) => {
       {/* we have left side and right side */}
       <aside className="flex items-center gap-2">
         <Image
-          src={"./assets/plura-logo.svg"}
-          width={40}
-          height={40}
+          src={"/assets/jplura-logo.png"}
+          width={120}
+          height={120}
           alt="JPlura Logo"
         />
-        <span className="text-xl font-bold"> Plura. </span>
+        {/* <span className="text-xl font-bold"> JPlura. </span> */}
       </aside>
       <nav className="hidden md:block absolute left-[50%] top-[50%] transform translate-x-[-50%] translate-y-[-50%]">
         <ul className="flex items-center justify-center gap-8">

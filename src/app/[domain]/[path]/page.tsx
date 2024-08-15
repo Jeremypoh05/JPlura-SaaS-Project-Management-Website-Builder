@@ -25,7 +25,7 @@ const Page = async ({
 
   // Finding the specific page data within the domain data
   const pageData = domainData?.FunnelPages.find(
-    (page) => page.pathName === `/${params.path}`
+    (page) => page.pathName === `${params.path}`
   );
   console.log("Page Data:", pageData);
 

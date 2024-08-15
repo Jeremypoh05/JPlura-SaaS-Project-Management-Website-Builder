@@ -108,6 +108,7 @@ model Agency {
   Invitation       Invitation[] //people can be invited to the agency, so that we have to keep track of that
   Notification     Notification[]
   Subscription     Subscription? //for Stripe
+  AddOns           AddOns[]
 }
 
 //owned by the agency owner so they do not have customerId
@@ -133,6 +134,8 @@ model SubAccount {
   Funnels          Funnel[] //each sub account will have multiple websites
   Media            Media[] //all the media files will be stored 
   Contact          Contact[] //all the contact for the sub account will be stored
+  Trigger          Trigger[]
+  Automation       Automation[]
   Pipeline         Pipeline[]
   Tags             Tag[] //Tags for the Tickets, assigned tags to the tickets
   Notification     Notification[]
@@ -207,11 +210,64 @@ enum TriggerTypes {
   CONTACT_FORM
 }
 
+model Trigger {
+  id           String       @id @default(uuid())
+  name         String
+  type         TriggerTypes
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+  subAccountId String
+  Subaccount   SubAccount   @relation(fields: [subAccountId], references: [id], onDelete: Cascade)
+  Automations  Automation[]
+
+  @@index([subAccountId])
+}
+
+model Automation {
+  id                 String               @id @default(uuid())
+  name               String
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
+  triggerId          String?
+  published          Boolean              @default(false)
+  Trigger            Trigger?             @relation(fields: [triggerId], references: [id], onDelete: Cascade)
+  subAccountId       String
+  Subaccount         SubAccount           @relation(fields: [subAccountId], references: [id], onDelete: Cascade)
+  Action             Action[]
+  AutomationInstance AutomationInstance[]
+
+  @@index([triggerId])
+  @@index([subAccountId])
+}
+
+model AutomationInstance {
+  id           String     @id @default(uuid())
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  automationId String
+  Automation   Automation @relation(fields: [automationId], references: [id], onDelete: Cascade)
+  active       Boolean    @default(false)
+
+  @@index([automationId])
+}
 
 enum ActionType {
   CREATE_CONTACT
 }
 
+model Action {
+  id           String     @id @default(uuid())
+  name         String
+  type         ActionType
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  automationId String
+  order        Int
+  Automation   Automation @relation(fields: [automationId], references: [id], onDelete: Cascade)
+  laneId       String     @default("0")
+
+  @@index([automationId])
+}
 
 model Contact {
   id           String   @id @default(uuid())
@@ -254,8 +310,22 @@ model Funnel {
   SubAccount    SubAccount   @relation(fields: [subAccountId], references: [id], onDelete: Cascade) //each funnel belongs to one sub account
   FunnelPages   FunnelPage[]
   liveProducts  String?      @default("[]")
+  ClassName     ClassName[]
 
   @@index([subAccountId])
+}
+
+model ClassName {
+  id         String   @id @default(uuid())
+  name       String
+  color      String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  funnelId   String
+  customData String?  @db.Text //@db.LongText
+  Funnel     Funnel   @relation(fields: [funnelId], references: [id], onDelete: Cascade)
+
+  @@index([funnelId])
 }
 
 //each Funnel (websites) have their Funnel Page
@@ -364,3 +434,15 @@ model Subscription {
   @@index([customerId])
 }
 
+model AddOns {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  name      String
+  active    Boolean  @default(false)
+  priceId   String   @unique
+  agencyId  String?
+  Agency    Agency?  @relation(fields: [agencyId], references: [id])
+
+  @@index([agencyId])
+}

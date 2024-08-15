@@ -275,13 +275,13 @@ const Container = ({ element }: Props) => {
   return (
     <div
       style={styles} // Applying styles to the container.
-      className={clsx("relative p-2 transition-all group mx-[3px]", {
+      className={clsx("relative p-2 transition-all group mx-[3px] mt-2", {
         "max-w-full w-full": type === "container" || type === "2Col", // Applying full width styles for container or 2Col types.
         "h-fit": type === "container", // Applying fit height for container type.
         "h-full": type === "__body", // Applying full height for __body type.
         "overflow-y-scroll custom-scrollbar overflow-x-hidden ":
           type === "__body", // Applying overflow auto for __body type.
-        "mb-[100px]": !state.editor.liveMode,
+        "mb-[30px]": !state.editor.liveMode,
         "flex flex-col md:!flex-row": type === "2Col", // Applying flex layout for 2Col type.
         "!border-blue-500":
           state.editor.selectedElement.id === id &&
