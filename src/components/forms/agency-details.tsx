@@ -318,8 +318,7 @@ const AgencyDetails = ({ data }: Props) => {
                         <FormLabel>White Label Agency</FormLabel>
                         <FormDescription>
                           Turning on white label mode will show your agency logo
-                          to all sub accounts by default. You can overwrite this
-                          functionality through sub account settings.
+                          to all sub accounts by default.
                         </FormDescription>
                       </div>
 
