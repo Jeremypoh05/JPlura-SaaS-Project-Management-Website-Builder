@@ -35,7 +35,7 @@ export const pricingCards = [
     price: "Free",
     duration: "",
     highlight: "Key features",
-    features: ["3 Sub accounts", "2 Team members", "Unlimited pipelines"],
+    features: ["1 Sub account", "2 Team members", "Unlimited pipelines"],
     priceId: "",
   },
   {
@@ -44,7 +44,7 @@ export const pricingCards = [
     price: "RM99",
     duration: "month",
     highlight: "Key features",
-    features: ["Rebilling", "24/7 Support team"],
+    features: ["Unlimited Sub Account, Rebilling", "24/7 Support team"],
     priceId: "price_1PQ8HWRqpSbtJ03827K2PbCM",
   },
   {
@@ -53,7 +53,7 @@ export const pricingCards = [
     price: "RM69",
     duration: "month",
     highlight: "Everything in Starter, plus",
-    features: ["Unlimited Sub accounts", "Unlimited Team members"],
+    features: ["5 Sub accounts", "Unlimited Team members"],
     priceId: "price_1PQ8HVRqpSbtJ038LxC6uWrX",
   },
 ];
