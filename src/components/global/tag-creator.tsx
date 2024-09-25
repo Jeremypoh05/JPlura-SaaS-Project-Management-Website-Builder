@@ -226,7 +226,7 @@ const TagCreator = ({
                   <AlertDialogFooter className="items-center">
                     <AlertDialogCancel>Cancel</AlertDialogCancel>
                     <AlertDialogAction
-                      className="bg-destructive"
+                      className="bg-destructive hover:bg-red-600"
                       onClick={() => handleDeleteTag(tag.id)}
                     >
                       Delete Tag

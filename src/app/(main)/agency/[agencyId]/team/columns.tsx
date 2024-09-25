@@ -228,7 +228,7 @@ const CellActions: React.FC<CellActionsProps> = ({ rowData }) => {
           <AlertDialogCancel className="mb-2">Cancel</AlertDialogCancel>
           <AlertDialogAction
             disabled={loading}
-            className="bg-destructive hover:bg-destructive"
+            className="bg-destructive hover:bg-red-600"
             onClick={async () => {
               setLoading(true);
               await deleteUser(rowData.id);

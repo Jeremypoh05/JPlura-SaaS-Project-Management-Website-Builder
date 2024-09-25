@@ -46,7 +46,7 @@ import {
   AlertDialogFooter,
   AlertDialogCancel,
   AlertDialogAction,
-} from "../ui/alert-dialog"; 
+} from "../ui/alert-dialog";
 
 interface CreateFunnelPageProps {
   defaultData?: FunnelPage; //Optional, the existing data of the funnel page to be edited.
@@ -60,7 +60,7 @@ component is responsible for creating or updating a funnel page.
 It uses a form to capture the details of the funnel page and handles form submission to save the data.
 */
 const CreateFunnelPage: React.FC<CreateFunnelPageProps> = ({
-  defaultData, 
+  defaultData,
   funnelId,
   order,
   subaccountId,
@@ -78,7 +78,7 @@ const CreateFunnelPage: React.FC<CreateFunnelPageProps> = ({
     },
   });
 
-    //If defaultData is provided, the form is reset with the existing data when the component mounts or when defaultData changes.
+  //If defaultData is provided, the form is reset with the existing data when the component mounts or when defaultData changes.
   useEffect(() => {
     if (defaultData) {
       form.reset({ name: defaultData.name, pathName: defaultData.pathName });
@@ -225,22 +225,26 @@ const CreateFunnelPage: React.FC<CreateFunnelPageProps> = ({
                   <AlertDialogContent>
                     <AlertDialogHeader>
                       <AlertDialogTitle>
-                        Are you sure you want to delete this funnel?
+                        Are you sure you want to delete this funnel page?
                       </AlertDialogTitle>
                       <AlertDialogDescription>
-                        This action cannot be undone. This will permanently delete the funnel.
+                        This action cannot be undone. This will permanently
+                        delete the funnel page.
                       </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                       <AlertDialogCancel>Cancel</AlertDialogCancel>
-                      <AlertDialogAction onClick={handleDeleteFunnel} disabled={deleting}>
+                      <AlertDialogAction
+                        className="bg-destructive hover:bg-red-600"
+                        onClick={handleDeleteFunnel}
+                        disabled={deleting}
+                      >
                         {deleting ? "Deleting..." : "Delete"}
                       </AlertDialogAction>
                     </AlertDialogFooter>
                   </AlertDialogContent>
                 </AlertDialog>
               )}
-
 
               {/* duplicate functionality 
               If defaultData is provided, buttons for deleting and duplicating the page are rendered.
@@ -252,20 +256,20 @@ const CreateFunnelPage: React.FC<CreateFunnelPageProps> = ({
                   disabled={form.formState.isSubmitting}
                   type="button"
                   onClick={async () => {
-                      //  fetches all the funnels for the given subaccountId using getFunnels. This is necessary to determine the order of the new duplicated page.
+                    //  fetches all the funnels for the given subaccountId using getFunnels. This is necessary to determine the order of the new duplicated page.
                     const response = await getFunnels(subaccountId);
                     const lastFunnelPage = response.find(
                       (funnel) => funnel.id === funnelId
-                      )?.FunnelPages.length; //finds the funnel with the funnelId and retrieves the length of its FunnelPages array. This length represents the number of pages currently in the funnel.
-                      //The new duplicated page will be added at the end of the funnel, so its order is set to the length of the FunnelPages array.
+                    )?.FunnelPages.length; //finds the funnel with the funnelId and retrieves the length of its FunnelPages array. This length represents the number of pages currently in the funnel.
+                    //The new duplicated page will be added at the end of the funnel, so its order is set to the length of the FunnelPages array.
 
-                      //Then, The function calls upsertFunnelPage to create a new page with the same properties as the original page but with a new id.
-                      await upsertFunnelPage(
+                    //Then, The function calls upsertFunnelPage to create a new page with the same properties as the original page but with a new id.
+                    await upsertFunnelPage(
                       subaccountId,
                       {
                         ...defaultData,
                         id: v4(),
-                          order: lastFunnelPage ? lastFunnelPage : 0, //The order is set to the position at the end of the funnel.
+                        order: lastFunnelPage ? lastFunnelPage : 0, //The order is set to the position at the end of the funnel.
                         visits: 0,
                         name: `${defaultData.name} Copy`,
                         pathName: `${defaultData.pathName}copy`,

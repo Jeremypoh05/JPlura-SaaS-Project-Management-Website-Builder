@@ -235,13 +235,13 @@ const PipelineLane: React.FC<PipelaneLaneProps> = ({
                     </AlertDialogTitle>
                     <AlertDialogDescription>
                       This action cannot be undone. This will permanently delete
-                      your account and remove your data from our servers.
+                      your entire lane and remove all the data from our servers.
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter className="flex items-center">
                     <AlertDialogCancel>Cancel</AlertDialogCancel>
                     <AlertDialogAction
-                      className="bg-destructive"
+                      className="bg-destructive hover:bg-red-600"
                       onClick={handleDeleteLane}
                     >
                       Continue

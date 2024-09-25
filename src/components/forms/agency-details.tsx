@@ -444,7 +444,7 @@ const AgencyDetails = ({ data }: Props) => {
                   <div className="text-center">Danger Zone</div>
                 </div>
                 <div className="text-muted-foreground ">
-                  Deleting your agency cannpt be undone. This will also delete
+                  Deleting your agency cannot be undone. This will also delete
                   all sub accounts and all data related to your sub accounts.
                   Sub accounts will no longer have access to funnels, contacts
                   etc.
@@ -469,10 +469,10 @@ const AgencyDetails = ({ data }: Props) => {
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter className="flex items-center">
-              <AlertDialogCancel className="mb-2">Cancel</AlertDialogCancel>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
               <AlertDialogAction
                 disabled={deletingAgency}
-                className="bg-destructive hover:bg-destructive"
+                className="bg-destructive hover:bg-red-600"
                 onClick={handleDeleteAgency}
               >
                 Delete
