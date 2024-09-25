@@ -51,7 +51,11 @@ export const columns: ColumnDef<FunnelsForSubAccount>[] = [
     cell: ({ row }) => {
       console.log("Funnels Data", row.original);
       const funnelId = row.original.id; //In the "Action" column, access the data for the current row using row.original.
-      return <DeleteFunnelButton funnelId={funnelId} />; //extract the funnelId from the current row's data.
+      const subaccountId = row.original.subAccountId; // Extract the subAccountId from the current row's data.  
+      return <DeleteFunnelButton
+        funnelId={funnelId}
+        subaccountId={subaccountId} // Pass the subaccountId to DeleteFunnelButton  
+      />; //extract the funnelId from the current row's data.
       //funnelId to DeleteFunnelButton: Pass the extracted funnelId to the DeleteFunnelButton component as a prop.
     },
   },

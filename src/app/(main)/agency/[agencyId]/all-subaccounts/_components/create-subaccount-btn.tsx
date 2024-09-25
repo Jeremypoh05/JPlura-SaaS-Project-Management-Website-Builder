@@ -4,7 +4,7 @@ import CustomModal from "@/components/global/custom-modal";
 import { Button } from "@/components/ui/button";
 import { useModal } from "@/providers/modal-provider";
 import { Agency, AgencySidebarOption, SubAccount, User } from "@prisma/client";
-import { PlusCircleIcon } from "lucide-react";
+import { CircleFadingPlus, PlusCircleIcon } from "lucide-react";
 import React from "react";
 import { twMerge } from "tailwind-merge";
 
@@ -34,7 +34,8 @@ const CreateSubaccountButton = ({ className, id, user }: Props) => {
 
   return (
     <Button
-      className={twMerge("w-full flex gap-4", className)}
+      size={"lg"}
+      className={twMerge("w-[190px] flex items-center text-base md:!w-[230px] hover:font-bold ", className)}
       onClick={() => {
         setOpen(
           <CustomModal
@@ -50,8 +51,8 @@ const CreateSubaccountButton = ({ className, id, user }: Props) => {
         );
       }}
     >
-      <PlusCircleIcon size={15} />
       Create Sub Account
+      <CircleFadingPlus className="ml-2 h-5 w-5" />
     </Button>
   );
 };

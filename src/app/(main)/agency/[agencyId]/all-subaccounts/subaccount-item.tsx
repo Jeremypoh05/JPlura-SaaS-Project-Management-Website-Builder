@@ -18,6 +18,7 @@ import Link from "next/link";
 import React from "react";
 import DeleteButton from "./_components/delete-button";
 import { CommandEmpty, CommandItem } from "@/components/ui/command";
+import { Trash2 } from "lucide-react";
 
 type SubaccountItemProps = {
   subaccount: SubAccount;
@@ -35,12 +36,12 @@ const SubaccountItem = ({ subaccount }: SubaccountItemProps) => {
         className="flex gap-4 w-full h-full"
         onClick={handleItemClick}
       >
-        <div className="relative w-32">
+        <div className="relative w-32 overflow-hidden">
           <Image
             src={subaccount.subAccountLogo}
             alt="subaccount logo"
             fill
-            className="rounded-md object-contain bg-muted/50 p-4"
+            className="rounded-md object-contain bg-muted/50 p-4 transition-transform duration-300 ease-in-out transform hover:scale-150"
           />
         </div>
         <div className="flex flex-col justify-between">
@@ -56,26 +57,26 @@ const SubaccountItem = ({ subaccount }: SubaccountItemProps) => {
       <AlertDialog>
         <AlertDialogTrigger asChild>
           <Button
-            size={"sm"}
-            variant={"destructive"}
-            className="w-20 hover:bg-red-600 hover:text-white !text-white"
+            className="text-base hover:font-bold flex items-center"
+            variant="destructive"
           >
             Delete
+            <Trash2 className="ml-2 h-4 w-4 mb-1" />
           </Button>
         </AlertDialogTrigger>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle className="text-left">
+            <AlertDialogTitle>
               Are you absolutely sure?
             </AlertDialogTitle>
-            <AlertDialogDescription className="text-left">
+            <AlertDialogDescription>
               This action cannot be undone. This will delete the subaccount and
               all data related to the subaccount.
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter className="flex items-center">
-            <AlertDialogCancel className="mb-2">Cancel</AlertDialogCancel>
-            <AlertDialogAction className="bg-destructive hover:bg-destructive">
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction asChild>
               <DeleteButton
                 subaccountId={subaccount.id}
                 subaccountName={subaccount.name}

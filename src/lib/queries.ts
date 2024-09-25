@@ -869,6 +869,20 @@ export const upsertContact = async (
   return response;
 };
 
+export const deleteContact = async (contactId: string) => {
+  try {
+    const response = await db.contact.delete({
+      where: {
+        id: contactId,
+      },
+    });
+    return response;
+  } catch (error) {
+    console.error("Error deleting contact:", error);
+    throw error;
+  }
+};
+
 //get all the funnels
 //including both the funnel model information and the related FunnelPages information.
 //The include: { FunnelPages: true } part of the query ensures that the returned data includes the related FunnelPages for each funnel.
@@ -930,7 +944,7 @@ export const updateFunnelPublishedStatus = async (
   });
 
   return response;
-};  
+};
 
 //
 export const updateFunnelProducts = async (
@@ -963,14 +977,14 @@ export const upsertFunnelPage = async (
       content: funnelPage.content //If funnelPage.content is provided, it uses that value.
         ? funnelPage.content //If funnelPage.content is not provided, it sets a default content value, which is a JSON string representing a basic structure with a Body element.
         : JSON.stringify([
-            {
-              content: [],
-              id: "__body",
-              name: "Body",
-              styles: { backgroundColor: "white" },
-              type: "__body",
-            },
-          ]),
+          {
+            content: [],
+            id: "__body",
+            name: "Body",
+            styles: { backgroundColor: "white" },
+            type: "__body",
+          },
+        ]),
       funnelId,
     },
   });

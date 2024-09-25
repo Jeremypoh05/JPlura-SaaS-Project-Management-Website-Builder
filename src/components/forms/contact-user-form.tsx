@@ -78,7 +78,7 @@ const ContactUserForm: React.FC<ContactUserFormProps> = ({ subaccountId }) => {
       toast({
         variant: "destructive",
         title: "Oppse!",
-        description: "Could not save funnel details",
+        description: "Could not save contacts details",
       });
     }
   };

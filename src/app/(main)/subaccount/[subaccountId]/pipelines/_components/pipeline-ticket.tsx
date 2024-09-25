@@ -57,6 +57,22 @@ type Props = {
   index: number;
 };
 
+// Utility function to generate different colors based on name  
+const getAvatarColor = (name: string): string => {
+  const colors = [
+    "bg-red-500",
+    "bg-blue-500",
+    "bg-green-500",
+    "bg-yellow-500",
+    "bg-purple-500",
+    "bg-pink-500",
+    "bg-teal-500",
+  ];
+
+  const index = name.charCodeAt(0) % colors.length; // Calculate the index using the first character of the name  
+  return colors[index];
+};
+
 const PipelineTicket = ({
   setAllTickets,
   ticket,
@@ -67,13 +83,13 @@ const PipelineTicket = ({
   const router = useRouter();
   const { setOpen, data } = useModal();
 
-  //update a specific ticket in the allTickets array.
+  // Update a specific ticket in the allTickets array.  
   const editNewTicket = (ticket: TicketWithTags[0]) => {
     setAllTickets((tickets) =>
       allTickets.map((t) => {
-        // If the id of the current ticket matches the id of the ticket passed to the function, replaces that ticket with the new ticket object
+        // If the id of the current ticket matches the id of the ticket passed to the function, replaces that ticket with the new ticket object  
         if (t.id === ticket.id) {
-          return ticket; //returns the updated allTickets array.
+          return ticket; // Returns the updated allTickets array.  
         }
         return t;
       })
@@ -95,14 +111,14 @@ const PipelineTicket = ({
     );
   };
 
-  //delete a specific ticket from the allTickets array.
+  // Delete a specific ticket from the allTickets array.  
   const handleDeleteTicket = async () => {
     try {
-      //If the id of the current ticket does not match the id of the ticket passed to the function (ticket.id),
-      // this means that t.id is the tickets array from setAllTickets, if the id of this array does not match with the ticket.id which from the the query(database), it shows,
-      // If the id of the current ticket matches the id of the ticket passed to the function, it removes that ticket from the new array.
-      setAllTickets((tickets) => tickets.filter((t) => t.id !== ticket.id)); //show the ticket that does not match the id, because the match one will be deleted.
-      const response = await deleteTicket(ticket.id); //ticket object passed to the function is the one that the user wants to delete.
+      // If the id of the current ticket does not match the id of the ticket passed to the function (ticket.id),  
+      // this means that t.id is the tickets array from setAllTickets, if the id of this array does not match with the ticket.id which from the query(database), it shows,  
+      // If the id of the current ticket matches the id of the ticket passed to the function, it removes that ticket from the new array.  
+      setAllTickets((tickets) => tickets.filter((t) => t.id !== ticket.id)); // Show the ticket that does not match the id, because the match one will be deleted.  
+      const response = await deleteTicket(ticket.id); // Ticket object passed to the function is the one that the user wants to delete.  
       toast({
         title: "Deleted",
         description: "Deleted ticket from lane.",
@@ -130,11 +146,11 @@ const PipelineTicket = ({
       {(provided, snapshot) => {
         if (snapshot.isDragging) {
           const offset = { x: 300, y: -90 };
-          //@ts-ignore
+          //@ts-ignore  
           const x = provided.draggableProps.style?.left - offset.x;
-          //@ts-ignore
+          //@ts-ignore  
           const y = provided.draggableProps.style?.top - offset.y;
-          //@ts-ignore
+          //@ts-ignore  
           provided.draggableProps.style = {
             ...provided.draggableProps.style,
             top: y,
@@ -172,7 +188,7 @@ const PipelineTicket = ({
                     <CardDescription className="w-full ">
                       {ticket.description}
                     </CardDescription>
-                    {/*from ShadCN UI */}
+                    {/* From ShadCN UI */}
                     <HoverCard>
                       <HoverCardTrigger asChild>
                         <div className="p-2 text-muted-foreground flex gap-2 hover:bg-muted transition-all rounded-lg cursor-pointer items-center">
@@ -184,12 +200,11 @@ const PipelineTicket = ({
                         <div className="flex justify-between space-x-4">
                           <Avatar>
                             <AvatarImage />
-                            <AvatarFallback className="bg-primary">
-                              {/* used to display the first two letters of the customer's name in uppercase.
-                            (?.) that ensures the ticket.Customer?.name is not null before accessing the slice() and toUpperCase() methods. 
-                            The slice(0, 2) method extracts the first two characters from the customer's name,
-                            */}
-                              {ticket.Customer?.name.slice(0, 2).toUpperCase()}
+                            <AvatarFallback className={getAvatarColor(ticket.Customer?.name || "Unknown")}>
+                              {/* Used to display the first two letters of the customer's name in uppercase.  
+                              (?.) that ensures the ticket.Customer?.name is not null before accessing the slice() and toUpperCase() methods.   
+                              The slice(0, 2) method extracts the first two characters from the customer's name. */}
+                              {ticket.Customer?.name.slice(0, 2).toUpperCase() || "??"}
                             </AvatarFallback>
                           </Avatar>
                           <div className="space-y-1">
@@ -218,9 +233,11 @@ const PipelineTicket = ({
                           alt="contact"
                           src={ticket.Assigned?.avatarUrl}
                         />
-                        <AvatarFallback className="bg-primary text-sm text-white">
-                          {ticket.Assigned?.name}
-                          {!ticket.assignedUserId && <User2 size={14} />}
+                        <AvatarFallback className={ticket.assignedUserId ? getAvatarColor(ticket.Assigned?.name || "Assigned User") : "bg-primary"}>
+                          {ticket.assignedUserId ?
+                            (ticket.Assigned?.name?.slice(0, 2).toUpperCase() || "AU") :
+                            <User2 size={14} />
+                          }
                         </AvatarFallback>
                       </Avatar>
                       <div className="flex flex-col justify-center">
@@ -230,7 +247,7 @@ const PipelineTicket = ({
                             : "Not Assigned"}
                         </span>
                         {ticket.assignedUserId && (
-                          <span className="text-xs w-28  overflow-ellipsis overflow-hidden whitespace-nowrap text-muted-foreground">
+                          <span className="text-xs w-28 overflow-ellipsis overflow-hidden whitespace-nowrap text-muted-foreground">
                             {ticket.Assigned?.name}
                           </span>
                         )}

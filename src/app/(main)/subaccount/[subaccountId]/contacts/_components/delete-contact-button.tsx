@@ -1,4 +1,4 @@
-import { deleteFunnel, saveActivityLogsNotification } from "@/lib/queries";
+import { deleteContact, saveActivityLogsNotification } from "@/lib/queries";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -14,48 +14,50 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { toast } from "@/components/ui/use-toast";
+import { Trash2 } from "lucide-react";
 
-interface DeleteFunnelButtonProps {
-  funnelId: string; //this props passed down to this component from the parent component, which, is the column definition in columns.tsx.
-  subaccountId: string;
+interface DeleteContactButtonProps {
+  contactId: string; // This prop will be passed down from the ContactPage
+  subaccountId: string; // Ensure subaccountId is passed as a prop
 }
-//renders the delete button and handles the confirmation dialog.
-const DeleteFunnelButton: React.FC<DeleteFunnelButtonProps> = ({
-  funnelId, subaccountId
+
+const DeleteContactButton: React.FC<DeleteContactButtonProps> = ({
+  contactId,
+  subaccountId,
 }) => {
   const router = useRouter();
-  const [isHovered, setIsHovered] = useState(false);  
+  const [isHovered, setIsHovered] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
-  const handleDeleteFunnel = async () => {
+  const handleDeleteContact = async () => {
     setDeleting(true);
     try {
-      // Call the delete function with contactId  
-      const response = await deleteFunnel(funnelId);  // Call the delete function with funnelId
+      // Call the delete function with contactId
+      const response = await deleteContact(contactId); // Assuming deleteContact returns the deleted contact info
 
-      // Check if response is valid  
+      // Check if response is valid
       if (!response) {
         throw new Error("No response from deleteContact");
       }
 
-      // Save notification  
+      // Save notification
       await saveActivityLogsNotification({
-        agencyId: undefined, // Adjust as necessary  
-        description: `Deleted a funnel | ${response?.name || "Unknown"}`, // Fallback if name is not available  
-        subaccountId: subaccountId, //
+        agencyId: undefined, // Adjust as necessary
+        description: `Deleted a contact | ${response?.name || "Unknown"}`, // Fallback if name is not available
+        subaccountId: subaccountId,
       });
 
-      // Show success toast  
+      // Show success toast
       toast({
         title: "Success",
-        description: "Deleted Funnel Successfully",
+        description: "Deleted Contact Successfully",
       });
       router.refresh();
-      // Optionally refresh the router  
-      // router.refresh(); // Uncomment if you want to refresh the page  
+      // Optionally refresh the router
+      // router.refresh(); // Uncomment if you want to refresh the page
     } catch (error) {
       console.error("Error deleting contact:", error);
-      // Show error toast  
+      // Show error toast
       toast({
         variant: "destructive",
         title: "Oops!",
@@ -64,22 +66,27 @@ const DeleteFunnelButton: React.FC<DeleteFunnelButtonProps> = ({
     } finally {
       setDeleting(false);
     }
-
   };
 
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
-        <Button variant="destructive">Delete</Button>
+        <Button
+          className="text-base hover:font-bold flex items-center"
+          variant="destructive"
+        >
+          Delete
+          <Trash2 className="ml-2 h-4 w-4 mb-1" />
+        </Button>
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>
-            Are you sure you want to delete this funnel?
+            Are you sure you want to delete this contact?
           </AlertDialogTitle>
           <AlertDialogDescription>
             This action cannot be undone. This will permanently delete the
-            funnel.
+            contact.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
@@ -87,21 +94,21 @@ const DeleteFunnelButton: React.FC<DeleteFunnelButtonProps> = ({
           <AlertDialogAction asChild>
             <Button
               style={{
-                backgroundColor: isHovered ? '#b22222' : '#800000', // Lighter red on hover  
-                color: 'white',
+                backgroundColor: isHovered ? "#b22222" : "#800000", // Lighter red on hover
+                color: "white",
               }}
               onMouseEnter={() => setIsHovered(true)}
               onMouseLeave={() => setIsHovered(false)}
-              onClick={handleDeleteFunnel}
+              onClick={handleDeleteContact}
               disabled={deleting}
             >
               {deleting ? "Deleting..." : "Delete"}
             </Button>
-          </AlertDialogAction> 
+          </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
   );
 };
 
-export default DeleteFunnelButton;
+export default DeleteContactButton;
