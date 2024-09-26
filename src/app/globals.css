@@ -132,7 +132,7 @@ B (255 */
 
   .custom-scrollbar::-webkit-scrollbar {
     width: 8px;
-    height: 3px;
+    height: 5px;
   }
 
   .custom-scrollbar::-webkit-scrollbar-track {

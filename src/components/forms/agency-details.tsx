@@ -75,6 +75,8 @@ const AgencyDetails = ({ data }: Props) => {
   const { toast } = useToast();
   const router = useRouter();
   const [deletingAgency, setDeletingAgency] = useState(false);
+  const [confirmationInput, setConfirmationInput] = useState("");  
+  const confirmationPhrase = "I AM CONFIRM";  
 
   const form = useForm<z.infer<typeof FormSchema>>({
     mode: "onChange",
@@ -465,18 +467,27 @@ const AgencyDetails = ({ data }: Props) => {
               </AlertDialogTitle>
               <AlertDialogDescription className="text-left">
                 This action cannot be undone. This will permanently delete the
-                Agency account and all related sub accounts.
+                <span className="font-bold"> Agency Account</span> and all related <span className="font-bold">Sub Accounts.</span>
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter className="flex items-center">
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction
-                disabled={deletingAgency}
-                className="bg-destructive hover:bg-red-600"
-                onClick={handleDeleteAgency}
-              >
-                Delete
-              </AlertDialogAction>
+              <div className="flex flex-col w-full">
+                <Input
+                  placeholder={`To confirm, type "${confirmationPhrase}" in the box here`}
+                  value={confirmationInput}
+                  onChange={(e) => setConfirmationInput(e.target.value)}
+                  className="mb-2 border-red-600 outline-none focus:border-transparent"
+                />
+                <AlertDialogCancel className="mb-3">Cancel</AlertDialogCancel>
+                <AlertDialogAction
+                  disabled={deletingAgency || confirmationInput !== confirmationPhrase}
+                  className="bg-destructive hover:bg-red-600"
+                  onClick={handleDeleteAgency}
+                >
+                  Delete
+                </AlertDialogAction>
+              </div>  
+
             </AlertDialogFooter>
           </AlertDialogContent>
         </CardContent>

@@ -30,7 +30,7 @@ const SubaccountItem = ({ subaccount }: SubaccountItemProps) => {
   };
 
   return (
-    <CommandItem className="max-h-full h-[120px] !bg-background my-2 text-primary border-[1px] border-border p-4 rounded-lg hover:!bg-background cursor-pointer transition-all">
+<CommandItem className="max-h-full h-[120px] !custom-scrollbar !bg-background my-2 text-primary border-[1px] border-border p-4 rounded-lg hover:!bg-background cursor-pointer transition-all">    
       <Link
         href={`/subaccount/${subaccount.id}`}
         className="flex gap-4 w-full h-full"
