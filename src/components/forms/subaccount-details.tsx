@@ -51,13 +51,13 @@ interface SubAccountDetailsProps {
   details?: Partial<SubAccount>;
   userId: string;
   userName: string;
+  addSubaccount: (newSubaccount: SubAccount) => void; // Add this prop
 }
 
 const SubAccountDetails: React.FC<SubAccountDetailsProps> = ({
   details,
   agencyDetails,
-  userId,
-  userName,
+  addSubaccount,
 }) => {
   const { toast } = useToast();
   const { setClose } = useModal();
@@ -116,9 +116,9 @@ const SubAccountDetails: React.FC<SubAccountDetailsProps> = ({
         title: "Subaccount details saved",
         description: "Successfully saved your subaccount details.",
       });
-
       setClose();
       router.refresh();
+      addSubaccount(response); // Call the addSubaccount function to update the state in the parent component
     } catch (error) {
       console.error("Error saving sub account details:", error);
       toast({

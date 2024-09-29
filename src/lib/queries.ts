@@ -19,37 +19,39 @@ import {
   CreateFunnelFormSchema,
   CreateMediaType,
   UpsertFunnelPage,
+  UserWithAgency,
 } from "./types";
 import z from "zod";
 import { revalidatePath } from "next/cache";
 
-export const getAuthUserDetails = async () => {
+export const getAuthUserDetails = async (): Promise<UserWithAgency | null> => {
   const user = await currentUser();
   if (!user) {
-    return;
+    return null; // Return null explicitly
   }
 
-  const userData = await db.user.findUnique({
-    where: {
-      email: user.emailAddresses[0].emailAddress,
-    },
-    include: {
-      Agency: {
-        include: {
-          SidebarOption: true,
-          SubAccount: {
-            include: {
-              SidebarOption: true,
-            },
-          },
-        },
-      },
-      Permissions: true,
-    },
-  });
+ const userData = await db.user.findUnique({
+   where: {
+     email: user.emailAddresses[0].emailAddress,
+   },
+   include: {
+     Agency: {
+       include: {
+         SidebarOption: true, 
+         SubAccount: {
+           include: {
+             SidebarOption: true,
+           },
+         },
+         Subscription: true,
+       },
+     },
+     Permissions: true, 
+   },
+ });
 
-  return userData;
-};
+  return userData as UserWithAgency; // Cast to UserWithAgency
+};  
 
 export const saveActivityLogsNotification = async ({
   agencyId,
@@ -415,11 +417,6 @@ export const upsertSubAccount = async (subAccount: SubAccount) => {
                 name: "Media",
                 icon: "database",
                 link: `/subaccount/${subAccount.id}/media`,
-              },
-              {
-                name: "Automations",
-                icon: "chip",
-                link: `/subaccount/${subAccount.id}/automations`,
               },
               {
                 name: "Pipelines",

@@ -33,7 +33,7 @@ const DeleteContactButton: React.FC<DeleteContactButtonProps> = ({
     setDeleting(true);
     try {
       // Call the delete function with contactId
-      const response = await deleteContact(contactId); // Assuming deleteContact returns the deleted contact info
+      const response = await deleteContact(contactId); 
 
       // Check if response is valid
       if (!response) {

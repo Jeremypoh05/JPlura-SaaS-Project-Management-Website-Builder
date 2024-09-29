@@ -249,7 +249,7 @@ const UserDetails = ({ id, type, userData, subAccounts }: Props) => {
               name="avatarUrl"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Profile picture</FormLabel>
+                  <FormLabel>Profile Picture</FormLabel>
                   <FormControl>
                     <FileUpload
                       apiEndpoint="avatar"
@@ -268,7 +268,7 @@ const UserDetails = ({ id, type, userData, subAccounts }: Props) => {
               name="name"
               render={({ field }) => (
                 <FormItem className="flex-1">
-                  <FormLabel>User full name</FormLabel>
+                  <FormLabel>User Full Name</FormLabel>
                   <FormControl>
                     <Input required placeholder="Full Name" {...field} />
                   </FormControl>

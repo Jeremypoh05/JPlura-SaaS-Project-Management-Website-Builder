@@ -15,22 +15,25 @@ import {
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import Link from "next/link";
-import React from "react";
+import React, { useState } from "react";
 import DeleteButton from "./_components/delete-button";
 import { CommandEmpty, CommandItem } from "@/components/ui/command";
 import { Trash2 } from "lucide-react";
 
 type SubaccountItemProps = {
   subaccount: SubAccount;
+  onDelete: (subaccountId: string) => void; // Add onDelete prop  
 };
 
-const SubaccountItem = ({ subaccount }: SubaccountItemProps) => {
+const SubaccountItem = ({ subaccount, onDelete }: SubaccountItemProps) => {
+  const [isAlertOpen, setAlertOpen] = useState(false); // State for alert dialog
+
   const handleItemClick = () => {
     console.log(`Clicked subaccount ID: ${subaccount.id}`);
   };
 
   return (
-<CommandItem className="max-h-full h-[120px] !custom-scrollbar !bg-background my-2 text-primary border-[1px] border-border p-4 rounded-lg hover:!bg-background cursor-pointer transition-all">    
+    <CommandItem className="max-h-full h-[120px] !custom-scrollbar !bg-background my-2 text-primary border-[1px] border-border p-4 rounded-lg hover:!bg-background cursor-pointer transition-all">
       <Link
         href={`/subaccount/${subaccount.id}`}
         className="flex gap-4 w-full h-full"
@@ -54,7 +57,7 @@ const SubaccountItem = ({ subaccount }: SubaccountItemProps) => {
           </div>
         </div>
       </Link>
-      <AlertDialog>
+      <AlertDialog open={isAlertOpen} onOpenChange={setAlertOpen}>
         <AlertDialogTrigger asChild>
           <Button
             className="text-base hover:font-bold flex items-center"
@@ -66,20 +69,24 @@ const SubaccountItem = ({ subaccount }: SubaccountItemProps) => {
         </AlertDialogTrigger>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>
-              Are you absolutely sure?
-            </AlertDialogTitle>
+            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
             <AlertDialogDescription>
               This action cannot be undone. This will delete the subaccount and
               all data related to the subaccount.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel onClick={() => setAlertOpen(false)}>
+              Cancel
+            </AlertDialogCancel>
             <AlertDialogAction asChild>
               <DeleteButton
                 subaccountId={subaccount.id}
                 subaccountName={subaccount.name}
+                onDeleteSuccess={() => {
+                  setAlertOpen(false); // Close the alert dialog on successful deletion
+                  onDelete(subaccount.id); // Call the onDelete function to remove the subaccount  
+                }}
               />
             </AlertDialogAction>
           </AlertDialogFooter>
@@ -88,5 +95,4 @@ const SubaccountItem = ({ subaccount }: SubaccountItemProps) => {
     </CommandItem>
   );
 };
-
 export default SubaccountItem;

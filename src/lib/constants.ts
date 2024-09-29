@@ -35,7 +35,7 @@ export const pricingCards = [
     price: "Free",
     duration: "",
     highlight: "Key features",
-    features: ["1 Sub account", "2 Team members", "Unlimited pipelines"],
+    features: ["1 Sub Account", "Unlimited pipelines"],
     priceId: "",
   },
   {

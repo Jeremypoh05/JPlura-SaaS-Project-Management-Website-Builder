@@ -1,9 +1,14 @@
 import {
   Contact,
+  Icon,
+  Invitation,
   Lane,
   Notification,
+  Permissions,
   Prisma,
   Role,
+  SubAccount,
+  Subscription,
   Tag,
   Ticket,
   User,
@@ -22,6 +27,66 @@ import z from "zod";
 import Stripe from "stripe";
 import { CSSProperties } from "react";
 import { IconName } from "@fortawesome/free-solid-svg-icons";
+
+export type AgencySidebarOption = {
+  id: string;
+  name: string;
+  link: string;
+  icon: Icon;
+  agencyId: string;
+  createdAt: Date;
+  updatedAt: Date;
+};
+
+export type SubAccountSidebarOption = {
+  id: string;
+  name: string;
+  link: string;
+  icon: Icon;
+  createdAt: Date;
+  updatedAt: Date;
+  subAccountId: string | null;
+};
+
+type SubAccountWithSidebarOption = SubAccount & {
+  SidebarOption: SubAccountSidebarOption[];
+};
+
+// Define the UserWithAgency type
+export type UserWithAgency = {
+  id: string;
+  name: string;
+  avatarUrl: string;
+  email: string;
+  created_at: Date;
+  updated_at: Date;
+  role: Role;
+  agencyId: string | null;
+  Agency: {
+    id: string;
+    connectAccountId: string | null;
+    customerId: string;
+    name: string;
+    agencyLogo: string;
+    companyEmail: string;
+    companyPhone: string;
+    whiteLabel: boolean;
+    address: string;
+    city: string;
+    zipCode: string;
+    state: string;
+    country: string;
+    goal: number;
+    users: User[];
+    createdAt: Date;
+    updatedAt: Date;
+    SubAccount: SubAccountWithSidebarOption[];
+    SidebarOption: AgencySidebarOption[];
+    Notification: Notification[];
+    Subscription: Subscription | null;
+  } | null;
+  Permissions: Permissions[];
+};
 
 export type NotificationWithUser =
   | ({
@@ -159,10 +224,10 @@ export const CreateFunnelFormSchema = z.object({
   description: z.string(),
   subDomainName: z.string().optional(),
   favicon: z.string().optional(),
-  published: z.boolean().default(false), 
+  published: z.boolean().default(false),
 });
 
-//This type will include both the properties of the funnel model and the related FunnelPages model. 
+//This type will include both the properties of the funnel model and the related FunnelPages model.
 export type FunnelsForSubAccount = Prisma.PromiseReturnType<
   typeof getFunnels
 >[0];

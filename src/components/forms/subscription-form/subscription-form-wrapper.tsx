@@ -95,10 +95,12 @@ const SubscriptionFormWrapper = ({ customerId, planExists }: Props) => {
       if (planExists) {
         toast({
           title: "Success",
-          description: "Your plan has been successfully upgraded!",
+          description: "Your plan has been changed according to your needs!",
         });
         setClose();
-        router.refresh();
+        setTimeout(() => {
+          window.location.reload();
+        }, 2000);  
       }
     };
     console.log("created secret", createSecret);

@@ -30,14 +30,27 @@ import SubAccountDetails from "../forms/subaccount-details";
 import { Separator } from "../ui/separator";
 import { icons } from "@/lib/constants";
 import { UserButton } from "@clerk/nextjs";
+import { UserWithAgency } from "@/lib/types";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 type Props = {
   defaultOpen?: boolean;
   subAccounts: SubAccount[];
   sidebarOpt: AgencySidebarOption[] | SubAccountSidebarOption[];
   sidebarLogo: string;
-  details: any;
-  user: any;
+  details:
+  | UserWithAgency["Agency"]
+  | (SubAccount & { SidebarOption: SubAccountSidebarOption[] });
+  user: UserWithAgency;
   id: string;
 };
 
@@ -52,6 +65,19 @@ const MenuOptions = ({
 }: Props) => {
   const { setOpen } = useModal();
   const [isMounted, setIsMounted] = useState(false);
+  const [sortedSubAccounts, setSortedSubAccounts] =
+    useState<SubAccount[]>(subAccounts); // Initialize state with existing subaccounts
+  const [isAlertOpen, setAlertOpen] = useState(false); // State for alert dialog
+
+  // Determine the maximum number of subaccounts allowed based on the current plan.
+  const currentPlan = user?.Agency?.Subscription?.plan;
+  const maxSubaccounts = currentPlan
+    ? currentPlan === "price_1PQ8HWRqpSbtJ03827K2PbCM"
+      ? Infinity // Unlimited Plan
+      : currentPlan === "price_1PQ8HVRqpSbtJ038LxC6uWrX"
+        ? 4 // Basic Plan
+        : 1 // Default to 1 subaccount if no plan
+    : 1; // Default to 1 subaccount if no plan
 
   //useMemo is used for memoization, which optimizes performance by caching the result of a function.
   //It re - runs the function only when one of its dependencies changes, ensuring that it's only recalculated when defaultOpen changes.
@@ -78,7 +104,35 @@ const MenuOptions = ({
     setIsMounted(true);
   }, []);
 
-  if (!isMounted) return;
+  if (!isMounted) return null; // Ensure the component is mounted before rendering
+  if (!details) return null; // Early return if details is null
+
+  // Function to add a new subaccount to the state
+  const addSubaccount = (newSubaccount: SubAccount) => {
+    setSortedSubAccounts((prev) => [...prev, newSubaccount]);
+  };
+
+  const handleCreateSubaccount = () => {
+    if (sortedSubAccounts.length >= maxSubaccounts) {
+      // If the limit is reached, open the alert dialog
+      setAlertOpen(true);
+    } else {
+      // Otherwise, open the modal
+      setOpen(
+        <CustomModal
+          title="Create a Subaccount"
+          subHeading="You can switch between your Agency account and the Subaccount from the sidebar"
+        >
+          <SubAccountDetails
+            agencyDetails={user?.Agency as Agency}
+            userId={user?.id as string}
+            userName={user?.name}
+            addSubaccount={addSubaccount}
+          />
+        </CustomModal>
+      );
+    }
+  };
 
   return (
     <Sheet modal={false} {...openState}>
@@ -122,7 +176,7 @@ const MenuOptions = ({
               >
                 <div className="flex items-center text-left gap-2">
                   <Compass />
-                  <div className="flex flex-col whitespace-pre-wrap">
+                  <div className="flex flex-col whitespace-pre-wrap text-yellow-700 font-bold hover:text-yellow-600 leading-5">
                     {details.name}
                     <span className="text-muted-foreground">
                       {details.address}
@@ -155,7 +209,7 @@ const MenuOptions = ({
                                   className="rounded-md object-contain"
                                 />
                               </div>
-                              <div className="flex flex-col flex-1">
+                              <div className="flex flex-col flex-1 text-yellow-700 hover:text-yellow-600">
                                 {user?.Agency?.name}
                                 <span className="text-muted-foreground">
                                   {user?.Agency?.address}
@@ -188,13 +242,34 @@ const MenuOptions = ({
                         </CommandItem>
                       </CommandGroup>
                     )}
-                  {/* if subAccounts is truthy. If it is, it maps over each subaccount in the subAccounts array and renders them as CommandItem components. 
+                  {/* if subAccounts is truthy. If it is, it maps over each subaccount in the subAccounts array and renders them as CommandItem components.   
                   If subAccounts is falsy (for example, if it's an empty array), it displays the text "No Accounts". */}
                   <CommandGroup heading="Sub Accounts">
-                    {!!subAccounts
-                      ? subAccounts.map((subaccount) => (
-                          <CommandItem key={subaccount.id}>
-                            {defaultOpen ? (
+                    {!!sortedSubAccounts // Use sortedSubAccounts instead of subAccounts
+                      ? sortedSubAccounts.map((subaccount) => (
+                        <CommandItem key={subaccount.id}>
+                          {defaultOpen ? (
+                            <Link
+                              href={`/subaccount/${subaccount.id}`}
+                              className="flex gap-4 w-full h-full"
+                            >
+                              <div className="relative w-16">
+                                <Image
+                                  src={subaccount.subAccountLogo}
+                                  alt="subaccount Logo"
+                                  fill
+                                  className="rounded-md object-contain"
+                                />
+                              </div>
+                              <div className="flex flex-col flex-1">
+                                {subaccount.name}
+                                <span className="text-muted-foreground">
+                                  {subaccount.address}
+                                </span>
+                              </div>
+                            </Link>
+                          ) : (
+                            <SheetClose asChild>
                               <Link
                                 href={`/subaccount/${subaccount.id}`}
                                 className="flex gap-4 w-full h-full"
@@ -214,59 +289,25 @@ const MenuOptions = ({
                                   </span>
                                 </div>
                               </Link>
-                            ) : (
-                              <SheetClose asChild>
-                                <Link
-                                  href={`/subaccount/${subaccount.id}`}
-                                  className="flex gap-4 w-full h-full"
-                                >
-                                  <div className="relative w-16">
-                                    <Image
-                                      src={subaccount.subAccountLogo}
-                                      alt="subaccount Logo"
-                                      fill
-                                      className="rounded-md object-contain"
-                                    />
-                                  </div>
-                                  <div className="flex flex-col flex-1">
-                                    {subaccount.name}
-                                    <span className="text-muted-foreground">
-                                      {subaccount.address}
-                                    </span>
-                                  </div>
-                                </Link>
-                              </SheetClose>
-                            )}
-                          </CommandItem>
-                        ))
+                            </SheetClose>
+                          )}
+                        </CommandItem>
+                      ))
                       : "No Accounts"}
                   </CommandGroup>
                 </CommandList>
                 {(user?.role === "AGENCY_OWNER" ||
                   user?.role === "AGENCY_ADMIN") && (
-                  <SheetClose>
-                    <Button
-                      className="w-full flex gap-2 bg-blue-700/30 hover:bg-blue-700/10"
-                      onClick={() => {
-                        setOpen(
-                          <CustomModal
-                            title="Create a Subaccount"
-                            subHeading="You can switch between your Agency account and the Subaccount from the sidebar"
-                          >
-                            <SubAccountDetails
-                              agencyDetails={user?.Agency as Agency}
-                              userId={user?.id as string}
-                              userName={user?.name}
-                            />
-                          </CustomModal>
-                        );
-                      }}
-                    >
-                      <PlusCircleIcon size={15} />
-                      Create Sub Account
-                    </Button>
-                  </SheetClose>
-                )}
+                    <SheetClose>
+                      <Button
+                        className="w-full flex gap-2 bg-blue-700/30 hover:bg-blue-700/10"
+                        onClick={handleCreateSubaccount}
+                      >
+                        <PlusCircleIcon size={15} />
+                        Create Sub Account
+                      </Button>
+                    </SheetClose>
+                  )}
               </Command>
             </PopoverContent>
           </Popover>
@@ -279,7 +320,7 @@ const MenuOptions = ({
                 <CommandList className="py-2 overflow-visible">
                   <CommandEmpty>No Results Found</CommandEmpty>
                   <CommandGroup className="overflow-visible">
-                    {/*since this sidebarOpt props have associated with AgencySidebarOption[] | SubAccountSidebarOption[];
+                    {/*since this sidebarOpt props have associated with AgencySidebarOption[] | SubAccountSidebarOption[];  
                     and they have already have data when creating Agency or update Agency through upsertAgency(queries.ts), so we can map it from backend and render  it*/}
                     {sidebarOpt
                       .sort((a, b) => {
@@ -334,6 +375,35 @@ const MenuOptions = ({
           />
         </div>
       </SheetContent>
+
+      {/* Alert Dialog for Upgrade Plan */}
+      <AlertDialog open={isAlertOpen} onOpenChange={setAlertOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Limit Reached</AlertDialogTitle>
+            <AlertDialogDescription>
+              You have reached the maximum number of subaccounts allowed for your current plan. Please upgrade your current plan to align your needs.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogAction
+              className="bg-red-600 text-white hover:bg-red-800"
+              onClick={() => setAlertOpen(false)}
+            >
+              Close
+            </AlertDialogAction>
+            <AlertDialogAction
+              className="bg-blue-700 text-white"
+              onClick={() => {
+                // Redirect to the billing page or handle upgrade logic  
+                window.location.href = `/agency/${user?.Agency?.id}/billing`;
+              }}
+            >
+              Upgrade Plan
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Sheet>
   );
 };

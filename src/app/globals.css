@@ -1,10 +1,13 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+@import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@300..700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Roboto+Condensed:ital,wght@0,100..900;1,100..900&display=swap');
 
 html,
 body {
   height: 100vh;
+      /* Set Fredoka as the default font */
 }
 
 *,
@@ -148,6 +151,13 @@ B (255 */
   .custom-scrollbar::-webkit-scrollbar-thumb:hover {
     background: #555;
   }
+}
+
+/* font family */
+/* globals.css */
+.roboto-condensed {
+  font-family: 'Roboto Condensed', sans-serif;
+  /* Use Roboto Condensed for this class */
 }
 
 .loader {
