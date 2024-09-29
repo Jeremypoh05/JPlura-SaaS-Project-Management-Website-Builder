@@ -45,7 +45,7 @@ const CreateSubaccountButton = ({ className, id, user, maxSubaccounts, currentSu
             agencyDetails={agencyDetails}
             userId={user.id}
             userName={user.name}
-            addSubaccount={addSubaccount} // Pass the addSubaccount function  
+            addSubaccount={addSubaccount}  
           />
         </CustomModal>
       );

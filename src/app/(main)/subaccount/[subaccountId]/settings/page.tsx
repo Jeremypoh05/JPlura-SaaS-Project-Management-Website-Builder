@@ -3,13 +3,15 @@ import UserDetails from "@/components/forms/user-details";
 import BlurPage from "@/components/global/blur-page";
 import { db } from "@/lib/db";
 import { currentUser } from "@clerk/nextjs";
+import { SubAccount } from "@prisma/client";
 import React from "react";
 
 type Props = {
   params: { subaccountId: string };
+  addSubaccount: (newSubaccount: SubAccount) => void;  
 };
 
-const SubaccountSettingPage = async ({ params }: Props) => {
+const SubaccountSettingPage = async ({ params, addSubaccount }: Props) => {
   const authUser = await currentUser();
 
   if (!authUser) return;
@@ -43,6 +45,7 @@ const SubaccountSettingPage = async ({ params }: Props) => {
           details={subAccount}
           userId={userDetails.id}
           userName={userDetails.name}
+          addSubaccount={addSubaccount} 
         />
         <UserDetails
           type="subaccount"
