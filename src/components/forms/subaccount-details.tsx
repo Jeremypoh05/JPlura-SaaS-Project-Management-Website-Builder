@@ -51,7 +51,7 @@ interface SubAccountDetailsProps {
   details?: Partial<SubAccount>;
   userId: string;
   userName: string;
-  addSubaccount: (newSubaccount: SubAccount) => void; // Add this prop
+  addSubaccount?: (newSubaccount: SubAccount) => void; // Now optional
 }
 
 const SubAccountDetails: React.FC<SubAccountDetailsProps> = ({
@@ -118,7 +118,10 @@ const SubAccountDetails: React.FC<SubAccountDetailsProps> = ({
       });
       setClose();
       router.refresh();
-      addSubaccount(response); // Call the addSubaccount function to update the state in the parent component
+      // Check if addSubaccount exists before calling it
+      if (addSubaccount) {
+        addSubaccount(response); // Call the addSubaccount function to update the state in the parent component
+      }
     } catch (error) {
       console.error("Error saving sub account details:", error);
       toast({

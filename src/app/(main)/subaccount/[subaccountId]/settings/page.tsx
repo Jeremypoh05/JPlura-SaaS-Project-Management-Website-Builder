@@ -8,33 +8,34 @@ import React from "react";
 
 type Props = {
   params: { subaccountId: string };
-  addSubaccount: (newSubaccount: SubAccount) => void;  
 };
 
-const SubaccountSettingPage = async ({ params, addSubaccount }: Props) => {
+const SubaccountSettingPage = async ({ params }: Props) => {
   const authUser = await currentUser();
 
-  if (!authUser) return;
+  if (!authUser) return null;
 
   const userDetails = await db.user.findUnique({
     where: {
       email: authUser.emailAddresses[0].emailAddress,
     },
   });
-  if (!userDetails) return;
+
+  if (!userDetails) return null;
 
   const subAccount = await db.subAccount.findUnique({
     where: { id: params.subaccountId },
   });
-  if (!subAccount) return;
 
-  //where agency id match with the current subaccount id from the url .agencyId
+  if (!subAccount) return null;
+
+  // where agency id matches the current subaccount id from the URL .agencyId
   const agencyDetails = await db.agency.findUnique({
     where: { id: subAccount.agencyId },
     include: { SubAccount: true },
   });
 
-  if (!agencyDetails) return;
+  if (!agencyDetails) return null;
   const subAccounts = agencyDetails.SubAccount;
 
   return (
@@ -45,7 +46,6 @@ const SubaccountSettingPage = async ({ params, addSubaccount }: Props) => {
           details={subAccount}
           userId={userDetails.id}
           userName={userDetails.name}
-          addSubaccount={addSubaccount} 
         />
         <UserDetails
           type="subaccount"
