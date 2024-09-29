@@ -15,19 +15,19 @@ const SubaccountSettingPage = async ({ params }: Props) => {
 
   if (!authUser) return null;
 
-  const userDetails = await db.user.findUnique({
-    where: {
-      email: authUser.emailAddresses[0].emailAddress,
-    },
-  });
+  // Execute both `findUnique` queries in parallel
+  const [userDetails, subAccount] = await Promise.all([
+    db.user.findUnique({
+      where: {
+        email: authUser.emailAddresses[0].emailAddress,
+      },
+    }),
+    db.subAccount.findUnique({
+      where: { id: params.subaccountId },
+    }),
+  ]);
 
-  if (!userDetails) return null;
-
-  const subAccount = await db.subAccount.findUnique({
-    where: { id: params.subaccountId },
-  });
-
-  if (!subAccount) return null;
+  if (!userDetails || !subAccount) return null;
 
   // where agency id matches the current subaccount id from the URL .agencyId
   const agencyDetails = await db.agency.findUnique({
