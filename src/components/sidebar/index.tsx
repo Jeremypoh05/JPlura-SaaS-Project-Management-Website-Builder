@@ -47,10 +47,10 @@ const Sidebar = async ({ id, type }: Props) => {
         permission.subAccountId === subaccount.id && permission.access
     )
   ) || [];
-  console.log("User Data:", user);
-  console.log("Agency Sidebar Options:", user.Agency?.SidebarOption);
-  console.log("SubAccount Sidebar Options:", user.Agency?.SubAccount);
-  console.log("User Permissions:", user.Permissions);
+  // console.log("User Data:", user);
+  // console.log("Agency Sidebar Options:", user.Agency?.SidebarOption);
+  // console.log("SubAccount Sidebar Options:", user.Agency?.SubAccount);
+  // console.log("User Permissions:", user.Permissions);
 
   return (
     <>

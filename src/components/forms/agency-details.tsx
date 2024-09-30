@@ -50,24 +50,37 @@ import {
 } from "@/lib/queries";
 import Loading from "../global/loading";
 import { Button } from "../ui/button";
+import { isValidPhoneNumber } from "libphonenumber-js";
+import Fuse from "fuse.js";
+import { getCode, getNames } from "country-list";
 
 type Props = {
   data?: Partial<Agency>;
   //data prop can contain some or all of the properties defined in the Agency type, but it's not required to contain all of them and they can be present or absent in the object passed to the component.
 };
 
+// Define valid country names
+const countryList = getNames();
+const fuse = new Fuse(countryList, { threshold: 0.3 });
+
 const FormSchema = z.object({
   name: z
     .string()
     .min(2, { message: "Agency's name must be at least 2 characters." }),
-  companyEmail: z.string().min(1),
-  companyPhone: z.string().min(1),
+  companyEmail: z
+    .string()
+    .email({ message: "Please enter a valid email address." }),
+  companyPhone: z.string().refine(isValidPhoneNumber, {
+    message: "Please enter a valid phone number.",
+  }),
   whiteLabel: z.boolean(),
   address: z.string().min(1),
   city: z.string().min(1),
   zipCode: z.string().min(1),
   state: z.string().min(1),
-  country: z.string().min(1),
+  country: z.string().refine((val) => countryList.includes(val), {
+    message: "Please enter a valid country.",
+  }),
   agencyLogo: z.string().min(1),
 });
 
@@ -75,8 +88,9 @@ const AgencyDetails = ({ data }: Props) => {
   const { toast } = useToast();
   const router = useRouter();
   const [deletingAgency, setDeletingAgency] = useState(false);
-  const [confirmationInput, setConfirmationInput] = useState("");  
-  const confirmationPhrase = "I AM CONFIRM";  
+  const [confirmationInput, setConfirmationInput] = useState("");
+  const confirmationPhrase = "I AM CONFIRM";
+  const [suggestion, setSuggestion] = useState("");
 
   const form = useForm<z.infer<typeof FormSchema>>({
     mode: "onChange",
@@ -104,7 +118,29 @@ const AgencyDetails = ({ data }: Props) => {
     }
   }, [data]);
 
+  // Validate country input with Fuse.js for fuzzy matching
+  const validateCountry = (value: string) => {
+    const result = countryList.includes(value);
+    if (!result) {
+      const suggestedCountry = fuse.search(value)?.[0]?.item;
+      setSuggestion(suggestedCountry ? `Did you mean "${suggestedCountry}"?` : "");
+    } else {
+      setSuggestion("");
+    }
+  };
+
   const handleSubmit = async (values: z.infer<typeof FormSchema>) => {
+    validateCountry(values.country);
+    
+    if (suggestion) {
+      toast({
+        variant: "destructive",
+        title: "Invalid Country",
+        description: suggestion,
+      });
+      return;
+    }
+
     try {
       let newUserData;
       let custId;
@@ -188,7 +224,6 @@ const AgencyDetails = ({ data }: Props) => {
           description: "Your agency has been successfully created.",
         });
         if (data?.id) return router.refresh(); //might unnecessary
-
       } else {
         // Update existing agency
         await updateAgencyDetails(data.id, agencyData);
@@ -302,7 +337,7 @@ const AgencyDetails = ({ data }: Props) => {
                     <FormItem className="flex-1">
                       <FormLabel>Agency Phone Number</FormLabel>
                       <FormControl>
-                        <Input placeholder="Phone" {...field} />
+                        <Input placeholder="e.g., +601116305241" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -400,8 +435,18 @@ const AgencyDetails = ({ data }: Props) => {
                   <FormItem className="flex-1">
                     <FormLabel>Country</FormLabel>
                     <FormControl>
-                      <Input placeholder="Country" {...field} />
+                      <Input
+                        placeholder="e.g., Malaysia"
+                        onChange={(e) => {
+                          field.onChange(e);
+                          validateCountry(e.target.value);
+                        }}
+                        value={field.value}
+                      />
                     </FormControl>
+                    {suggestion && (
+                      <p className="text-red-500 text-sm mt-2">{suggestion}</p>
+                    )}
                     <FormMessage />
                   </FormItem>
                 )}
@@ -467,7 +512,8 @@ const AgencyDetails = ({ data }: Props) => {
               </AlertDialogTitle>
               <AlertDialogDescription className="text-left">
                 This action cannot be undone. This will permanently delete the
-                <span className="font-bold"> Agency Account</span> and all related <span className="font-bold">Sub Accounts.</span>
+                <span className="font-bold"> Agency Account</span> and all
+                related <span className="font-bold">Sub Accounts.</span>
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter className="flex items-center">
@@ -480,14 +526,15 @@ const AgencyDetails = ({ data }: Props) => {
                 />
                 <AlertDialogCancel className="mb-3">Cancel</AlertDialogCancel>
                 <AlertDialogAction
-                  disabled={deletingAgency || confirmationInput !== confirmationPhrase}
+                  disabled={
+                    deletingAgency || confirmationInput !== confirmationPhrase
+                  }
                   className="bg-destructive hover:bg-red-600"
                   onClick={handleDeleteAgency}
                 >
                   Delete
                 </AlertDialogAction>
-              </div>  
-
+              </div>
             </AlertDialogFooter>
           </AlertDialogContent>
         </CardContent>

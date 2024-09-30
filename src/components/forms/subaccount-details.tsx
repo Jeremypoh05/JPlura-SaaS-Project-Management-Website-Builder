@@ -29,20 +29,35 @@ import FileUpload from "../global/file-upload";
 import { Agency, SubAccount } from "@prisma/client";
 import { useToast } from "../ui/use-toast";
 import { saveActivityLogsNotification, upsertSubAccount } from "@/lib/queries";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import Loading from "../global/loading";
 import { useModal } from "@/providers/modal-provider";
+import { isValidPhoneNumber } from "libphonenumber-js";
+import Fuse from "fuse.js";
+import { getCode, getNames } from "country-list";
+
+// Define valid country names
+const countryList = getNames();
+const fuse = new Fuse(countryList, { threshold: 0.3 });
 
 const formSchema = z.object({
-  name: z.string(),
-  companyEmail: z.string(),
-  companyPhone: z.string().min(1),
+  name: z
+    .string()
+    .min(2, { message: "Agency's name must be at least 2 characters." }),
+  companyEmail: z
+    .string()
+    .email({ message: "Please enter a valid email address." }),
+  companyPhone: z.string().refine(isValidPhoneNumber, {
+    message: "Invalid phone number.Please use international format(e.g., +601116305211).",
+  }),
   address: z.string(),
   city: z.string(),
   subAccountLogo: z.string(),
   zipCode: z.string(),
   state: z.string(),
-  country: z.string(),
+  country: z.string().refine((val) => countryList.includes(val), {
+    message: "Please enter a valid country.",
+  }),
 });
 
 interface SubAccountDetailsProps {
@@ -62,6 +77,8 @@ const SubAccountDetails: React.FC<SubAccountDetailsProps> = ({
   const { toast } = useToast();
   const { setClose } = useModal();
   const router = useRouter();
+  const [suggestion, setSuggestion] = useState("");
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -80,7 +97,29 @@ const SubAccountDetails: React.FC<SubAccountDetailsProps> = ({
   console.log("agency response", agencyDetails);
   console.log("details", details);
 
+  // Validate country input with Fuse.js for fuzzy matching
+  const validateCountry = (value: string) => {
+    const result = countryList.includes(value);
+    if (!result) {
+      const suggestedCountry = fuse.search(value)?.[0]?.item;
+      setSuggestion(suggestedCountry ? `Did you mean "${suggestedCountry}"?` : "");
+    } else {
+      setSuggestion("");
+    }
+  };
+
   async function onSubmit(values: z.infer<typeof formSchema>) {
+    validateCountry(values.country);
+
+    if (suggestion) {
+      toast({
+        variant: "destructive",
+        title: "Invalid Country",
+        description: suggestion,
+      });
+      return;
+    }
+
     try {
       const response = await upsertSubAccount({
         id: details?.id ? details.id : v4(),
@@ -209,7 +248,7 @@ const SubAccountDetails: React.FC<SubAccountDetailsProps> = ({
                   <FormItem className="flex-1">
                     <FormLabel>Account Phone Number</FormLabel>
                     <FormControl>
-                      <Input placeholder="Phone" required {...field} />
+                      <Input placeholder="e.g., +601116305241" required {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -283,8 +322,18 @@ const SubAccountDetails: React.FC<SubAccountDetailsProps> = ({
                 <FormItem className="flex-1">
                   <FormLabel>Country</FormLabel>
                   <FormControl>
-                    <Input required placeholder="Country" {...field} />
+                    <Input
+                      placeholder="e.g., Malaysia"
+                      onChange={(e) => {
+                        field.onChange(e);
+                        validateCountry(e.target.value);
+                      }}
+                      value={field.value}
+                    />
                   </FormControl>
+                  {suggestion && (
+                    <p className="text-red-500 text-sm mt-2">{suggestion}</p>
+                  )}
                   <FormMessage />
                 </FormItem>
               )}
