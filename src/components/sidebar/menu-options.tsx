@@ -378,30 +378,48 @@ const MenuOptions = ({
 
       {/* Alert Dialog for Upgrade Plan */}
       <AlertDialog open={isAlertOpen} onOpenChange={setAlertOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Limit Reached</AlertDialogTitle>
-            <AlertDialogDescription>
-              You have reached the maximum number of subaccounts allowed for your current plan. Please upgrade your current plan to align your needs.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogAction
-              className="bg-red-600 text-white hover:bg-red-800"
-              onClick={() => setAlertOpen(false)}
-            >
-              Close
-            </AlertDialogAction>
-            <AlertDialogAction
-              className="bg-blue-700 text-white"
-              onClick={() => {
-                // Redirect to the billing page or handle upgrade logic  
-                window.location.href = `/agency/${user?.Agency?.id}/billing`;
-              }}
-            >
-              Upgrade Plan
-            </AlertDialogAction>
-          </AlertDialogFooter>
+        <AlertDialogContent className="p-0">
+          {/* Full-width background image */}
+          <div
+            className="w-full h-64 bg-cover bg-center rounded-xl	"
+            style={{ backgroundImage: "url('/assets/upgrade_plan.png')" }}
+          />
+          <div className="p-6 text-center">
+            {/* Title and Description */}
+            <AlertDialogHeader>
+              <AlertDialogTitle className="text-xl font-bold">
+                Limit Reached
+              </AlertDialogTitle>
+              <AlertDialogDescription className="mt-2">
+                You have reached the maximum number of subaccounts allowed for your current plan. Please upgrade your current plan to align your needs.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            {/* List of features or benefits of upgrading */}
+            <ul className="text-left list-disc list-inside mt-4 leading-8">
+              <li>Unlimited Subaccounts</li>
+              <li>Unlimited Team Members</li>
+              <li>24/7 Supports</li>
+              <li>And more!</li>
+            </ul>
+            {/* Footer with action buttons */}
+            <AlertDialogFooter className="mt-6">
+              <AlertDialogAction
+                className="bg-red-600 text-white hover:bg-red-800"
+                onClick={() => setAlertOpen(false)}
+              >
+                Close
+              </AlertDialogAction>
+              <AlertDialogAction
+                className="bg-blue-700 text-white"
+                onClick={() => {
+                  // Redirect to the billing page or handle upgrade logic  
+                  window.location.href = `/agency/${user?.Agency?.id}/billing`;
+                }}
+              >
+                Upgrade Plan
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </div>
         </AlertDialogContent>
       </AlertDialog>
     </Sheet>

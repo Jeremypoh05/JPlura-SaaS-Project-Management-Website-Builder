@@ -1,13 +1,13 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-@import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@300..700&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Roboto+Condensed:ital,wght@0,100..900;1,100..900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@300..700&family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap');
 
 html,
 body {
   height: 100vh;
-      /* Set Fredoka as the default font */
+  /* Set Fredoka as the default font */
 }
 
 *,
@@ -20,6 +20,17 @@ body {
 R (0)
 G (110)
 B (255 */
+
+/* font family */
+/* globals.css */
+.fredoka {
+    font-family: "Fredoka", sans-serif;
+  /* Use Roboto Condensed for this class */
+}
+
+.montserrat {
+  font-family: "Montserrat", sans-serif;
+}
 
 @layer base {
   :root {
@@ -151,13 +162,6 @@ B (255 */
   .custom-scrollbar::-webkit-scrollbar-thumb:hover {
     background: #555;
   }
-}
-
-/* font family */
-/* globals.css */
-.roboto-condensed {
-  font-family: 'Roboto Condensed', sans-serif;
-  /* Use Roboto Condensed for this class */
 }
 
 .loader {
