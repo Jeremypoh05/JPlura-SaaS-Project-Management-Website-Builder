@@ -19,6 +19,10 @@ module.exports = withUt({
       },
     },
     extend: {
+      // Add the custom font family here
+      fontFamily: {
+        montserrat: ["Montserrat", "sans-serif"], // Define the new font
+      },
       colors: {
         tremor: {
           brand: {

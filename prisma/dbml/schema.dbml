@@ -125,6 +125,8 @@ Table Ticket {
   Customer Contact
   assignedUserId String
   Assigned User
+  startDate DateTime
+  dueDate DateTime
 }
 
 Table Contact {

@@ -185,6 +185,8 @@ export const TicketFormSchema = z.object({
   value: z.string().refine((value) => currencyNumberRegex.test(value), {
     message: "Value must be a valid price.",
   }),
+  startDate: z.date().optional(), // Optional start date
+  dueDate: z.date().optional(), // Optional due date
 });
 
 export type TicketDetails = Prisma.PromiseReturnType<

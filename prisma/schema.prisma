@@ -197,6 +197,8 @@ model Ticket {
   assignedUserId String?
   Assigned       User?   @relation(fields: [assignedUserId], references: [id], onDelete: SetNull)
 
+  startDate      DateTime?  
+  dueDate        DateTime?  
   @@index([laneId])
   @@index([customerId])
   @@index([assignedUserId])

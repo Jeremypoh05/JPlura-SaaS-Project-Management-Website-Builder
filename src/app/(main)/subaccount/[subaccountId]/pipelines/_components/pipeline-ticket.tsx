@@ -49,6 +49,7 @@ import { useRouter } from "next/navigation";
 import { deleteTicket, saveActivityLogsNotification } from "@/lib/queries";
 import { toast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge"; // Ensure you import the Badge component  
 
 type Props = {
   setAllTickets: Dispatch<SetStateAction<TicketWithTags>>;
@@ -83,7 +84,7 @@ const PipelineTicket = ({
 }: Props) => {
   const router = useRouter();
   const { setOpen, data } = useModal();
-  const [isHovered, setIsHovered] = useState(false);  
+  const [isHovered, setIsHovered] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
   // Update a specific ticket in the allTickets array.
@@ -114,6 +115,35 @@ const PipelineTicket = ({
     );
   };
 
+  // Utility function to safely format the date and include time  
+  const formatDate = (date: Date | null) => { //accepts a parameter date, which can be a Date object or null.
+    if (!date) return 'N/A'; // Handle null case here  
+    return new Intl.DateTimeFormat('en-US', { //Intl.DateTimeFormat, which is a built-in JavaScript object that allows for language-sensitive date and time formatting. (ECMAScript Internationalization API.)
+      //English as used in the United States, which affects aspects like date order (MM/DD/YYYY), time format (12-hour clock), and names of months/days.
+      dateStyle: 'medium',
+      timeStyle: 'short', // Include the time in a short format  
+    }).format(date);
+  };
+
+  /* 
+  Date Styles:
+  full: The date, including the day of the week (e.g., "Monday, September 25, 2024").
+  long: The date, without the day of the week (e.g., "September 25, 2024").
+  medium: A shorter form of the date (e.g., "Sep 25, 2024").
+  short: The shortest form of the date, usually numeric (e.g., "9/25/24").
+  Time Styles:
+
+  full: The time with a time zone (e.g., "2:30:00 PM GMT+5").
+  long: The time with a time zone but without seconds (e.g., "2:30 PM GMT+5").
+  medium: A medium-length time format (e.g., "2:30:00 PM").
+  short: A shorter time format (e.g., "2:30 PM").
+  */
+
+  // This creates a new Date object representing the current date and time.
+  // Condition: The comparison checks if the due date of the ticket is earlier than the current date and time.
+  //If it is, isOverdue will be true, indicating that the ticket is overdue.
+  const isOverdue = ticket.dueDate && new Date(ticket.dueDate) < new Date();
+
   // Delete a specific ticket from the allTickets array.
   const handleDeleteTicket = async () => {
     try {
@@ -143,6 +173,8 @@ const PipelineTicket = ({
       console.log(error);
     }
   };
+
+  console.log("all tickets information", ticket)
 
   return (
     <Draggable draggableId={ticket.id.toString()} index={index}>
@@ -177,8 +209,14 @@ const PipelineTicket = ({
                       </DropdownMenuTrigger>
                     </CardTitle>
                     <span className="text-muted-foreground text-xs">
-                      {new Date().toLocaleDateString()}
+                      {`${formatDate(ticket.startDate)} - ${formatDate(ticket.dueDate)}`}
                     </span>
+                    {isOverdue && (
+                      <Badge color="destructive" className="mt-1">
+                        Overdue
+                      </Badge>
+                    )}
+
                     <div className="flex items-center flex-wrap gap-2">
                       {ticket.Tags.map((tag) => (
                         <TagComponent
@@ -246,8 +284,8 @@ const PipelineTicket = ({
                           className={
                             ticket.assignedUserId
                               ? getAvatarColor(
-                                  ticket.Assigned?.name || "Assigned User"
-                                )
+                                ticket.Assigned?.name || "Assigned User"
+                              )
                               : "bg-primary"
                           }
                         >

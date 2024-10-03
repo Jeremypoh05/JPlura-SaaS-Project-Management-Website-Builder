@@ -126,7 +126,7 @@ const PipelineLane: React.FC<PipelaneLaneProps> = ({
         //so, manually push it around to make it work.
         if (snapshot.isDragging) {
           //@ts-ignore
-          const offset = { x: 300, y: -80 };
+          const offset = { x: 300, y: -100 };
           //@ts-ignore
           const x = provided.draggableProps.style?.left - offset.x;
           //@ts-ignore

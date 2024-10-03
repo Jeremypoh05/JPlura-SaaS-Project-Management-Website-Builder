@@ -25,6 +25,9 @@ import {
 } from "../ui/form";
 import { Input } from "../ui/input";
 import { Textarea } from "../ui/textarea";
+import { DateTimePicker } from "@/components/ui/datetime-picker";
+import { format } from "date-fns";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Select,
   SelectContent,
@@ -35,7 +38,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
-import { CheckIcon, ChevronsUpDownIcon, User2 } from "lucide-react";
+import {
+  CheckIcon,
+  ChevronsUpDownIcon,
+  User2,
+  Calendar as CalendarIcon,
+} from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { Button } from "../ui/button";
 import {
@@ -72,6 +80,47 @@ const TicketForm = ({ laneId, subaccountId, getNewTicket }: Props) => {
   const [assignedTo, setAssignedTo] = useState(
     defaultData.ticket?.Assigned?.id || ""
   );
+
+  const [showStartDate, setShowStartDate] = useState(false);
+  const [showDueDate, setShowDueDate] = useState(false);
+  const [startDate, setStartDate] = useState<Date | undefined>(undefined);
+  const [dueDate, setDueDate] = useState<Date | undefined>(undefined);
+
+  const handleStartDateChange = (date: Date | undefined) => {
+    // Update the start date state with the new date
+    setStartDate(date);
+    //date: This is the new start date that is being set, dueDate:  This is the current due date before the start date change.
+    //dueDate < date  This checks if the current due date is earlier than the new start date.
+    if (date && dueDate && dueDate < date) {
+      //If a new start date is provided (date), and there is already a due date (dueDate), we check if the due date is earlier than the new start date.
+      // If the due date is earlier than the new start date, it means that logically, the due date should not be before the start date.Therefore, we adjust the due date to match the new start date.
+      setDueDate(date); //setDueDate to current start date.
+      toast({
+        title: "Date Adjusted",
+        description: "Due date has been adjusted to match the start date.",
+        variant: "default",
+      });
+    }
+  };
+
+  const handleDueDateChange = (date: Date | undefined) => {
+    //date: This is the new due date that is being set.
+    //startDate: This is the current start date.
+    //date < startDate: This checks if the new due date is earlier than the current start date.
+    if (date && startDate && date < startDate) {
+      toast({
+        title: "Invalid Date",
+        description: "Due date cannot be earlier than the start date.",
+        variant: "destructive",
+      });
+      // Exit the function without updating the due date state
+      // This effectively rejects the invalid date selection
+      return;
+    }
+    // If we've reached this point, the new date is either valid or undefined
+    // Update the due date state with the new date
+    setDueDate(date);
+  };
 
   const form = useForm<z.infer<typeof TicketFormSchema>>({
     mode: "onChange",
@@ -128,6 +177,12 @@ const TicketForm = ({ laneId, subaccountId, getNewTicket }: Props) => {
   //submit the form when clicking
   const onSubmit = async (values: z.infer<typeof TicketFormSchema>) => {
     if (!laneId) return;
+
+    // Automatically set the startDate to the current date/time if it is undefined
+    if (showStartDate && !startDate) {
+      setStartDate(new Date()); // Set to current date and time
+    }
+
     try {
       const response = await upsertTicket(
         {
@@ -135,6 +190,11 @@ const TicketForm = ({ laneId, subaccountId, getNewTicket }: Props) => {
           laneId,
           id: defaultData.ticket?.id,
           assignedUserId: assignedTo,
+          startDate:
+            showStartDate && startDate
+              ? startDate.toISOString()
+              : new Date().toISOString(), // Use current time if startDate is still undefined
+          dueDate: showDueDate && dueDate ? dueDate.toISOString() : null, // Convert to ISO string if Date is defined
           ...(contact ? { customerId: contact } : {}),
         },
         tags
@@ -179,7 +239,9 @@ const TicketForm = ({ laneId, subaccountId, getNewTicket }: Props) => {
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-black dark:text-white ">Ticket Name</FormLabel>
+                  <FormLabel className="text-black dark:text-white ">
+                    Ticket Name
+                  </FormLabel>
                   <FormControl>
                     <Input placeholder="Name" {...field} />
                   </FormControl>
@@ -215,6 +277,56 @@ const TicketForm = ({ laneId, subaccountId, getNewTicket }: Props) => {
                 </FormItem>
               )}
             />
+
+            <h3>Date & Time</h3>
+            <div className="!bg-secondary flex flex-col gap-4 rounded-md border border-input px-5 py-4 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50">
+              {/* Checkbox for Start Date */}
+              <div className="flex items-center gap-2">
+                <Checkbox
+                  className="border-[1px] border-[#0c89e3]"
+                  checked={showStartDate}
+                  onCheckedChange={(checked) => {
+                    // Ensure that checked is a boolean
+                    if (typeof checked === "boolean") {
+                      setShowStartDate(checked);
+                    }
+                  }}
+                />
+                <FormLabel>Start Date</FormLabel>
+              </div>
+              {showStartDate && (
+                <DateTimePicker
+                  className="hover:bg-[#002147]"
+                  hourCycle={24} // or 12,
+                  value={startDate}
+                  onChange={handleStartDateChange}
+                />
+              )}
+
+              {/* Checkbox for Due Date */}
+              <div className="flex items-center gap-2">
+                <Checkbox
+                  className="border-[1px] border-[#0c89e3]"
+                  checked={showDueDate}
+                  onCheckedChange={(checked) => {
+                    // Ensure that checked is a boolean
+                    if (typeof checked === "boolean") {
+                      setShowDueDate(checked);
+                    }
+                  }}
+                />
+                <FormLabel>Due Date</FormLabel>
+              </div>
+              {showDueDate && (
+                <DateTimePicker
+                  className="hover:bg-[#002147]"
+                  hourCycle={24} // or 12
+                  value={dueDate}
+                  onChange={handleDueDateChange}
+                />
+              )}
+            </div>
+
             <h3>Add tags</h3>
             <TagCreator
               subAccountId={subaccountId}
