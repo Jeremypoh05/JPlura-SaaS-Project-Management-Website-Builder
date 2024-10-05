@@ -1,4 +1,4 @@
-import React, { Dispatch, SetStateAction, useState } from "react";
+import React, { Dispatch, SetStateAction, useEffect, useState } from "react";
 import { TicketWithTags } from "@/lib/types";
 import { Draggable } from "@hello-pangea/dnd";
 import { AlertDialog } from "@radix-ui/react-alert-dialog";
@@ -49,7 +49,7 @@ import { useRouter } from "next/navigation";
 import { deleteTicket, saveActivityLogsNotification } from "@/lib/queries";
 import { toast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge"; // Ensure you import the Badge component  
+import { Badge } from "@/components/ui/badge"; // Ensure you import the Badge component
 
 type Props = {
   setAllTickets: Dispatch<SetStateAction<TicketWithTags>>;
@@ -57,6 +57,7 @@ type Props = {
   subaccountId: string;
   allTickets: TicketWithTags;
   index: number;
+  triggerConfetti: () => void; 
 };
 
 // Utility function to generate different colors based on name
@@ -81,11 +82,15 @@ const PipelineTicket = ({
   subaccountId,
   allTickets,
   index,
+  triggerConfetti,
+
 }: Props) => {
   const router = useRouter();
   const { setOpen, data } = useModal();
   const [isHovered, setIsHovered] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [timeLeft, setTimeLeft] = useState<string | null>(null); // State for time left
+  const [isOverdue, setIsOverdue] = useState(false); // State for overdue status
 
   // Update a specific ticket in the allTickets array.
   const editNewTicket = (ticket: TicketWithTags[0]) => {
@@ -107,6 +112,7 @@ const PipelineTicket = ({
           getNewTicket={editNewTicket}
           laneId={ticket.laneId}
           subaccountId={subaccountId}
+          triggerConfetti={triggerConfetti} 
         />
       </CustomModal>,
       async () => {
@@ -115,13 +121,15 @@ const PipelineTicket = ({
     );
   };
 
-  // Utility function to safely format the date and include time  
-  const formatDate = (date: Date | null) => { //accepts a parameter date, which can be a Date object or null.
-    if (!date) return 'N/A'; // Handle null case here  
-    return new Intl.DateTimeFormat('en-US', { //Intl.DateTimeFormat, which is a built-in JavaScript object that allows for language-sensitive date and time formatting. (ECMAScript Internationalization API.)
+  // Utility function to safely format the date and include time
+  const formatDate = (date: Date | null) => {
+    //accepts a parameter date, which can be a Date object or null.
+    if (!date) return "N/A"; // Handle null case here
+    return new Intl.DateTimeFormat("en-US", {
+      //Intl.DateTimeFormat, which is a built-in JavaScript object that allows for language-sensitive date and time formatting. (ECMAScript Internationalization API.)
       //English as used in the United States, which affects aspects like date order (MM/DD/YYYY), time format (12-hour clock), and names of months/days.
-      dateStyle: 'medium',
-      timeStyle: 'short', // Include the time in a short format  
+      dateStyle: "medium",
+      timeStyle: "short", // Include the time in a short format
     }).format(date);
   };
 
@@ -139,10 +147,74 @@ const PipelineTicket = ({
   short: A shorter time format (e.g., "2:30 PM").
   */
 
-  // This creates a new Date object representing the current date and time.
-  // Condition: The comparison checks if the due date of the ticket is earlier than the current date and time.
-  //If it is, isOverdue will be true, indicating that the ticket is overdue.
-  const isOverdue = ticket.dueDate && new Date(ticket.dueDate) < new Date();
+  // Function to calculate the time left until due date
+  const calculateTimeLeft = () => {
+    if (ticket.dueDate) {
+      const now = new Date();
+      const dueDate = new Date(ticket.dueDate);
+      const timeDifference = dueDate.getTime() - now.getTime();
+
+      // Log values for debugging
+      // console.log("Current Time:", now);
+      // console.log("Due Date:", dueDate);
+      // console.log("Time Difference:", timeDifference);
+
+      if (timeDifference <= 0) {
+        setIsOverdue(true); // Set overdue state to true
+        setTimeLeft(null); // Clear time left since it's overdue
+      } else {
+        setIsOverdue(false); // Reset overdue state
+
+        const daysLeft = Math.floor(timeDifference / (1000 * 3600 * 24));
+        const hoursLeft = Math.floor(
+          (timeDifference % (1000 * 3600 * 24)) / (1000 * 3600)
+        );
+        const minutesLeft = Math.floor(
+          (timeDifference % (1000 * 3600)) / (1000 * 60)
+        );
+        const secondsLeft = Math.floor((timeDifference % (1000 * 60)) / 1000);
+
+        // Set time left messages
+        if (daysLeft > 0) {
+          setTimeLeft(
+            daysLeft < 3
+              ? `⚠️ ${daysLeft} day${daysLeft !== 1 ? "s" : ""} left`
+              : `${daysLeft} day${daysLeft !== 1 ? "s" : ""} left`
+          );
+        } else if (daysLeft === 0) {
+          // Same day
+          if (hoursLeft > 0) {
+            // If there's at least one hour left, show hours and minutes
+            setTimeLeft(
+              `⚠️ ${hoursLeft} hour${
+                hoursLeft !== 1 ? "s" : ""
+              } and ${minutesLeft} minute${minutesLeft !== 1 ? "s" : ""} left`
+            );
+          } else if (minutesLeft > 0) {
+            // Show minutes and seconds if minutes are left
+            setTimeLeft(
+              `⚠️ ${minutesLeft} minute${
+                minutesLeft !== 1 ? "s" : ""
+              } and ${secondsLeft} second${secondsLeft !== 1 ? "s" : ""} left`
+            );
+          } else if (secondsLeft > 0) {
+            // Only seconds left if there are no minutes
+            setTimeLeft(
+              `⚠️ ${secondsLeft} second${secondsLeft !== 1 ? "s" : ""} left`
+            );
+          }
+        }
+      }
+    } else {
+      setTimeLeft(null); // No due date set
+    }
+  };
+
+  useEffect(() => {
+    calculateTimeLeft(); // Calculate time left on component mount
+    const interval = setInterval(calculateTimeLeft, 60000); // Update every minute
+    return () => clearInterval(interval); // Cleanup on unmount
+  }, [ticket.dueDate]);
 
   // Delete a specific ticket from the allTickets array.
   const handleDeleteTicket = async () => {
@@ -174,7 +246,7 @@ const PipelineTicket = ({
     }
   };
 
-  console.log("all tickets information", ticket)
+  console.log("all tickets information", ticket);
 
   return (
     <Draggable draggableId={ticket.id.toString()} index={index}>
@@ -200,22 +272,41 @@ const PipelineTicket = ({
           >
             <AlertDialog>
               <DropdownMenu>
-                <Card className="my-4 dark:bg-slate-900 bg-white shadow-none transition-all">
+                <Card className="my-4 dark:bg-slate-900 bg-white shadow-none transition-all !w-[260px] ">
+                  {ticket.completed ? (
+                    <div className="flex justify-end p-2 text-xs items-center border-b-2 rounded-sm">
+                      <Badge className="bg-green-700 ml-auto text-center text-zinc-300 flex justify-center items-center w-[100px]">
+                        COMPLETED
+                      </Badge>
+                    </div>
+                  ) : (
+                    (isOverdue || timeLeft) && (
+                      <div className="flex justify-end p-2 text-xs items-center border-b-2 rounded-sm">
+                        {isOverdue ? (
+                          <Badge
+                            variant="destructive"
+                            className="ml-auto text-center text-zinc-300 flex justify-center items-center w-[100px]"
+                          >
+                            OVERDUE
+                          </Badge>
+                        ) : (
+                          timeLeft && <span className="p-1">{timeLeft}</span>
+                        )}
+                      </div>
+                    )
+                  )}
                   <CardHeader className="p-[12px]">
-                    <CardTitle className="flex items-center justify-between">
+                    <CardTitle className="flex items-start justify-between">
                       <span className="text-lg w-full">{ticket.name}</span>
                       <DropdownMenuTrigger>
                         <MoreHorizontalIcon className="text-muted-foreground" />
                       </DropdownMenuTrigger>
                     </CardTitle>
                     <span className="text-muted-foreground text-xs">
-                      {`${formatDate(ticket.startDate)} - ${formatDate(ticket.dueDate)}`}
+                      {`${formatDate(ticket.startDate)} - ${formatDate(
+                        ticket.dueDate
+                      )}`}
                     </span>
-                    {isOverdue && (
-                      <Badge color="destructive" className="mt-1">
-                        Overdue
-                      </Badge>
-                    )}
 
                     <div className="flex items-center flex-wrap gap-2">
                       {ticket.Tags.map((tag) => (
@@ -284,8 +375,8 @@ const PipelineTicket = ({
                           className={
                             ticket.assignedUserId
                               ? getAvatarColor(
-                                ticket.Assigned?.name || "Assigned User"
-                              )
+                                  ticket.Assigned?.name || "Assigned User"
+                                )
                               : "bg-primary"
                           }
                         >

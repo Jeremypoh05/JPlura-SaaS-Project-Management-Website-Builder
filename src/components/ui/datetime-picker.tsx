@@ -3,7 +3,7 @@ import type { CalendarProps } from '@/components/ui/calendar';
 import { Input } from '@/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
-import { add, format } from 'date-fns';
+import { add, format, isToday, startOfToday } from 'date-fns';
 import { Locale } from 'date-fns';
 import { enUS } from 'date-fns/locale';
 import { Calendar as CalendarIcon, ChevronLeft, ChevronRight } from 'lucide-react';
@@ -677,9 +677,8 @@ const DateTimePicker = React.forwardRef<Partial<DateTimePickerRef>, DateTimePick
                 setMonth(newDay);
                 return;
             }
-            const diff = newDay.getTime() - value.getTime();
-            const diffInDays = diff / (1000 * 60 * 60 * 24);
-            const newDateFull = add(value, { days: Math.ceil(diffInDays) });
+            const newDateFull = new Date(newDay);
+            newDateFull.setHours(value.getHours(), value.getMinutes(), value.getSeconds());
             onChange?.(newDateFull);
             setMonth(newDateFull);
         };
@@ -712,6 +711,10 @@ const DateTimePicker = React.forwardRef<Partial<DateTimePickerRef>, DateTimePick
                 formatLong,
             };
         }
+        
+        const disablePastDates = (date: Date) => {
+            return date < startOfToday() && !isToday(date);
+        };
 
         return (
             <Popover>
@@ -742,6 +745,7 @@ const DateTimePicker = React.forwardRef<Partial<DateTimePickerRef>, DateTimePick
                         month={month}
                         onSelect={(d) => handleSelect(d)}
                         onMonthChange={handleSelect}
+                        disabled={disablePastDates}
                         yearRange={yearRange}
                         locale={locale}
                         {...props}

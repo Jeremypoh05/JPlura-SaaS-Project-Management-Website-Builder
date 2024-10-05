@@ -14,6 +14,9 @@ import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import { DragDropContext, DropResult, Droppable } from "@hello-pangea/dnd";
 import PipelineLane from "./pipeline-lane";
+import dynamic from 'next/dynamic';
+
+const ParticlesComponent = dynamic(() => import('@/particlesConfig.mjs'), { ssr: false });
 
 type Props = {
   lanes: LaneDetail[];
@@ -36,11 +39,26 @@ const PipelineView = ({
   const { setOpen } = useModal();
   const router = useRouter();
   const [allLanes, setAllLanes] = useState<LaneDetail[]>([]); //basically have the LaneDetail array
+  const [showParticles, setShowParticles] = useState(false);
+  const [scrollPosition, setScrollPosition] = useState(0);
 
   //when it loads, set all the lanes
   useEffect(() => {
     setAllLanes(lanes);
   }, [lanes]);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrollPosition(window.scrollY); // Track scroll position  
+    };
+
+    window.addEventListener("scroll", handleScroll);
+
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+    };
+  }, []);
+
 
   const ticketsFromAllLanes: TicketAndTags[] = [];
   //populates it with all the tickets from each lane in the lanes array.
@@ -123,8 +141,8 @@ const PipelineView = ({
             });
           originLane.Tickets = newOrderedTickets;
           setAllLanes(newLanes);
-           updateTicketsOrder(newOrderedTickets); //update the server as well
-           router.refresh();
+          updateTicketsOrder(newOrderedTickets); //update the server as well
+          router.refresh();
         } else {
           const [currentTicket] = originLane.Tickets.splice(source.index, 1)
 
@@ -137,7 +155,7 @@ const PipelineView = ({
             laneId: destination.droppableId,
           })
 
-          
+
           destinationLane.Tickets.forEach((ticket, idx) => {
             ticket.order = idx
           })
@@ -153,8 +171,14 @@ const PipelineView = ({
     }
   };
 
+  const triggerConfetti = () => {
+    setShowParticles(true);
+    setTimeout(() => setShowParticles(false), 7000); // Hide after 5 seconds
+  };
+
   return (
     <DragDropContext onDragEnd={onDragEnd}>
+      {showParticles && <ParticlesComponent id="particles" scrollPosition={scrollPosition} />}
       <div className="bg-white/60 dark:bg-background/60 rounded-xl p-4 use-automation-zoom-in">
         <div className="flex items-center justify-between">
           <h1 className="text-2xl">{pipelineDetails?.name}</h1>
@@ -187,6 +211,7 @@ const PipelineView = ({
                     laneDetails={lane}
                     index={index}
                     key={lane.id}
+                    triggerConfetti={triggerConfetti} // Pass function down here  
                   />
                 ))}
                 {provided.placeholder}

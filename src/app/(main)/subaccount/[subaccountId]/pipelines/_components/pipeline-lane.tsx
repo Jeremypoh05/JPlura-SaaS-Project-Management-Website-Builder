@@ -41,6 +41,7 @@ interface PipelaneLaneProps {
   laneDetails: LaneDetail;
   subaccountId: string;
   index: number;
+  triggerConfetti: () => void;
 }
 
 const PipelineLane: React.FC<PipelaneLaneProps> = ({
@@ -51,6 +52,7 @@ const PipelineLane: React.FC<PipelaneLaneProps> = ({
   subaccountId,
   allTickets,
   index,
+  triggerConfetti,
 }) => {
   const { setOpen } = useModal();
   const router = useRouter();
@@ -87,6 +89,7 @@ const PipelineLane: React.FC<PipelaneLaneProps> = ({
           getNewTicket={addNewTicket}
           laneId={laneDetails.id}
           subaccountId={subaccountId}
+          triggerConfetti={triggerConfetti}
         />
       </CustomModal>
     );
@@ -146,12 +149,12 @@ const PipelineLane: React.FC<PipelaneLaneProps> = ({
           >
             <AlertDialog>
               <DropdownMenu>
-                <div className="bg-slate-200/30 dark:bg-background/20 h-[700px] w-[300px] px-4 relative rounded-lg overflow-auto flex-shrink-0 ">
+                <div className="bg-slate-200/30 dark:bg-background/20 h-[800px] w-[335px] px-4 relative rounded-xl !overflow-auto flex-shrink-0 mr-1">
                   <div
                     {...provided.dragHandleProps}
                     className=" h-14 backdrop-blur-lg dark:bg-background/40 bg-slate-200/60  absolute top-0 left-0 right-0 z-10 "
                   >
-                    <div className="h-full flex items-center p-4 justify-between cursor-grab border-b-[1px] ">
+                    <div className="h-full flex items-center p-4 justify-between cursor-grab border-b-[1px]">
                       {/* {laneDetails.order} */}
                       <div className="flex items-center w-full gap-2">
                         <div
@@ -180,11 +183,11 @@ const PipelineLane: React.FC<PipelaneLaneProps> = ({
                     type="ticket"
                   >
                     {(provided) => (
-                      <div className="max-h-[700px] overflow-auto pt-12 ">
+                      <div className="max-h-[1000px] overflow-auto pt-12 ">
                         <div
                           {...provided.droppableProps}
                           ref={provided.innerRef}
-                          className="mt-2"
+                          className="mt-2 flex flex-col justify-center items-center"
                         >
                           {tickets.map((ticket, index) => (
                             <PipelineTicket
@@ -194,6 +197,7 @@ const PipelineLane: React.FC<PipelaneLaneProps> = ({
                               ticket={ticket}
                               key={ticket.id.toString()}
                               index={index}
+                              triggerConfetti={triggerConfetti}
                             />
                           ))}
                           {provided.placeholder}
