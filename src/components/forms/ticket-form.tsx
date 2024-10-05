@@ -62,9 +62,10 @@ type Props = {
   subaccountId: string;
   //the TicketForm component expects to receive a getNewTicket function that takes one argument, ticket, which is of type TicketWithTags[0], and returns a value of type void.
   getNewTicket: (ticket: TicketWithTags[0]) => void;
+  triggerConfetti: () => void;
 };
 
-const TicketForm = ({ laneId, subaccountId, getNewTicket }: Props) => {
+const TicketForm = ({ laneId, subaccountId, getNewTicket, triggerConfetti }: Props) => {
   const { data: defaultData, setClose } = useModal();
   const router = useRouter();
   const [tags, setTags] = useState<Tag[]>([]);
@@ -81,10 +82,14 @@ const TicketForm = ({ laneId, subaccountId, getNewTicket }: Props) => {
     defaultData.ticket?.Assigned?.id || ""
   );
 
+  //for date-time and status
   const [showStartDate, setShowStartDate] = useState(false);
   const [showDueDate, setShowDueDate] = useState(false);
   const [startDate, setStartDate] = useState<Date | undefined>(undefined);
   const [dueDate, setDueDate] = useState<Date | undefined>(undefined);
+  const [completed, setCompleted] = useState(
+    defaultData.ticket?.completed || false
+  );
 
   const handleStartDateChange = (date: Date | undefined) => {
     // Update the start date state with the new date
@@ -155,6 +160,22 @@ const TicketForm = ({ laneId, subaccountId, getNewTicket }: Props) => {
         description: defaultData.ticket?.description || "",
         value: String(defaultData.ticket?.value || 0),
       });
+      // Set start and due dates if they exist
+      setStartDate(
+        defaultData.ticket.startDate
+          ? new Date(defaultData.ticket.startDate)
+          : undefined
+      );
+      setDueDate(
+        defaultData.ticket.dueDate
+          ? new Date(defaultData.ticket.dueDate)
+          : undefined
+      );
+
+      // Set the checkboxes based on whether the dates are set
+      setShowStartDate(!!defaultData.ticket.startDate);
+      setShowDueDate(!!defaultData.ticket.dueDate);
+
       //stripe thing
       //If the ticket has a customerId, sets the contact state with the customerId.
       if (defaultData.ticket.customerId)
@@ -179,9 +200,38 @@ const TicketForm = ({ laneId, subaccountId, getNewTicket }: Props) => {
     if (!laneId) return;
 
     // Automatically set the startDate to the current date/time if it is undefined
-    if (showStartDate && !startDate) {
-      setStartDate(new Date()); // Set to current date and time
-    }
+    // if (showStartDate && !startDate) {
+    //   setStartDate(new Date()); // Set to current date and time
+    // }
+
+    //If defaultData.ticket is defined (i.e., it exists), ticketExists will be true.
+    //If it’s not defined, ticketExists will be false.
+    const ticketExists = defaultData.ticket !== undefined;
+
+    // Automatically set the startDate to the current date/time if it is undefined
+    const currentDate = new Date(); // Get the current date and time
+
+    // Set final dates based on checkbox state and existing values
+    const finalStartDate = showStartDate
+      ? startDate
+      : ticketExists && defaultData.ticket?.startDate
+      ? new Date(defaultData.ticket?.startDate)
+      : currentDate; // Use current date if no start date is selected
+    /*
+     Condition 1: showStartDate
+      If showStartDate is true, it means the user has checked the checkbox to indicate they want to set a start date. In this case, finalStartDate is set to the current value of startDate.
+      Condition 2: ticketExists && defaultData.ticket?.startDate
+      If showStartDate is false, it checks if the ticket exists (ticketExists is true) and if defaultData.ticket.startDate is defined (not undefined).
+      If both conditions are true, it creates a new Date object from defaultData.ticket.startDate, ensuring that the stored start date is used.
+      Condition 3: If neither of the above conditions is satisfied, it defaults to currentDate.
+      This means if the user has not checked the start date checkbox and there is no existing start date, it will use the current date and time.
+     */
+
+    const finalDueDate = showDueDate
+      ? dueDate
+      : ticketExists && defaultData.ticket?.dueDate
+      ? new Date(defaultData.ticket?.dueDate)
+      : null; // Use existing date or null if it doesn't exist
 
     try {
       const response = await upsertTicket(
@@ -190,11 +240,9 @@ const TicketForm = ({ laneId, subaccountId, getNewTicket }: Props) => {
           laneId,
           id: defaultData.ticket?.id,
           assignedUserId: assignedTo,
-          startDate:
-            showStartDate && startDate
-              ? startDate.toISOString()
-              : new Date().toISOString(), // Use current time if startDate is still undefined
-          dueDate: showDueDate && dueDate ? dueDate.toISOString() : null, // Convert to ISO string if Date is defined
+          startDate: finalStartDate ? finalStartDate.toISOString() : null,
+          dueDate: finalDueDate ? finalDueDate.toISOString() : null,
+          completed: completed,
           ...(contact ? { customerId: contact } : {}),
         },
         tags
@@ -205,6 +253,10 @@ const TicketForm = ({ laneId, subaccountId, getNewTicket }: Props) => {
         description: `Updated a ticket | ${response?.name}`,
         subaccountId,
       });
+      // Call triggerConfetti if the ticket is marked as completed  
+      if (completed) {
+        triggerConfetti();
+      }  
 
       toast({
         title: "Success",
@@ -279,7 +331,33 @@ const TicketForm = ({ laneId, subaccountId, getNewTicket }: Props) => {
             />
 
             <h3>Date & Time</h3>
-            <div className="!bg-secondary flex flex-col gap-4 rounded-md border border-input px-5 py-4 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50">
+            <div className="!bg-secondary flex flex-col gap-4 rounded-md border border-input px-5 pb-4 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50">
+              <div
+                className={`flex items-center justify-end gap-2 mt-4 border-2 rounded-md ml-auto w-[170px] p-2 ${
+                  completed ? "border-green-500" : "border-rose-500"
+                }`}
+              >
+                <Checkbox
+                  id="completed"
+                  className={`${
+                    completed ? "border-green-500" : "border-rose-500"
+                  }`}
+                  checked={completed}
+                  onCheckedChange={(checked) => {
+                    if (typeof checked === "boolean") {
+                      setCompleted(checked);
+                    }
+                  }}
+                />
+                <FormLabel
+                  className={`mt-[2px] ${
+                    completed ? "text-white" : "text-muted-foreground"
+                  }`}
+                  htmlFor="completed"
+                >
+                  Mark as Completed
+                </FormLabel>
+              </div>
               {/* Checkbox for Start Date */}
               <div className="flex items-center gap-2">
                 <Checkbox

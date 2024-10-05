@@ -39,12 +39,12 @@ const SubaccountItem = ({ subaccount, onDelete }: SubaccountItemProps) => {
         className="flex gap-4 w-full h-full"
         onClick={handleItemClick}
       >
-        <div className="relative w-32 overflow-hidden">
+        <div className="relative w-36 overflow-hidden">
           <Image
             src={subaccount.subAccountLogo}
             alt="subaccount logo"
             fill
-            className="rounded-md object-contain bg-muted/50 p-4 transition-transform duration-300 ease-in-out transform hover:scale-150"
+            className="rounded-md pb-1 object-contain bg-muted/50 transition-transform duration-300 ease-in-out transform hover:scale-125"
           />
         </div>
         <div className="flex flex-col justify-between">

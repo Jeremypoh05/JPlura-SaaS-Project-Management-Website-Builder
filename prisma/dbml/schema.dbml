@@ -127,6 +127,7 @@ Table Ticket {
   Assigned User
   startDate DateTime
   dueDate DateTime
+  completed Boolean [not null, default: false]
 }
 
 Table Contact {

@@ -199,6 +199,8 @@ model Ticket {
 
   startDate      DateTime?  
   dueDate        DateTime?  
+  completed Boolean @default(false)
+
   @@index([laneId])
   @@index([customerId])
   @@index([assignedUserId])
