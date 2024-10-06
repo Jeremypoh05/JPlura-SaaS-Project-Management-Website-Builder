@@ -20,16 +20,13 @@ import {
 import { useForm } from "react-hook-form";
 import { Funnel, Lane, Pipeline } from "@prisma/client";
 import { Input } from "../ui/input";
-
 import { Button } from "../ui/button";
 import Loading from "../global/loading";
 import { LaneFormSchema } from "@/lib/types";
 import {
   getPipelineDetails,
   saveActivityLogsNotification,
-  upsertFunnel,
   upsertLane,
-  upsertPipeline,
 } from "@/lib/queries";
 import { v4 } from "uuid";
 import { toast } from "../ui/use-toast";

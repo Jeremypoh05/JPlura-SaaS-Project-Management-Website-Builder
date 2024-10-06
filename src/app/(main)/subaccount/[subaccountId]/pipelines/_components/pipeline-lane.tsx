@@ -42,6 +42,7 @@ interface PipelaneLaneProps {
   subaccountId: string;
   index: number;
   triggerConfetti: () => void;
+  warningThreshold?: number | null;
 }
 
 const PipelineLane: React.FC<PipelaneLaneProps> = ({
@@ -53,6 +54,7 @@ const PipelineLane: React.FC<PipelaneLaneProps> = ({
   allTickets,
   index,
   triggerConfetti,
+  warningThreshold,
 }) => {
   const { setOpen } = useModal();
   const router = useRouter();
@@ -198,6 +200,7 @@ const PipelineLane: React.FC<PipelaneLaneProps> = ({
                               key={ticket.id.toString()}
                               index={index}
                               triggerConfetti={triggerConfetti}
+                              warningThreshold={warningThreshold}
                             />
                           ))}
                           {provided.placeholder}

@@ -97,6 +97,7 @@ Table Pipeline {
   Lane Lane [not null]
   SubAccount SubAccount [not null]
   subAccountId String [not null]
+  warningThreshold Int
 }
 
 Table Lane {

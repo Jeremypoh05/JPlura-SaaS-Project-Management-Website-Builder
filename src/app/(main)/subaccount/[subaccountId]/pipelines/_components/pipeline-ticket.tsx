@@ -18,6 +18,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import {
+  Clock2,
   Contact2,
   Edit,
   LinkIcon,
@@ -46,7 +47,11 @@ import CustomModal from "@/components/global/custom-modal";
 import TicketForm from "@/components/forms/ticket-form";
 import { useModal } from "@/providers/modal-provider";
 import { useRouter } from "next/navigation";
-import { deleteTicket, saveActivityLogsNotification } from "@/lib/queries";
+import {
+  deleteTicket,
+  getPipelineDetails,
+  saveActivityLogsNotification,
+} from "@/lib/queries";
 import { toast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge"; // Ensure you import the Badge component
@@ -57,7 +62,8 @@ type Props = {
   subaccountId: string;
   allTickets: TicketWithTags;
   index: number;
-  triggerConfetti: () => void; 
+  triggerConfetti: () => void;
+  warningThreshold: number | null | undefined;
 };
 
 // Utility function to generate different colors based on name
@@ -83,7 +89,7 @@ const PipelineTicket = ({
   allTickets,
   index,
   triggerConfetti,
-
+  warningThreshold,
 }: Props) => {
   const router = useRouter();
   const { setOpen, data } = useModal();
@@ -91,6 +97,9 @@ const PipelineTicket = ({
   const [deleting, setDeleting] = useState(false);
   const [timeLeft, setTimeLeft] = useState<string | null>(null); // State for time left
   const [isOverdue, setIsOverdue] = useState(false); // State for overdue status
+  const [daysLeft, setDaysLeft] = useState<number | null>(null);
+  const [effectiveWarningThreshold, setEffectiveWarningThreshold] =
+    useState<number>(3); // Default warning threshold
 
   // Update a specific ticket in the allTickets array.
   const editNewTicket = (ticket: TicketWithTags[0]) => {
@@ -112,7 +121,7 @@ const PipelineTicket = ({
           getNewTicket={editNewTicket}
           laneId={ticket.laneId}
           subaccountId={subaccountId}
-          triggerConfetti={triggerConfetti} 
+          triggerConfetti={triggerConfetti}
         />
       </CustomModal>,
       async () => {
@@ -132,7 +141,6 @@ const PipelineTicket = ({
       timeStyle: "short", // Include the time in a short format
     }).format(date);
   };
-
   /* 
   Date Styles:
   full: The date, including the day of the week (e.g., "Monday, September 25, 2024").
@@ -162,9 +170,9 @@ const PipelineTicket = ({
       if (timeDifference <= 0) {
         setIsOverdue(true); // Set overdue state to true
         setTimeLeft(null); // Clear time left since it's overdue
+        setDaysLeft(0); // Set days left to 0 if overdue
       } else {
         setIsOverdue(false); // Reset overdue state
-
         const daysLeft = Math.floor(timeDifference / (1000 * 3600 * 24));
         const hoursLeft = Math.floor(
           (timeDifference % (1000 * 3600 * 24)) / (1000 * 3600)
@@ -173,11 +181,13 @@ const PipelineTicket = ({
           (timeDifference % (1000 * 3600)) / (1000 * 60)
         );
         const secondsLeft = Math.floor((timeDifference % (1000 * 60)) / 1000);
-
+        setDaysLeft(daysLeft); // Set the days left state
+        console.log("Effective Warning Threshold:", effectiveWarningThreshold);
+        console.log("Days Left:", daysLeft);
         // Set time left messages
         if (daysLeft > 0) {
           setTimeLeft(
-            daysLeft < 3
+            daysLeft <= effectiveWarningThreshold
               ? `⚠️ ${daysLeft} day${daysLeft !== 1 ? "s" : ""} left`
               : `${daysLeft} day${daysLeft !== 1 ? "s" : ""} left`
           );
@@ -209,6 +219,12 @@ const PipelineTicket = ({
       setTimeLeft(null); // No due date set
     }
   };
+
+  useEffect(() => {
+    if (warningThreshold) {
+      setEffectiveWarningThreshold(warningThreshold);
+    }
+  }, [warningThreshold]);
 
   useEffect(() => {
     calculateTimeLeft(); // Calculate time left on component mount
@@ -272,7 +288,16 @@ const PipelineTicket = ({
           >
             <AlertDialog>
               <DropdownMenu>
-                <Card className="my-4 dark:bg-slate-900 bg-white shadow-none transition-all !w-[260px] ">
+                <Card
+                  className={`my-4 dark:bg-slate-900 bg-white shadow-none transition-all !w-[260px] ${
+                    daysLeft !== null &&
+                    daysLeft <= effectiveWarningThreshold &&
+                    !isOverdue &&
+                    !ticket.completed
+                      ? "border-2 border-yellow-500"
+                      : ""
+                  }`}
+                >
                   {ticket.completed ? (
                     <div className="flex justify-end p-2 text-xs items-center border-b-2 rounded-sm">
                       <Badge className="bg-green-700 ml-auto text-center text-zinc-300 flex justify-center items-center w-[100px]">
@@ -302,13 +327,16 @@ const PipelineTicket = ({
                         <MoreHorizontalIcon className="text-muted-foreground" />
                       </DropdownMenuTrigger>
                     </CardTitle>
-                    <span className="text-muted-foreground text-xs">
-                      {`${formatDate(ticket.startDate)} - ${formatDate(
-                        ticket.dueDate
-                      )}`}
-                    </span>
-
-                    <div className="flex items-center flex-wrap gap-2">
+                    <div className="flex items-center bg-[#1f845a] gap-2 border-green-800 border-2 rounded-lg p-1">
+                      <Clock2 className="text-black "/>
+                      <span className="text-black text-xs">
+                        {`${formatDate(ticket.startDate)} - ${formatDate(
+                          ticket.dueDate
+                        )}`}
+                      </span>
+                    </div>
+                   
+                    <div className="!mt-4 flex items-center flex-wrap gap-2">
                       {ticket.Tags.map((tag) => (
                         <TagComponent
                           key={tag.id}

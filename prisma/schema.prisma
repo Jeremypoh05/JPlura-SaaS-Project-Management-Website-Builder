@@ -162,6 +162,7 @@ model Pipeline {
   Lane         Lane[]
   SubAccount   SubAccount @relation(fields: [subAccountId], references: [id], onDelete: Cascade)
   subAccountId String
+  warningThreshold  Int?  //to store days left threshold
 
   @@index([subAccountId])
 }

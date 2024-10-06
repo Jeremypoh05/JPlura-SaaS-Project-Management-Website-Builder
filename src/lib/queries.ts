@@ -641,6 +641,20 @@ export const upsertPipeline = async (
   return response;
 };
 
+export const upsertAutomationConfig = async (automation: {
+  pipelineId: string;
+  warningThreshold: number;
+}) => {
+  const response = await db.pipeline.update({
+    where: { id: automation.pipelineId },
+    data: {
+      warningThreshold: automation.warningThreshold,  // updating warningThreshold field in Pipeline model
+    },
+  });
+
+  return response;
+};
+
 export const deletePipeline = async (pipelineId: string) => {
   const response = await db.pipeline.delete({
     where: { id: pipelineId },

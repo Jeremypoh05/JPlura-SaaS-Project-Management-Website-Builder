@@ -166,9 +166,10 @@ export type PipelineDetailsWithLanesCardsTagsTickets = Prisma.PromiseReturnType<
 >;
 
 export const LaneFormSchema = z.object({
-  name: z.string().min(1),
+  name: z.string().min(1, "Lane name is required"),
 });
 
+  
 export type TicketWithTags = Prisma.PromiseReturnType<
   typeof getTicketsWithTags
 >;

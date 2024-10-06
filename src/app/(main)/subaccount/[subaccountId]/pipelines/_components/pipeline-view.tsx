@@ -9,14 +9,17 @@ import {
 } from "@/lib/types";
 import { useModal } from "@/providers/modal-provider";
 import { Lane, Ticket } from "@prisma/client";
-import { Flag, Plus } from "lucide-react";
+import { Filter, Flag, PlusCircle, PlusCircleIcon, Workflow } from "lucide-react";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import { DragDropContext, DropResult, Droppable } from "@hello-pangea/dnd";
 import PipelineLane from "./pipeline-lane";
-import dynamic from 'next/dynamic';
+import dynamic from "next/dynamic";
+import AutomationForm from "@/components/forms/automation-form";
 
-const ParticlesComponent = dynamic(() => import('@/particlesConfig.mjs'), { ssr: false });
+const ParticlesComponent = dynamic(() => import("@/particlesConfig.mjs"), {
+  ssr: false,
+});
 
 type Props = {
   lanes: LaneDetail[];
@@ -49,7 +52,7 @@ const PipelineView = ({
 
   useEffect(() => {
     const handleScroll = () => {
-      setScrollPosition(window.scrollY); // Track scroll position  
+      setScrollPosition(window.scrollY); // Track scroll position
     };
 
     window.addEventListener("scroll", handleScroll);
@@ -58,7 +61,6 @@ const PipelineView = ({
       window.removeEventListener("scroll", handleScroll);
     };
   }, []);
-
 
   const ticketsFromAllLanes: TicketAndTags[] = [];
   //populates it with all the tickets from each lane in the lanes array.
@@ -74,6 +76,8 @@ const PipelineView = ({
   //The ticketsFromAllLanes array is used to display all the tickets across all the lanes, and the allTickets state variable is used to keep track of the current state of the tickets array, so that any updates to the tickets can be reflected in the UI.
   const [allTickets, setAllTickets] = useState(ticketsFromAllLanes);
 
+  console.log("All tickets", allTickets);
+
   const handleAddLane = () => {
     setOpen(
       <CustomModal
@@ -81,6 +85,20 @@ const PipelineView = ({
         subHeading="Lanes allow you to group tickets"
       >
         <LaneForm pipelineId={pipelineId} />
+      </CustomModal>
+    );
+  };
+
+  const handleAutomation = () => {
+    setOpen(
+      <CustomModal
+        title=" Automation"
+        subHeading="Customize Your Configuration"
+      >
+        <AutomationForm
+          pipelineId={pipelineId}
+          warningThreshold={pipelineDetails?.warningThreshold ?? undefined} // Example: passing warning threshold if it's part of the pipeline details
+        />
       </CustomModal>
     );
   };
@@ -144,28 +162,28 @@ const PipelineView = ({
           updateTicketsOrder(newOrderedTickets); //update the server as well
           router.refresh();
         } else {
-          const [currentTicket] = originLane.Tickets.splice(source.index, 1)
+          const [currentTicket] = originLane.Tickets.splice(source.index, 1);
 
           originLane.Tickets.forEach((ticket, idx) => {
-            ticket.order = idx
-          })
+            ticket.order = idx;
+          });
 
           destinationLane.Tickets.splice(destination.index, 0, {
             ...currentTicket,
             laneId: destination.droppableId,
-          })
-
+          });
 
           destinationLane.Tickets.forEach((ticket, idx) => {
-            ticket.order = idx
-          })
+            ticket.order = idx;
+          });
 
-          setAllLanes(newLanes)
-          updateTicketsOrder([ //update the database
+          setAllLanes(newLanes);
+          updateTicketsOrder([
+            //update the database
             ...destinationLane.Tickets,
             ...originLane.Tickets,
-          ])
-          router.refresh()
+          ]);
+          router.refresh();
         }
       }
     }
@@ -178,15 +196,31 @@ const PipelineView = ({
 
   return (
     <DragDropContext onDragEnd={onDragEnd}>
-      {showParticles && <ParticlesComponent id="particles" scrollPosition={scrollPosition} />}
+      {showParticles && (
+        <ParticlesComponent id="particles" scrollPosition={scrollPosition} />
+      )}
       <div className="bg-white/60 dark:bg-background/60 rounded-xl p-4 use-automation-zoom-in">
         <div className="flex items-center justify-between">
           <h1 className="text-2xl">{pipelineDetails?.name}</h1>
-          <Button className="flex items-center gap-4" onClick={handleAddLane}>
-            <Plus size={15} />
-            Create Lane
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button className="flex gap-2 items-center" onClick={handleAddLane}>
+              <PlusCircleIcon size={15} />
+              Create Lane
+            </Button>
+            <Button
+              className="flex gap-2 items-center bg-slate-800 hover:bg-slate-900"
+              onClick={handleAutomation}
+            >
+              <Workflow size={15} />
+              Automation
+            </Button>
+            <Button className="flex gap-2 items-center bg-zinc-600 hover:bg-zinc-700" onClick={() => {}}>
+              <Filter size={15} />
+              Filter
+            </Button>
+          </div>
         </div>
+
         {/*from react-beautiful-dnd */}
         <Droppable
           droppableId="lanes"
@@ -211,7 +245,8 @@ const PipelineView = ({
                     laneDetails={lane}
                     index={index}
                     key={lane.id}
-                    triggerConfetti={triggerConfetti} // Pass function down here  
+                    triggerConfetti={triggerConfetti}
+                    warningThreshold={pipelineDetails?.warningThreshold}
                   />
                 ))}
                 {provided.placeholder}

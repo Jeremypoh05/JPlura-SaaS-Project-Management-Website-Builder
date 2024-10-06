@@ -52,6 +52,7 @@ const TagCreator = ({
   const router = useRouter();
   const [value, setValue] = useState(""); //what users looking for
   const [selectedColor, setSelectedColor] = useState("");
+  const [tagToDelete, setTagToDelete] = useState<string | null>(null); // New state to hold the tag ID for deletion confirmation  
 
   useEffect(() => {
     getSelectedTags(selectedTags);
@@ -129,29 +130,34 @@ const TagCreator = ({
     }
   };
 
-  const handleDeleteTag = async (tagId: string) => {
-    setTags(tags.filter((tag) => tag.id !== tagId));
-    try {
-      const response = await deleteTag(tagId);
-      toast({
-        title: "Deleted tag",
-        description: "The tag is deleted from your subaccount.",
-      });
+  const handleConfirmDelete = async () => {
+    if (tagToDelete) {
+      console.log("Attempting to delete tag with ID:", tagToDelete); 
+      setTags((prevTags) => prevTags.filter((tag) => tag.id !== tagToDelete)); // Update tags state  
+      try {
+        const response = await deleteTag(tagToDelete); // Use tagToDelete  
+        toast({
+          title: "Deleted tag",
+          description: "The tag is deleted from your subaccount.",
+        });
 
-      await saveActivityLogsNotification({
-        agencyId: undefined,
-        description: `Deleted a tag | ${response?.name}`,
-        subaccountId: subAccountId,
-      });
+        await saveActivityLogsNotification({
+          agencyId: undefined,
+          description: `Deleted a tag | ${response?.name}`,
+          subaccountId: subAccountId,
+        });
 
-      router.refresh();
-    } catch (error) {
-      toast({
-        variant: "destructive",
-        title: "Could not delete tag",
-      });
+        router.refresh();
+      } catch (error) {
+        toast({
+          variant: "destructive",
+          title: "Could not delete tag",
+        });
+      } finally {
+        setTagToDelete(null); // Reset after operation  
+      }
     }
-  };
+  };  
 
   return (
     <AlertDialog>
@@ -211,6 +217,7 @@ const TagCreator = ({
                   <TrashIcon
                     size={16}
                     className="cursor-pointer text-muted-foreground hover:text-rose-400  transition-all"
+                    onClick={() => setTagToDelete(tag.id)} // Set the tag to delete on icon click 
                   />
                 </AlertDialogTrigger>
                 <AlertDialogContent>
@@ -227,7 +234,7 @@ const TagCreator = ({
                     <AlertDialogCancel>Cancel</AlertDialogCancel>
                     <AlertDialogAction
                       className="bg-destructive hover:bg-red-600"
-                      onClick={() => handleDeleteTag(tag.id)}
+                      onClick={handleConfirmDelete}  
                     >
                       Delete Tag
                     </AlertDialogAction>
