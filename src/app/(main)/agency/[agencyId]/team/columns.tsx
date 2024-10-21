@@ -265,11 +265,11 @@ const CellActions: React.FC<CellActionsProps> = ({ rowData }) => {
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle className="text-left">
-            Are you absolutely sure? // Confirmation title
+            Are you absolutely sure? 
           </AlertDialogTitle>
           <AlertDialogDescription className="text-left">
             This action cannot be undone. This will permanently delete the user
-            and related data. // Confirmation message
+            and related data. 
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter className="flex items-center">
@@ -289,7 +289,7 @@ const CellActions: React.FC<CellActionsProps> = ({ rowData }) => {
               router.refresh(); // Refresh the router to update the UI  
             }}
           >
-            Delete // Delete action button
+            Delete
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

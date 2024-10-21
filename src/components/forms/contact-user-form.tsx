@@ -70,7 +70,7 @@ const ContactUserForm: React.FC<ContactUserFormProps> = ({ subaccountId }) => {
       });
       toast({
         title: "Success",
-        description: "Saved funnel details",
+        description: "Saved contacts details",
       });
       setClose();
       router.refresh();

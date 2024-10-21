@@ -182,8 +182,8 @@ const PipelineTicket = ({
         );
         const secondsLeft = Math.floor((timeDifference % (1000 * 60)) / 1000);
         setDaysLeft(daysLeft); // Set the days left state
-        console.log("Effective Warning Threshold:", effectiveWarningThreshold);
-        console.log("Days Left:", daysLeft);
+        // console.log("Effective Warning Threshold:", effectiveWarningThreshold);
+        // console.log("Days Left:", daysLeft);
         // Set time left messages
         if (daysLeft > 0) {
           setTimeLeft(
@@ -196,15 +196,13 @@ const PipelineTicket = ({
           if (hoursLeft > 0) {
             // If there's at least one hour left, show hours and minutes
             setTimeLeft(
-              `⚠️ ${hoursLeft} hour${
-                hoursLeft !== 1 ? "s" : ""
+              `⚠️ ${hoursLeft} hour${hoursLeft !== 1 ? "s" : ""
               } and ${minutesLeft} minute${minutesLeft !== 1 ? "s" : ""} left`
             );
           } else if (minutesLeft > 0) {
             // Show minutes and seconds if minutes are left
             setTimeLeft(
-              `⚠️ ${minutesLeft} minute${
-                minutesLeft !== 1 ? "s" : ""
+              `⚠️ ${minutesLeft} minute${minutesLeft !== 1 ? "s" : ""
               } and ${secondsLeft} second${secondsLeft !== 1 ? "s" : ""} left`
             );
           } else if (secondsLeft > 0) {
@@ -262,7 +260,7 @@ const PipelineTicket = ({
     }
   };
 
-  console.log("all tickets information", ticket);
+  // console.log("all tickets information", ticket);
 
   return (
     <Draggable draggableId={ticket.id.toString()} index={index}>
@@ -289,14 +287,13 @@ const PipelineTicket = ({
             <AlertDialog>
               <DropdownMenu>
                 <Card
-                  className={`my-4 dark:bg-slate-900 bg-white shadow-none transition-all !w-[260px] ${
-                    daysLeft !== null &&
-                    daysLeft <= effectiveWarningThreshold &&
-                    !isOverdue &&
-                    !ticket.completed
+                  className={`my-4 dark:bg-slate-900 bg-white shadow-none transition-all !w-[260px] ${daysLeft !== null &&
+                      daysLeft <= effectiveWarningThreshold &&
+                      !isOverdue &&
+                      !ticket.completed
                       ? "border-2 border-yellow-500"
                       : ""
-                  }`}
+                    }`}
                 >
                   {ticket.completed ? (
                     <div className="flex justify-end p-2 text-xs items-center border-b-2 rounded-sm">
@@ -327,15 +324,15 @@ const PipelineTicket = ({
                         <MoreHorizontalIcon className="text-muted-foreground" />
                       </DropdownMenuTrigger>
                     </CardTitle>
-                    <div className="flex items-center bg-[#1f845a] gap-2 border-green-800 border-2 rounded-lg p-1">
-                      <Clock2 className="text-black "/>
-                      <span className="text-black text-xs">
+                    <div className="flex items-center gap-2 border-amber-500 border rounded-lg p-1">
+                      <Clock2 className="text-amber-500 " />
+                      <span className="text-zinc-300 text-xs">
                         {`${formatDate(ticket.startDate)} - ${formatDate(
                           ticket.dueDate
                         )}`}
                       </span>
                     </div>
-                   
+
                     <div className="!mt-4 flex items-center flex-wrap gap-2">
                       {ticket.Tags.map((tag) => (
                         <TagComponent
@@ -403,8 +400,8 @@ const PipelineTicket = ({
                           className={
                             ticket.assignedUserId
                               ? getAvatarColor(
-                                  ticket.Assigned?.name || "Assigned User"
-                                )
+                                ticket.Assigned?.name || "Assigned User"
+                              )
                               : "bg-primary"
                           }
                         >

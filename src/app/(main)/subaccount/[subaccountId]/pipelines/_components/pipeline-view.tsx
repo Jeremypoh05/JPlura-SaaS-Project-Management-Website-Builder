@@ -16,6 +16,7 @@ import { DragDropContext, DropResult, Droppable } from "@hello-pangea/dnd";
 import PipelineLane from "./pipeline-lane";
 import dynamic from "next/dynamic";
 import AutomationForm from "@/components/forms/automation-form";
+import FilterPopover from "./pipeline-filter";
 
 const ParticlesComponent = dynamic(() => import("@/particlesConfig.mjs"), {
   ssr: false,
@@ -214,10 +215,7 @@ const PipelineView = ({
               <Workflow size={15} />
               Automation
             </Button>
-            <Button className="flex gap-2 items-center bg-zinc-600 hover:bg-zinc-700" onClick={() => {}}>
-              <Filter size={15} />
-              Filter
-            </Button>
+            <FilterPopover pipelineId={pipelineId} lanesDetails={lanes} pipelineDetails={pipelineDetails} />
           </div>
         </div>
 
