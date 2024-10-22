@@ -262,6 +262,22 @@ const PipelineTicket = ({
 
   // console.log("all tickets information", ticket);
 
+  // Determine if the ticket should be displayed based on the current filter
+  // const shouldDisplayTicket = () => {
+  //   switch (currentFilter) {
+  //     case "no_members":
+  //       return !ticket.assignedUserId;
+  //     case "overdue":
+  //       return ticket.dueDate && new Date(ticket.dueDate) < new Date();
+  //     default:
+  //       return true;
+  //   }
+  // };
+
+  // if (!shouldDisplayTicket()) {
+  //   return null; // Don't render the ticket if it doesn't match the current filter
+  // }
+
   return (
     <Draggable draggableId={ticket.id.toString()} index={index}>
       {(provided, snapshot) => {
