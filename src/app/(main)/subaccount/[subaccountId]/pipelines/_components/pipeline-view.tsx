@@ -6,10 +6,17 @@ import {
   LaneDetail,
   PipelineDetailsWithLanesCardsTagsTickets,
   TicketAndTags,
+  UserWithAgency,
 } from "@/lib/types";
 import { useModal } from "@/providers/modal-provider";
 import { Lane, Ticket } from "@prisma/client";
-import { Filter, Flag, PlusCircle, PlusCircleIcon, Workflow } from "lucide-react";
+import {
+  Filter,
+  Flag,
+  PlusCircle,
+  PlusCircleIcon,
+  Workflow,
+} from "lucide-react";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import { DragDropContext, DropResult, Droppable } from "@hello-pangea/dnd";
@@ -17,6 +24,7 @@ import PipelineLane from "./pipeline-lane";
 import dynamic from "next/dynamic";
 import AutomationForm from "@/components/forms/automation-form";
 import FilterPopover from "./pipeline-filter";
+import { getAuthUserDetails } from "@/lib/queries";
 
 const ParticlesComponent = dynamic(() => import("@/particlesConfig.mjs"), {
   ssr: false,
@@ -45,6 +53,20 @@ const PipelineView = ({
   const [allLanes, setAllLanes] = useState<LaneDetail[]>([]); //basically have the LaneDetail array
   const [showParticles, setShowParticles] = useState(false);
   const [scrollPosition, setScrollPosition] = useState(0);
+  const [currentFilter, setCurrentFilter] = useState<string>("all");  // State to track current active filter
+  const [filteredLanes, setFilteredLanes] = useState<LaneDetail[]>(lanes);  // State to store filtered lanes based on current filter
+  const [currentUser, setCurrentUser] = useState<UserWithAgency | null>(null); //use UserWithAgency type to ensure type safety for user properties
+
+  // Fetch user details when component mounts
+  //use useEffect because can't use async operations directly in component body
+  useEffect(() => {
+    const fetchUser = async () => {
+      const user = await getAuthUserDetails(); // Fetch user data from auth system
+      setCurrentUser(user); // Store user data in state
+      console.log("pipeline view user info", user);
+    };
+    fetchUser();
+  }, []); //Empty dependency array means this runs once on mount
 
   //when it loads, set all the lanes
   useEffect(() => {
@@ -62,6 +84,60 @@ const PipelineView = ({
       window.removeEventListener("scroll", handleScroll);
     };
   }, []);
+
+  const applyFilter = (filter: string) => {
+    const newFilteredLanes = allLanes.map((lane) => ({
+      ...lane, // Keep all lane properties
+      // Filter tickets within each lane based on selected filter
+      Tickets: lane.Tickets.filter((ticket) => {
+        switch (filter) {
+          case "no_members":
+            // Return tickets that don't have any assigned user
+            return !ticket.assignedUserId;
+
+          case "assigned_to_me":
+            // Return tickets assigned to current user
+            // Only works if currentUser exists and IDs match
+            return currentUser && ticket.assignedUserId === currentUser.id;
+
+          case "overdue":
+            // Skip if no due date or ticket is already completed
+            if (!ticket.dueDate || ticket.completed) return false;
+            // Return tickets whose due date is before current date
+            return new Date(ticket.dueDate) < new Date();
+
+          case "no_dates":
+            // Return tickets that don't have a due date set
+            return !ticket.dueDate;
+
+          case "due_next_day":
+            // Skip if no due date or ticket is completed
+            if (!ticket.dueDate || ticket.completed) return false;
+            const dueDate = new Date(ticket.dueDate);
+            const tomorrow = new Date();
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            tomorrow.setHours(23, 59, 59, 999); // Set to end of next day
+            // Return tickets due between now and end of tomorrow
+            return dueDate >= new Date() && dueDate <= tomorrow;
+          default: // "all" case
+            // Show all tickets when no filter is applied
+            return true;
+        }
+      }),
+    }));
+    // Update the filtered lanes state
+    setFilteredLanes(newFilteredLanes);
+  };
+
+  // Apply filter whenever filter selection or lanes data changes
+  useEffect(() => {
+    applyFilter(currentFilter);
+  }, [currentFilter, allLanes, currentUser]);
+
+  // Handler for filter changes from FilterPopover component
+  const handleFilterChange = (filter: string) => {
+    setCurrentFilter(filter);
+  };
 
   const ticketsFromAllLanes: TicketAndTags[] = [];
   //populates it with all the tickets from each lane in the lanes array.
@@ -215,7 +291,7 @@ const PipelineView = ({
               <Workflow size={15} />
               Automation
             </Button>
-            <FilterPopover pipelineId={pipelineId} lanesDetails={lanes} pipelineDetails={pipelineDetails} />
+            <FilterPopover currentUser={currentUser} onFilterChange={handleFilterChange} />
           </div>
         </div>
 
@@ -233,7 +309,7 @@ const PipelineView = ({
               ref={provided.innerRef}
             >
               <div className="flex mt-4">
-                {allLanes.map((lane, index) => (
+                {filteredLanes.map((lane, index) => (
                   <PipelineLane
                     allTickets={allTickets}
                     setAllTickets={setAllTickets}
