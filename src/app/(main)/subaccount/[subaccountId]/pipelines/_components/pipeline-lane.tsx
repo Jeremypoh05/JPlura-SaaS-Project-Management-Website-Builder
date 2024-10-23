@@ -151,7 +151,7 @@ const PipelineLane: React.FC<PipelaneLaneProps> = ({
           >
             <AlertDialog>
               <DropdownMenu>
-                <div className="bg-slate-200/30 dark:bg-background/20 h-full w-[335px] px-4 relative rounded-xl !overflow-auto flex-shrink-0 mr-1">
+                <div className="bg-slate-200/30 dark:bg-[#070c1c] h-full w-[335px] px-4 relative rounded-xl !overflow-auto flex-shrink-0 mr-8">
                   <div
                     {...provided.dragHandleProps}
                     className=" h-14 backdrop-blur-lg dark:bg-background/40 bg-slate-200/60  absolute top-0 left-0 right-0 z-10 "

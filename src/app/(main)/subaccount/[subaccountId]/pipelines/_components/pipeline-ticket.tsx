@@ -196,13 +196,15 @@ const PipelineTicket = ({
           if (hoursLeft > 0) {
             // If there's at least one hour left, show hours and minutes
             setTimeLeft(
-              `⚠️ ${hoursLeft} hour${hoursLeft !== 1 ? "s" : ""
+              `⚠️ ${hoursLeft} hour${
+                hoursLeft !== 1 ? "s" : ""
               } and ${minutesLeft} minute${minutesLeft !== 1 ? "s" : ""} left`
             );
           } else if (minutesLeft > 0) {
             // Show minutes and seconds if minutes are left
             setTimeLeft(
-              `⚠️ ${minutesLeft} minute${minutesLeft !== 1 ? "s" : ""
+              `⚠️ ${minutesLeft} minute${
+                minutesLeft !== 1 ? "s" : ""
               } and ${secondsLeft} second${secondsLeft !== 1 ? "s" : ""} left`
             );
           } else if (secondsLeft > 0) {
@@ -282,7 +284,7 @@ const PipelineTicket = ({
     <Draggable draggableId={ticket.id.toString()} index={index}>
       {(provided, snapshot) => {
         if (snapshot.isDragging) {
-          const offset = { x: 300, y: -90 };
+          const offset = { x: 320, y: -25 };
           //@ts-ignore
           const x = provided.draggableProps.style?.left - offset.x;
           //@ts-ignore
@@ -303,13 +305,16 @@ const PipelineTicket = ({
             <AlertDialog>
               <DropdownMenu>
                 <Card
-                  className={`my-4 dark:bg-slate-900 bg-white shadow-none transition-all !w-[260px] ${daysLeft !== null &&
-                      daysLeft <= effectiveWarningThreshold &&
-                      !isOverdue &&
-                      !ticket.completed
+                  className={`my-4 dark:bg-slate-900 bg-white shadow-none transition-all !w-[260px] ${
+                    daysLeft !== null &&
+                    daysLeft <= effectiveWarningThreshold &&
+                    !isOverdue &&
+                    !ticket.completed
                       ? "border-2 border-yellow-500"
                       : ""
-                    }`}
+                  }
+                       ${isOverdue && !ticket.completed ? "border-red-500" : ""}
+    rounded-lg shadow-md`}
                 >
                   {ticket.completed ? (
                     <div className="flex justify-end p-2 text-xs items-center border-b-2 rounded-sm">
@@ -416,8 +421,8 @@ const PipelineTicket = ({
                           className={
                             ticket.assignedUserId
                               ? getAvatarColor(
-                                ticket.Assigned?.name || "Assigned User"
-                              )
+                                  ticket.Assigned?.name || "Assigned User"
+                                )
                               : "bg-primary"
                           }
                         >

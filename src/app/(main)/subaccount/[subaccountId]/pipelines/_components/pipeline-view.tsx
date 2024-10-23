@@ -18,7 +18,7 @@ import {
   Workflow,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { DragDropContext, DropResult, Droppable } from "@hello-pangea/dnd";
 import PipelineLane from "./pipeline-lane";
 import dynamic from "next/dynamic";
@@ -53,9 +53,11 @@ const PipelineView = ({
   const [allLanes, setAllLanes] = useState<LaneDetail[]>([]); //basically have the LaneDetail array
   const [showParticles, setShowParticles] = useState(false);
   const [scrollPosition, setScrollPosition] = useState(0);
-  const [currentFilter, setCurrentFilter] = useState<string>("all");  // State to track current active filter
-  const [filteredLanes, setFilteredLanes] = useState<LaneDetail[]>(lanes);  // State to store filtered lanes based on current filter
+  const [currentFilter, setCurrentFilter] = useState<string>("all"); // State to track current active filter
+  const [filteredLanes, setFilteredLanes] = useState<LaneDetail[]>(lanes); // State to store filtered lanes based on current filter
   const [currentUser, setCurrentUser] = useState<UserWithAgency | null>(null); //use UserWithAgency type to ensure type safety for user properties
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);  // State to store all available tags with their ticket counts
+  const [keyword, setKeyword] = useState<string>('');
 
   // Fetch user details when component mounts
   //use useEffect because can't use async operations directly in component body
@@ -85,11 +87,76 @@ const PipelineView = ({
     };
   }, []);
 
-  const applyFilter = (filter: string) => {
+  // Extract unique tags and count their occurrences across all tickets
+  //useMemo used to optimize performance by memoizing values, recalculates a value only when one of its dependencies changes. 
+  //Without useMemo, every re-render of the component would cause this tag calculation logic to execute again,
+  const availableTags = useMemo(() => {
+    // Use Map to store unique tags by their ID
+    const tagsMap = new Map();
+
+    // Loop through all lanes and their tickets to count tag usage
+    lanes.forEach((lane) => {
+      //For each ticket, checks its associated tags and either
+      //adds the tag to the Map or increments its ticket count if it's already present.
+      lane.Tickets.forEach((ticket) => {
+        ticket.Tags.forEach((tag) => {
+          if (!tagsMap.has(tag.id)) {
+            // If this is the first occurrence of the tag, initialize it
+            tagsMap.set(tag.id, {
+              ...tag,
+              _count: { Ticket: 1 },
+            });
+          } else {
+            // If we've seen this tag before, increment its count
+            const existingTag = tagsMap.get(tag.id);
+            existingTag._count.Ticket += 1;
+            tagsMap.set(tag.id, existingTag);
+          }
+        });
+      });
+    });
+
+    // Convert Map back to array for rendering
+    return Array.from(tagsMap.values());
+  }, [lanes]);// Only recalculate when lanes data changes
+
+  // Main filtering function that handles all filter types
+  const applyFilter = (filter: string, tags?: string[], keyword?: string) => {
     const newFilteredLanes = allLanes.map((lane) => ({
       ...lane, // Keep all lane properties
       // Filter tickets within each lane based on selected filter
       Tickets: lane.Tickets.filter((ticket) => {
+        // Check tags first if they're selected
+        if (tags && tags.length > 0) {
+          const ticketTagIds = ticket.Tags.map((tag) => tag.id);
+          // Check if ticket has any of the selected tags
+          const hasSelectedTags = tags.some((selectedTagId) =>
+            ticketTagIds.includes(selectedTagId)
+          );
+          if (!hasSelectedTags) return false;
+        }
+
+        // Check keyword if provided
+        if (keyword) {
+          const lowercaseKeyword = keyword.toLowerCase();
+
+          // Check ticket name
+          const nameMatch = ticket.name.toLowerCase().includes(lowercaseKeyword);
+
+          // Check ticket description
+          const descriptionMatch = ticket.description?.toLowerCase().includes(lowercaseKeyword) || false;
+
+          // Check assigned user name (assuming the User relation includes a name field)
+          const assignedUserMatch = ticket.Assigned?.name?.toLowerCase().includes(lowercaseKeyword) || false;
+
+          // Return true if ANY of the fields match the keyword
+          //Return false for non-matches to show the things that we want*
+          if (!nameMatch && !descriptionMatch && !assignedUserMatch) {
+            return false;
+          }
+        }
+
+        //apply filters
         switch (filter) {
           case "no_members":
             // Return tickets that don't have any assigned user
@@ -119,6 +186,22 @@ const PipelineView = ({
             tomorrow.setHours(23, 59, 59, 999); // Set to end of next day
             // Return tickets due between now and end of tomorrow
             return dueDate >= new Date() && dueDate <= tomorrow;
+
+          case "due_within_week":
+            const nextWeek = new Date();
+            nextWeek.setDate(nextWeek.getDate() + 7);
+            nextWeek.setHours(23, 59, 59, 999);
+
+            if (!ticket.dueDate || ticket.completed) return false;
+            const dueDateWeek = new Date(ticket.dueDate);
+            return dueDateWeek >= new Date() && dueDateWeek <= nextWeek;
+
+          case "tags":
+            return true; // Tags already filtered above
+
+          case "completed_tasks":
+            return ticket.completed === true;
+
           default: // "all" case
             // Show all tickets when no filter is applied
             return true;
@@ -135,8 +218,11 @@ const PipelineView = ({
   }, [currentFilter, allLanes, currentUser]);
 
   // Handler for filter changes from FilterPopover component
-  const handleFilterChange = (filter: string) => {
+  const handleFilterChange = (filter: string, tags?: string[], keyword?: string) => {
     setCurrentFilter(filter);
+    setSelectedTags(tags || []);
+    setKeyword(keyword || "");
+    applyFilter(filter, tags, keyword);
   };
 
   const ticketsFromAllLanes: TicketAndTags[] = [];
@@ -291,7 +377,11 @@ const PipelineView = ({
               <Workflow size={15} />
               Automation
             </Button>
-            <FilterPopover currentUser={currentUser} onFilterChange={handleFilterChange} />
+            <FilterPopover
+              currentUser={currentUser}
+              onFilterChange={handleFilterChange}
+              availableTags={availableTags}
+            />
           </div>
         </div>
 

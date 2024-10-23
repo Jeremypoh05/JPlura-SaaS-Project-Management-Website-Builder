@@ -149,7 +149,7 @@ model Tag {
   subAccountId String
 
   SubAccount SubAccount @relation(fields: [subAccountId], references: [id], onDelete: Cascade)
-  Ticket     Ticket[]
+  Ticket     Ticket[] // This creates the many-to-many relationship
 
   @@index([subAccountId])
 }
@@ -190,7 +190,7 @@ model Ticket {
   Lane        Lane     @relation(fields: [laneId], references: [id], onDelete: Cascade)
   value       Decimal?
   description String?
-  Tags        Tag[]
+  Tags        Tag[] // This creates the many-to-many relationship
 
   customerId String?
   Customer   Contact? @relation(fields: [customerId], references: [id], onDelete: SetNull)
