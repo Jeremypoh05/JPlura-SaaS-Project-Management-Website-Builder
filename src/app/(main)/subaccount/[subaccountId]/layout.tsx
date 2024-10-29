@@ -7,10 +7,14 @@ import {
   getNotificationAndUser,
   verifyAndAcceptInvitation,
 } from "@/lib/queries";
+import { cn } from "@/lib/utils";
+import { useSidebarContext } from "@/providers/sidebar-provider";
 import { currentUser } from "@clerk/nextjs";
 import { Role } from "@prisma/client";
 import { redirect } from "next/navigation";
-import React from "react";
+import React, { createContext } from "react";
+import LayoutClient from "./layout-client";
+import SidebarToggle from "@/components/sidebar/sidebar-toggle";
 
 type Props = {
   children: React.ReactNode;
@@ -61,17 +65,16 @@ const SubaccountLayout = async ({ children, params }: Props) => {
   return (
     <div className="h-screen overflow-hidden">
       <Sidebar id={params.subaccountId} type="subaccount" />
-
-      <div className="md:pl-[320px]">
+      <SidebarToggle>
         <InfoBar
           notifications={notifications}
           role={user.privateMetadata.role as Role}
           subAccountId={params.subaccountId as string}
         />
         <div className="relative -ml-1">
-         {children}
+          {children}
         </div>
-      </div>
+      </SidebarToggle>
     </div>
   );
 };

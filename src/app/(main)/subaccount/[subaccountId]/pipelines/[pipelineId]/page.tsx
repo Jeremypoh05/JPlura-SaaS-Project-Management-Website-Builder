@@ -34,8 +34,8 @@ const PipelinesPage = async ({ params }: Props) => {
   )) as LaneDetail[];
 
   return (
-    <Tabs defaultValue="view" className="w-full">
-      <TabsList className="bg-transparent border-b-2 h-16 w-full justify-between mb-4">
+    <Tabs defaultValue="view" className="w-full mt-[-10px]">
+      <TabsList className="bg-transparent border-b-2 w-full h-13 justify-between mb-4">
         <PipelineInfoBar
           pipelineId={params.pipelineId}
           subAccountId={params.subaccountId}

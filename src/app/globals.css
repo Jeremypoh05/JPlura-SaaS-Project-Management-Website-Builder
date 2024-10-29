@@ -1,8 +1,8 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@300..700&family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Fredoka:wght@300..700&family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap");
 
 html,
 body {
@@ -24,7 +24,7 @@ B (255 */
 /* font family */
 /* globals.css */
 .fredoka {
-    font-family: "Fredoka", sans-serif;
+  font-family: "Fredoka", sans-serif;
   /* Use Roboto Condensed for this class */
 }
 
@@ -164,6 +164,321 @@ B (255 */
   }
 }
 
+/* Pipelines */
+/* For pipeline-lanes*/
+.lane-container {
+  width: 290px;
+  min-width: 290px;
+  margin-right: 1rem;
+  position: relative;
+  border-radius: 16px;
+  transform: none !important;
+  overflow: visible;
+  background: linear-gradient(135deg,
+        rgba(241, 245, 249, 0.4) 0%,
+        rgba(241, 245, 249, 0.2) 25%,
+        rgba(241, 245, 249, 0.1) 50%);
+    border: 1px solid rgba(226, 232, 240, 0.7);
+    box-shadow: 0 4px 24px -1px rgba(0, 0, 0, 0.1),
+      0 0 0 1px rgba(255, 255, 255, 0.5) inset;
+}
+
+/* Dark mode lane */
+.dark .lane-container {
+  background: linear-gradient(
+    135deg,
+    rgba(30, 41, 59, 0.8) 0%,
+    rgba(15, 23, 42, 0.7) 35%,
+    rgba(7, 12, 28, 0.7) 100%
+  );
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Non-uniform border glow for lane */
+.lane-container::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.3) 0%,
+    rgba(255, 255, 255, 0.1) 25%,
+    transparent 50%,
+    rgba(255, 255, 255, 0.05) 75%
+  );
+  border-radius: 16px;
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+.lane-header {
+  position: relative;
+  border-bottom: 1px solid rgba(226, 232, 240, 0.8);
+  border-radius: 16px 16px 0 0;
+  overflow: hidden;
+  /* Contain the glass effect */
+}
+
+.lane-header::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.3) 0%,
+    rgba(255, 255, 255, 0.1) 25%,
+    transparent 50%
+  );
+  pointer-events: none;
+}
+
+.dark .lane-header {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.dark .lane-header::before {
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.15) 0%,
+    rgba(255, 255, 255, 0.05) 25%,
+    transparent 50%
+  );
+}
+
+/*pipeline ticket */
+/* Pipeline ticket styles */
+/* Base ticket styles */
+.pipeline-ticket {
+  zoom: 0.9;
+  position: relative;
+  border-radius: 12px;
+  width: 270px !important;
+  font-size: 0.7rem;
+  transform-origin: center;
+  will-change: transform;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1), 0 2px 8px rgba(0, 0, 0, 0.05),
+    0 0 0 1px rgba(255, 255, 255, 0.5) inset;
+}
+
+/* Adjust card padding */
+.pipeline-ticket .card-header {
+  padding: 0.55rem !important;
+  /* Reduced padding */
+}
+
+/* Make badges and icons slightly smaller */
+.pipeline-ticket .badge {
+  font-size: 0.75rem !important;
+  padding: 0.25rem 0.5rem;
+}
+
+.pipeline-ticket .icon {
+  width: 1rem;
+  height: 1rem;
+}
+
+/* Hover effect for all tickets */
+.pipeline-ticket:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15), 0 4px 12px rgba(0, 0, 0, 0.1),
+    0 0 0 1px rgba(255, 255, 255, 0.6) inset;
+}
+
+/* Light mode ticket */
+.pipeline-ticket {
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.95) 0%,
+    rgba(255, 255, 255, 0.85) 35%,
+    rgba(255, 255, 255, 0.8) 100%
+  );
+}
+
+/* Dark mode ticket */
+.dark .pipeline-ticket {
+  background: linear-gradient(
+    135deg,
+    rgba(30, 41, 59, 0.9) 0%,
+    rgba(15, 23, 42, 0.7) 35%,
+    rgba(7, 12, 28, 0.7) 100%
+  );
+  box-shadow: rgba(0, 0, 0, 0.4) 0px 30px 90px;
+}
+
+.dark .pipeline-ticket:hover {
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4), 0 4px 12px rgba(0, 0, 0, 0.3),
+    0 0 0 1px rgba(255, 255, 255, 0.1) inset;
+}
+
+/* Light mode glass effect border */
+.pipeline-ticket::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  background: linear-gradient(
+    135deg,
+    rgba(148, 163, 184, 0.35) 0%,
+    /* Lighter slate */ rgba(100, 116, 139, 0.15) 20%,
+    /* Darker slate */ rgba(71, 85, 105, 0.05) 30%,
+    /* Even darker slate */ transparent 65% /* Reduced gradient spread */
+  );
+  border-radius: 12px;
+  pointer-events: none;
+}
+
+/* Dark mode glass effect border */
+.dark .pipeline-ticket::before {
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.5) 0%,
+    rgba(255, 255, 255, 0.2) 20%,
+    rgba(255, 255, 255, 0.05) 30%,
+    transparent 50%
+  );
+}
+
+/* Warning state glass effect */
+.pipeline-ticket.border-yellow-500::before {
+  background: linear-gradient(135deg,
+      rgba(234, 179, 8, 0.5) 0%,
+      rgba(234, 179, 8, 0.2) 15%,
+      rgba(234, 179, 8, 0.05) 30%,
+      transparent 50%),
+    linear-gradient(45deg,
+      rgba(255, 255, 255, 0.3) 0%,
+      transparent 50%);
+}
+
+/* Overdue state glass effect */
+.pipeline-ticket.border-red-500::before {
+  background: linear-gradient(
+      135deg,
+      rgba(239, 68, 68, 0.5) 0%,
+      /* Overdue red */ rgba(239, 68, 68, 0.2) 15%,
+      rgba(239, 68, 68, 0.05) 30%,
+      transparent 50%
+    ),
+    linear-gradient(45deg, rgba(255, 255, 255, 0.3) 0%, transparent 50%);
+}
+
+/* Dark mode warning state */
+.dark .pipeline-ticket.border-yellow-500::before {
+  background: linear-gradient(135deg,
+      rgba(234, 179, 8, 0.3) 0%,
+      rgba(234, 179, 8, 0.1) 15%,
+      rgba(234, 179, 8, 0.02) 30%,
+      transparent 50%);
+}
+
+/* Dark mode overdue state */
+.dark .pipeline-ticket.border-red-500::before {
+  background: linear-gradient(
+    135deg,
+    rgba(239, 68, 68, 0.3) 0%,
+    rgba(239, 68, 68, 0.1) 15%,
+    rgba(239, 68, 68, 0.02) 30%,
+    transparent 50%
+  );
+}
+
+/* Light mode mouse follow effect */
+.pipeline-ticket::after {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  background: radial-gradient(
+    circle at var(--mouse-x, 15%) var(--mouse-y, 15%),
+    rgba(192, 203, 219, 0.4) 0%,
+    /* Slate color */ rgba(139, 160, 190, 0.2) 20%,
+    /* Reduced spread */ transparent 55% /* Smaller radius */
+  );
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  border-radius: 12px;
+}
+
+/* Dark mode mouse follow effect */
+.dark .pipeline-ticket::after {
+  background: radial-gradient(
+    circle at var(--mouse-x, 15%) var(--mouse-y, 15%),
+    rgba(255, 255, 255, 0.3),
+    rgba(255, 255, 255, 0.1) 30%,
+    transparent 60%
+  );
+}
+
+/* Adjust mouse follow effect for warning state */
+.pipeline-ticket.border-yellow-500::after {
+  background: radial-gradient(
+    circle at var(--mouse-x, 15%) var(--mouse-y, 15%),
+    rgba(234, 179, 8, 0.3),
+    rgba(234, 179, 8, 0.1) 30%,
+    transparent 60%
+  );
+}
+
+/* Adjust mouse follow effect for overdue state */
+.pipeline-ticket.border-red-500::after {
+  background: radial-gradient(
+    circle at var(--mouse-x, 15%) var(--mouse-y, 15%),
+    rgba(239, 68, 68, 0.3),
+    rgba(239, 68, 68, 0.1) 30%,
+    transparent 60%
+  );
+}
+
+.pipeline-ticket:hover::after {
+  opacity: 1;
+}
+
+/* Fix for HoverCard z-index */
+.hover-card-content {
+  z-index: 99999 !important;
+  pointer-events: auto !important;
+}
+
+/* scroll pipeline-lane */
+.lane-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+
+.lane-scroll::-webkit-scrollbar-track {
+  background: transparent;
+  border-radius: 20px;
+}
+
+.lane-scroll::-webkit-scrollbar-thumb {
+  background-color: rgba(148, 163, 184, 0.2);
+  border-radius: 20px;
+  height: 20px;
+  min-height: 20px;
+}
+
+.dark .lane-scroll::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.lane-scroll::-webkit-scrollbar-thumb:hover {
+  background-color: #888;
+  /* Clearly different hover state */
+}
+
+.lane-scroll::-webkit-scrollbar-thumb:active {
+  background-color: #444;
+  /* Clearly different active state */
+}
+
+/* Firefox */
+.lane-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: #3d3d3d rgba(0, 0, 0, 0.1);
+}
+
 .loader {
   animation: rotate 1s infinite;
   height: 50px;
@@ -173,7 +488,7 @@ B (255 */
 .loader:before,
 .loader:after {
   border-radius: 50%;
-  content: '';
+  content: "";
   display: block;
   height: 20px;
   width: 20px;
