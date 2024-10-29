@@ -196,15 +196,13 @@ const PipelineTicket = ({
           if (hoursLeft > 0) {
             // If there's at least one hour left, show hours and minutes
             setTimeLeft(
-              `⚠️ ${hoursLeft} hour${
-                hoursLeft !== 1 ? "s" : ""
+              `⚠️ ${hoursLeft} hour${hoursLeft !== 1 ? "s" : ""
               } and ${minutesLeft} minute${minutesLeft !== 1 ? "s" : ""} left`
             );
           } else if (minutesLeft > 0) {
             // Show minutes and seconds if minutes are left
             setTimeLeft(
-              `⚠️ ${minutesLeft} minute${
-                minutesLeft !== 1 ? "s" : ""
+              `⚠️ ${minutesLeft} minute${minutesLeft !== 1 ? "s" : ""
               } and ${secondsLeft} second${secondsLeft !== 1 ? "s" : ""} left`
             );
           } else if (secondsLeft > 0) {
@@ -262,29 +260,19 @@ const PipelineTicket = ({
     }
   };
 
-  // console.log("all tickets information", ticket);
-
-  // Determine if the ticket should be displayed based on the current filter
-  // const shouldDisplayTicket = () => {
-  //   switch (currentFilter) {
-  //     case "no_members":
-  //       return !ticket.assignedUserId;
-  //     case "overdue":
-  //       return ticket.dueDate && new Date(ticket.dueDate) < new Date();
-  //     default:
-  //       return true;
-  //   }
-  // };
-
-  // if (!shouldDisplayTicket()) {
-  //   return null; // Don't render the ticket if it doesn't match the current filter
-  // }
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = ((e.clientX - rect.left) / rect.width) * 100;
+    const y = ((e.clientY - rect.top) / rect.height) * 100;
+    e.currentTarget.style.setProperty("--mouse-x", `${x}%`);
+    e.currentTarget.style.setProperty("--mouse-y", `${y}%`);
+  };
 
   return (
     <Draggable draggableId={ticket.id.toString()} index={index}>
       {(provided, snapshot) => {
         if (snapshot.isDragging) {
-          const offset = { x: 320, y: -25 };
+          const offset = { x: 256, y: 0 };
           //@ts-ignore
           const x = provided.draggableProps.style?.left - offset.x;
           //@ts-ignore
@@ -305,20 +293,20 @@ const PipelineTicket = ({
             <AlertDialog>
               <DropdownMenu>
                 <Card
-                  className={`my-4 dark:bg-slate-900 bg-white shadow-none transition-all !w-[260px] ${
-                    daysLeft !== null &&
-                    daysLeft <= effectiveWarningThreshold &&
-                    !isOverdue &&
-                    !ticket.completed
-                      ? "border-2 border-yellow-500"
+                  className={`pipeline-ticket mt-4 mb-5 !shadow-sm !shadow-slate-200/50 ${daysLeft !== null &&
+                      daysLeft <= effectiveWarningThreshold &&
+                      !isOverdue &&
+                      !ticket.completed
+                      ? "border border-yellow-500"
                       : ""
-                  }
+                    }
                        ${isOverdue && !ticket.completed ? "border-red-500" : ""}
-    rounded-lg shadow-md`}
+    rounded-lg `}
+                  onMouseMove={handleMouseMove}
                 >
                   {ticket.completed ? (
                     <div className="flex justify-end p-2 text-xs items-center border-b-2 rounded-sm">
-                      <Badge className="bg-green-700 ml-auto text-center text-zinc-300 flex justify-center items-center w-[100px]">
+                      <Badge className="badge bg-green-700 ml-auto text-center text-zinc-300 flex justify-center items-center w-[100px]">
                         COMPLETED
                       </Badge>
                     </div>
@@ -338,9 +326,9 @@ const PipelineTicket = ({
                       </div>
                     )
                   )}
-                  <CardHeader className="p-[12px]">
+                  <CardHeader className="card-header">
                     <CardTitle className="flex items-start justify-between">
-                      <span className="text-lg w-full">{ticket.name}</span>
+                      <span className="text-base w-full">{ticket.name}</span>
                       <DropdownMenuTrigger>
                         <MoreHorizontalIcon className="text-muted-foreground" />
                       </DropdownMenuTrigger>
@@ -354,7 +342,7 @@ const PipelineTicket = ({
                       </span>
                     </div>
 
-                    <div className="!mt-4 flex items-center flex-wrap gap-2">
+                    <div className="!mt-2 flex items-center flex-wrap gap-2">
                       {ticket.Tags.map((tag) => (
                         <TagComponent
                           key={tag.id}
@@ -363,19 +351,22 @@ const PipelineTicket = ({
                         />
                       ))}
                     </div>
-                    <CardDescription className="w-full ">
+                    <CardDescription className="w-full text-xs ">
                       {ticket.description}
                     </CardDescription>
                     {/* From ShadCN UI */}
                     <HoverCard>
                       <HoverCardTrigger asChild>
                         <div className="p-2 text-muted-foreground flex gap-2 hover:bg-muted transition-all rounded-lg cursor-pointer items-center">
-                          <LinkIcon />
+                          <LinkIcon size={13} />
                           <span className="text-xs font-bold">CONTACT</span>
                         </div>
                       </HoverCardTrigger>
-                      <HoverCardContent side="right" className="w-fit">
-                        <div className="flex justify-between space-x-4">
+                      <HoverCardContent
+                        side="bottom"
+                        className="hover-card-content w-fit !py-[6px] !px-[17px]"
+                      >
+                        <div className="flex justify-between items-center space-x-2">
                           <Avatar>
                             <AvatarImage />
                             <AvatarFallback
@@ -398,7 +389,7 @@ const PipelineTicket = ({
                             <p className="text-sm text-muted-foreground">
                               {ticket.Customer?.email}
                             </p>
-                            <div className="flex items-center pt-2">
+                            <div className="flex items-center">
                               <Contact2 className="mr-2 h-4 w-4 opacity-70" />
                               <span className="text-xs text-muted-foreground">
                                 Joined{" "}
@@ -412,7 +403,7 @@ const PipelineTicket = ({
                   </CardHeader>
                   <CardFooter className="m-0 p-2 border-t-[1px] border-muted-foreground/20 flex items-center justify-between">
                     <div className="flex item-center gap-2">
-                      <Avatar className="w-8 h-8">
+                      <Avatar className="w-7 h-7">
                         <AvatarImage
                           alt="contact"
                           src={ticket.Assigned?.avatarUrl}
@@ -421,8 +412,8 @@ const PipelineTicket = ({
                           className={
                             ticket.assignedUserId
                               ? getAvatarColor(
-                                  ticket.Assigned?.name || "Assigned User"
-                                )
+                                ticket.Assigned?.name || "Assigned User"
+                              )
                               : "bg-primary"
                           }
                         >
@@ -435,13 +426,13 @@ const PipelineTicket = ({
                         </AvatarFallback>
                       </Avatar>
                       <div className="flex flex-col justify-center">
-                        <span className="text-sm text-muted-foreground">
+                        <span className="text-xs text-muted-foreground">
                           {ticket.assignedUserId
                             ? "Assigned to"
                             : "Not Assigned"}
                         </span>
                         {ticket.assignedUserId && (
-                          <span className="text-xs w-28 overflow-ellipsis overflow-hidden whitespace-nowrap text-muted-foreground">
+                          <span className="text-xs overflow-ellipsis overflow-hidden whitespace-nowrap text-muted-foreground">
                             {ticket.Assigned?.name}
                           </span>
                         )}

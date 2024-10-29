@@ -32,6 +32,7 @@ import React, { Dispatch, SetStateAction, useMemo } from "react";
 import CustomModal from "@/components/global/custom-modal";
 import TicketForm from "@/components/forms/ticket-form";
 import PipelineTicket from "./pipeline-ticket";
+import { Button } from "@/components/ui/button";
 
 interface PipelaneLaneProps {
   setAllTickets: Dispatch<SetStateAction<TicketWithTags>>;
@@ -131,7 +132,7 @@ const PipelineLane: React.FC<PipelaneLaneProps> = ({
         //so, manually push it around to make it work.
         if (snapshot.isDragging) {
           //@ts-ignore
-          const offset = { x: 300, y: -100 };
+          const offset = { x: 250, y: -5 };
           //@ts-ignore
           const x = provided.draggableProps.style?.left - offset.x;
           //@ts-ignore
@@ -151,12 +152,26 @@ const PipelineLane: React.FC<PipelaneLaneProps> = ({
           >
             <AlertDialog>
               <DropdownMenu>
-                <div className="bg-slate-200/30 dark:bg-[#070c1c] h-full w-[335px] px-4 relative rounded-xl !overflow-auto flex-shrink-0 mr-8">
+                <div
+                  className={cn(
+                    "lane-container h-full w-[330px] relative flex flex-col rounded-xl flex-shrink-0 mr-8",
+                    // Light mode gradient
+                    "bg-gradient-to-br from-white/95 via-slate-50/95 to-slate-100/95",
+                    // Dark mode gradient
+                    "dark:bg-gradient-to-br dark:from-slate-900/95 dark:via-slate-800/95 dark:to-slate-900/95",
+                    // Border
+                    "!border !border-slate-200/60 !dark:border-slate-700/50",
+                    // Shadow
+                    "!shadow-md !shadow-slate-200/50 ",
+                    // Transition
+                    "transition-all duration-300"
+                  )}
+                >
                   <div
                     {...provided.dragHandleProps}
-                    className=" h-14 backdrop-blur-lg dark:bg-background/40 bg-slate-200/60  absolute top-0 left-0 right-0 z-10 "
+                    className="lane-header !border-b-slate-200 rounded-t-xl sticky top-0 z-1000 "
                   >
-                    <div className="h-full flex items-center p-4 justify-between cursor-grab border-b-[1px]">
+                    <div className="h-14 flex items-center p-4 justify-between cursor-grab border-b-[1px]">
                       {/* {laneDetails.order} */}
                       <div className="flex items-center w-full gap-2">
                         <div
@@ -177,7 +192,6 @@ const PipelineLane: React.FC<PipelaneLaneProps> = ({
                       </div>
                     </div>
                   </div>
-
                   {/*drag and drop for tickets(tasks) */}
                   <Droppable
                     droppableId={laneDetails.id.toString()}
@@ -185,7 +199,7 @@ const PipelineLane: React.FC<PipelaneLaneProps> = ({
                     type="ticket"
                   >
                     {(provided) => (
-                      <div className="max-h-[1000px] overflow-auto pt-12 ">
+                      <div className="flex-1 overflow-y-auto overflow-x-hidden lane-scroll">
                         <div
                           {...provided.droppableProps}
                           ref={provided.innerRef}
@@ -208,7 +222,28 @@ const PipelineLane: React.FC<PipelaneLaneProps> = ({
                       </div>
                     )}
                   </Droppable>
-
+                  {/* Add card button */}
+                  <div
+                    className={cn(
+                      "px-4 py-2 !border-t !rounded-b-xl",
+                      // Light mode gradient
+                      "bg-gradient-to-r from-slate-100/80 via-white/80 to-slate-50/80",
+                      // Dark mode gradient
+                      "dark:bg-gradient-to-r dark:from-slate-900/90 dark:via-slate-800/90 dark:to-slate-900/90",
+                      "!border !border-slate-200/60 !dark:border-slate-700/50",
+                      // Transition
+                      "transition-all duration-300"
+                    )}
+                  >
+                    <Button
+                      variant="ghost"
+                      className="w-full justify-start text-muted-foreground text-sm hover:text-muted-foreground/80"
+                      onClick={handleCreateTicket}
+                    >
+                      <PlusCircleIcon className="h-4 w-4 mr-2" />
+                      Add a ticket
+                    </Button>
+                  </div>
                   <DropdownMenuContent>
                     <DropdownMenuLabel>Options</DropdownMenuLabel>
                     <DropdownMenuSeparator />

@@ -31,7 +31,7 @@ const CustomModal = ({ title, subHeading, children, defaultOpen }: Props) => {
     <Dialog open={isOpen || defaultOpen} onOpenChange={setClose}>
       <DialogContent
         ref={contentRef}
-        className={`md:max-h-[600px] md:h-fit h-screen bg-card ${
+        className={`md:max-h-[500px] md:h-fit h-screen bg-card ${
           isOverflow ? "overflow-y-scroll" : "overflow-y-auto"
         }`}
       >

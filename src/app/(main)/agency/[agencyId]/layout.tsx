@@ -1,6 +1,7 @@
 import BlurPage from '@/components/global/blur-page'
 import InfoBar from '@/components/global/infobar'
 import Sidebar from '@/components/sidebar'
+import SidebarToggle from '@/components/sidebar/sidebar-toggle'
 import Unauthorized from '@/components/unauthorized'
 import { getNotificationAndUser, verifyAndAcceptInvitation } from '@/lib/queries'
 import { currentUser } from '@clerk/nextjs'
@@ -46,15 +47,14 @@ const layout = async ({
         id={params.agencyId}
         type='agency'
       />
-      <div className='md:pl-[320px]'>
+      <SidebarToggle>
         <InfoBar notifications={allNoti} role={allNoti.User?.role} />
         <div className='relative -ml-1'>
           <BlurPage>{children}</BlurPage>
         </div>
-      </div>
+        </SidebarToggle>
     </div>
   )
-
 }
 
 export default layout

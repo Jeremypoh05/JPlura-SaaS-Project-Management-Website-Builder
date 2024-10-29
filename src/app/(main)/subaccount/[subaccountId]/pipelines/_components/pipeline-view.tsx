@@ -58,6 +58,15 @@ const PipelineView = ({
   const [currentUser, setCurrentUser] = useState<UserWithAgency | null>(null); //use UserWithAgency type to ensure type safety for user properties
   const [selectedTags, setSelectedTags] = useState<string[]>([]);  // State to store all available tags with their ticket counts
   const [keyword, setKeyword] = useState<string>('');
+  const [scrollY, setScrollY] = useState(0);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrollY(window.scrollY);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   // Fetch user details when component mounts
   //use useEffect because can't use async operations directly in component body
@@ -74,18 +83,6 @@ const PipelineView = ({
   useEffect(() => {
     setAllLanes(lanes);
   }, [lanes]);
-
-  useEffect(() => {
-    const handleScroll = () => {
-      setScrollPosition(window.scrollY); // Track scroll position
-    };
-
-    window.addEventListener("scroll", handleScroll);
-
-    return () => {
-      window.removeEventListener("scroll", handleScroll);
-    };
-  }, []);
 
   // Extract unique tags and count their occurrences across all tickets
   //useMemo used to optimize performance by memoizing values, recalculates a value only when one of its dependencies changes. 
@@ -362,16 +359,16 @@ const PipelineView = ({
       {showParticles && (
         <ParticlesComponent id="particles" scrollPosition={scrollPosition} />
       )}
-      <div className="bg-white/60 dark:bg-background/60 rounded-xl p-4 use-automation-zoom-in">
-        <div className="flex items-center justify-between">
-          <h1 className="text-2xl">{pipelineDetails?.name}</h1>
+      <div className="h-[calc(100vh-80px)] bg-white/60 dark:bg-background/60 rounded-xl flex flex-col use-automation-zoom-in mt-[-15px]" >
+        <div className="flex items-center justify-between py-2 px-4 border-b">
+          <h1 className="text-xl">{pipelineDetails?.name}</h1>
           <div className="flex items-center gap-2">
-            <Button className="flex gap-2 items-center" onClick={handleAddLane}>
-              <PlusCircleIcon size={15} />
+            <Button className="flex gap-2 items-center text-sm" onClick={handleAddLane}>
+              <PlusCircleIcon className="mt-1" size={15} />
               Create Lane
             </Button>
             <Button
-              className="flex gap-2 items-center bg-slate-800 hover:bg-slate-900"
+              className="flex gap-2 items-center bg-slate-800 hover:bg-slate-900 text-sm"
               onClick={handleAutomation}
             >
               <Workflow size={15} />
@@ -394,11 +391,11 @@ const PipelineView = ({
         >
           {(provided) => (
             <div
-              className="flex item-center gap-x-2 overflow-auto"
+              className="flex gap-x-2 h-full overflow-x-auto !overflow-y-hidden p-4"
               {...provided.droppableProps}
               ref={provided.innerRef}
             >
-              <div className="flex mt-4">
+              <div className="flex gap-2">
                 {filteredLanes.map((lane, index) => (
                   <PipelineLane
                     allTickets={allTickets}
