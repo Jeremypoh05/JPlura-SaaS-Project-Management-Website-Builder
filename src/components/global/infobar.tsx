@@ -27,6 +27,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { Button } from "../ui/button";
+import { useSidebarContext } from "@/providers/sidebar-provider";
 
 type Props = {
   notifications: NotificationWithUser | [];
@@ -36,6 +37,7 @@ type Props = {
 };
 
 const InfoBar = ({ notifications, role, className, subAccountId }: Props) => {
+  const { isCollapsed } = useSidebarContext();
   const [allNotifications, setAllNotifications] = useState(notifications);
   const [showAll, setShowAll] = useState(true);
 
@@ -61,7 +63,9 @@ const InfoBar = ({ notifications, role, className, subAccountId }: Props) => {
     <>
       <div
         className={twMerge(
-          "fixed z-[20] md:left-[316px] left-0 right-0 top-0 p-4 bg-background/80 backdrop-blur-md flex gap-4 items-center border-b-[1px]"
+          "fixed z-[20] left-0 right-0 top-0 p-3 bg-background/80 backdrop-blur-md flex gap-4 items-center border-b-[1px]",
+          isCollapsed ? "md:left-[56px]" : "md:left-[256px]",
+          className
         )}
       >
         <div className="flex items-center gap-2 ml-auto">

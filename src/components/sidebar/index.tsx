@@ -1,5 +1,4 @@
 import { getAuthUserDetails } from "@/lib/queries";
-import React from "react";
 import MenuOptions from "./menu-options";
 
 type Props = {
@@ -33,20 +32,22 @@ const Sidebar = async ({ id, type }: Props) => {
     }
   }
 
-  const sidebarOpt = type === 'agency'
-    ? user.Agency?.SidebarOption || []
-    : (user.Agency?.SubAccount?.find((subaccount) => subaccount.id === id)
-      ?.SidebarOption || []);
+  const sidebarOpt =
+    type === "agency"
+      ? user.Agency?.SidebarOption || []
+      : user.Agency?.SubAccount?.find((subaccount) => subaccount.id === id)
+          ?.SidebarOption || [];
 
   //filter out subaccounts based on whether the current user has permission to access them.
   // check if the current user has access to a particular subaccount. It checks if there exists a permission object where the subAccountId matches the id of the current subaccount being filtered, and also checks if the access property of that permission is true.
   //filter() method is used to select subaccounts based on whether the user has access permissions.
-  const subaccounts = user.Agency.SubAccount?.filter((subaccount) =>
-    user.Permissions.find(
-      (permission) =>
-        permission.subAccountId === subaccount.id && permission.access
-    )
-  ) || [];
+  const subaccounts =
+    user.Agency.SubAccount?.filter((subaccount) =>
+      user.Permissions.find(
+        (permission) =>
+          permission.subAccountId === subaccount.id && permission.access
+      )
+    ) || [];
   // console.log("User Data:", user);
   // console.log("Agency Sidebar Options:", user.Agency?.SidebarOption);
   // console.log("SubAccount Sidebar Options:", user.Agency?.SubAccount);
@@ -63,8 +64,8 @@ const Sidebar = async ({ id, type }: Props) => {
         subAccounts={subaccounts}
         user={user}
       />
-       {/*for mobile navbar */}
-        <MenuOptions
+      {/*for mobile navbar */}
+      <MenuOptions
         details={details}
         id={id}
         sidebarLogo={sideBarLogo}
@@ -72,7 +73,6 @@ const Sidebar = async ({ id, type }: Props) => {
         subAccounts={subaccounts}
         user={user}
       />
-      
     </>
   );
 };

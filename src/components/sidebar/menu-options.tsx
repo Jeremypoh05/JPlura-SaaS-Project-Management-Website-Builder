@@ -9,7 +9,13 @@ import {
 import React, { useEffect, useMemo, useState } from "react";
 import { Sheet, SheetClose, SheetContent, SheetTrigger } from "../ui/sheet";
 import { Button } from "../ui/button";
-import { ChevronsUpDown, Compass, Menu, PlusCircleIcon } from "lucide-react";
+import {
+  ChevronsLeft,
+  ChevronsUpDown,
+  Compass,
+  Menu,
+  PlusCircleIcon,
+} from "lucide-react";
 import clsx from "clsx";
 import { AspectRatio } from "../ui/aspect-ratio";
 import { Popover, PopoverTrigger } from "../ui/popover";
@@ -41,6 +47,14 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "../ui/tooltip";
+import { cn } from "@/lib/utils";
+import { useSidebarContext } from "@/providers/sidebar-provider";
 
 type Props = {
   defaultOpen?: boolean;
@@ -48,8 +62,8 @@ type Props = {
   sidebarOpt: AgencySidebarOption[] | SubAccountSidebarOption[];
   sidebarLogo: string;
   details:
-  | UserWithAgency["Agency"]
-  | (SubAccount & { SidebarOption: SubAccountSidebarOption[] });
+    | UserWithAgency["Agency"]
+    | (SubAccount & { SidebarOption: SubAccountSidebarOption[] });
   user: UserWithAgency;
   id: string;
 };
@@ -63,6 +77,7 @@ const MenuOptions = ({
   user,
   id,
 }: Props) => {
+  const { isCollapsed, setIsCollapsed } = useSidebarContext();
   const { setOpen } = useModal();
   const [isMounted, setIsMounted] = useState(false);
   const [sortedSubAccounts, setSortedSubAccounts] =
@@ -75,9 +90,15 @@ const MenuOptions = ({
     ? currentPlan === "price_1PQ8HWRqpSbtJ03827K2PbCM"
       ? Infinity // Unlimited Plan
       : currentPlan === "price_1PQ8HVRqpSbtJ038LxC6uWrX"
-        ? 4 // Basic Plan
-        : 1 // Default to 1 subaccount if no plan
+      ? 3 // Basic Plan
+      : 1 // Default to 1 subaccount if no plan
     : 1; // Default to 1 subaccount if no plan
+
+  const handleCollapse = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsCollapsed(!isCollapsed);
+  };
 
   //useMemo is used for memoization, which optimizes performance by caching the result of a function.
   //It re - runs the function only when one of its dependencies changes, ensuring that it's only recalculated when defaultOpen changes.
@@ -85,6 +106,13 @@ const MenuOptions = ({
     () => (defaultOpen ? { open: true } : {}),
     [defaultOpen]
   );
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  if (!isMounted) return null;
+  if (!details) return null;
 
   const sidebarOrder = [
     "Dashboard",
@@ -99,13 +127,6 @@ const MenuOptions = ({
     "Pipelines",
     "Contacts",
   ];
-
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
-
-  if (!isMounted) return null; // Ensure the component is mounted before rendering
-  if (!details) return null; // Early return if details is null
 
   // Function to add a new subaccount to the state
   const addSubaccount = (newSubaccount: SubAccount) => {
@@ -148,18 +169,56 @@ const MenuOptions = ({
       <SheetContent
         showX={!defaultOpen}
         side={"left"}
-        className={clsx(
-          // Sets the background color to a shade with 80% opacity.
-          "bg-background/80 backdrop-blur-xl fixed top-0 border-none py-6 px-2 ",
+        className={cn(
+          "bg-background/80 backdrop-blur-xl fixed top-0 border-r-[1px] py-6 px-2",
+          "transition-all duration-300 ease-in-out",
           {
-            //Shows the element as an inline-block on medium-sized screens and larger.
-            "hidden md:inline-block z-0 w-[310px]": defaultOpen,
-            //This is applied when defaultOpn is false. Hides the element on medium-sized screens and larger(which is a full-width sidebar will be hidden, else we will have 2 sidebar).
-            "inline-block md:hidden z-[100] w-full": !defaultOpen,
-          }
+            "md:inline-block z-0": defaultOpen,
+            "inline-block md:hidden z-[100]": !defaultOpen,
+          },
+          isCollapsed ? "w-[60px]" : "w-[260px]"
         )}
       >
-        <div>
+        <Button
+          variant="ghost"
+          size="icon"
+          className={cn(
+            "absolute right-1 top-2",
+            "rounded-full",
+            "hidden md:flex items-center justify-center", // Only show on md and above
+            "hover:scale-105 transition-all duration-300",
+            // Light mode styles
+            "bg-background border-2 border-border",
+            "hover:bg-primary-foreground",
+            // Dark mode styles
+            "dark:bg-muted dark:hover:bg-gray-800",
+            "dark:border-border",
+            // Shadow and blur effects
+            "shadow-sm backdrop-blur-sm",
+            isCollapsed ? "rotate-180" : "",
+            "!z-50"
+          )}
+          onClick={handleCollapse}
+        >
+          <ChevronsLeft
+            className={cn(
+              "h-4 w-4",
+              "text-muted-foreground",
+              "transition-colors duration-300",
+              "group-hover:text-primary"
+            )}
+          />
+        </Button>
+
+        <div
+          className={clsx(
+            "transition-all duration-300",
+            isCollapsed
+              ? "opacity-0 invisible w-0"
+              : "opacity-100 visible w-auto"
+          )}
+        >
+          {/* Logo */}
           <AspectRatio ratio={16 / 5}>
             <Image
               src={sidebarLogo}
@@ -168,6 +227,7 @@ const MenuOptions = ({
               className="rounded-md object-contain"
             />
           </AspectRatio>
+
           <Popover>
             <PopoverTrigger asChild>
               <Button
@@ -176,9 +236,9 @@ const MenuOptions = ({
               >
                 <div className="flex items-center text-left gap-2">
                   <Compass />
-                  <div className="flex flex-col whitespace-pre-wrap text-yellow-700 font-bold hover:text-yellow-600 leading-5">
+                  <div className="flex flex-col whitespace-pre-wrap text-xs text-yellow-700 font-bold hover:text-yellow-600 leading-5">
                     {details.name}
-                    <span className="text-muted-foreground">
+                    <span className="text-muted-foreground text-xs">
                       {details.address}
                     </span>
                   </div>
@@ -186,9 +246,13 @@ const MenuOptions = ({
                 <ChevronsUpDown size={16} className="text-muted-foreground" />
               </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-80 md:w-[282px] h-80 mt-4 z-[200]">
-              <Command className="rounded-lg shadow-md">
-                <CommandInput placeholder="Search Accounts..." />
+
+            <PopoverContent className="w-80 md:w-[242px] h-80 mt-4 z-[200]">
+              <Command className="text-xs rounded-lg shadow-md !m-0">
+                <CommandInput
+                  placeholder="Search Accounts..."
+                  className="text-xs"
+                />
                 <CommandList>
                   <CommandEmpty>No results found</CommandEmpty>
                   {(user?.role === "AGENCY_OWNER" ||
@@ -209,9 +273,9 @@ const MenuOptions = ({
                                   className="rounded-md object-contain"
                                 />
                               </div>
-                              <div className="flex flex-col flex-1 text-yellow-700 hover:text-yellow-600">
+                              <div className="flex flex-col flex-1 text-yellow-700 hover:text-yellow-600 text-xs">
                                 {user?.Agency?.name}
-                                <span className="text-muted-foreground">
+                                <span className="text-muted-foreground font-medium text-xs">
                                   {user?.Agency?.address}
                                 </span>
                               </div>
@@ -230,9 +294,9 @@ const MenuOptions = ({
                                     className="rounded-md object-contain"
                                   />
                                 </div>
-                                <div className="flex flex-col flex-1">
+                                <div className="flex flex-col flex-1 text-xs">
                                   {user?.Agency?.name}
-                                  <span className="text-muted-foreground">
+                                  <span className="text-muted-foreground font-medium text-xs">
                                     {user?.Agency?.address}
                                   </span>
                                 </div>
@@ -247,29 +311,11 @@ const MenuOptions = ({
                   <CommandGroup heading="Sub Accounts">
                     {!!sortedSubAccounts // Use sortedSubAccounts instead of subAccounts
                       ? sortedSubAccounts.map((subaccount) => (
-                        <CommandItem key={subaccount.id}>
-                          {defaultOpen ? (
-                            <Link
-                              href={`/subaccount/${subaccount.id}`}
-                              className="flex gap-4 w-full h-full"
-                            >
-                              <div className="relative w-16">
-                                <Image
-                                  src={subaccount.subAccountLogo}
-                                  alt="subaccount Logo"
-                                  fill
-                                  className="rounded-md object-contain"
-                                />
-                              </div>
-                              <div className="flex flex-col flex-1">
-                                {subaccount.name}
-                                <span className="text-muted-foreground">
-                                  {subaccount.address}
-                                </span>
-                              </div>
-                            </Link>
-                          ) : (
-                            <SheetClose asChild>
+                          <CommandItem
+                            className="!bg-transparent mb-1 border border-border rounded-md hover:!bg-muted cursor-pointer transition-all"
+                            key={subaccount.id}
+                          >
+                            {defaultOpen ? (
                               <Link
                                 href={`/subaccount/${subaccount.id}`}
                                 className="flex gap-4 w-full h-full"
@@ -282,35 +328,58 @@ const MenuOptions = ({
                                     className="rounded-md object-contain"
                                   />
                                 </div>
-                                <div className="flex flex-col flex-1">
+                                <div className="flex flex-col flex-1 text-xs">
                                   {subaccount.name}
-                                  <span className="text-muted-foreground">
+                                  <span className="text-muted-foreground font-medium text-xs">
                                     {subaccount.address}
                                   </span>
                                 </div>
                               </Link>
-                            </SheetClose>
-                          )}
-                        </CommandItem>
-                      ))
+                            ) : (
+                              <SheetClose asChild>
+                                <Link
+                                  href={`/subaccount/${subaccount.id}`}
+                                  className="flex gap-4 w-full h-full"
+                                >
+                                  <div className="relative w-16">
+                                    <Image
+                                      src={subaccount.subAccountLogo}
+                                      alt="subaccount Logo"
+                                      fill
+                                      className="rounded-md object-contain"
+                                    />
+                                  </div>
+                                  <div className="flex flex-col flex-1 text-xs">
+                                    {subaccount.name}
+                                    <span className="text-muted-foreground font-medium text-xs">
+                                      {subaccount.address}
+                                    </span>
+                                  </div>
+                                </Link>
+                              </SheetClose>
+                            )}
+                          </CommandItem>
+                        ))
                       : "No Accounts"}
                   </CommandGroup>
                 </CommandList>
                 {(user?.role === "AGENCY_OWNER" ||
                   user?.role === "AGENCY_ADMIN") && (
-                    <SheetClose>
-                      <Button
-                        className="w-full flex gap-2 bg-blue-700/30 hover:bg-blue-700/10"
-                        onClick={handleCreateSubaccount}
-                      >
-                        <PlusCircleIcon size={15} />
-                        Create Sub Account
-                      </Button>
-                    </SheetClose>
-                  )}
+                  <SheetClose>
+                    <Button
+                      className="w-full flex gap-2 bg-blue-700/30 hover:bg-blue-700/10"
+                      onClick={handleCreateSubaccount}
+                    >
+                      <PlusCircleIcon size={15} />
+                      Create Sub Account
+                    </Button>
+                  </SheetClose>
+                )}
               </Command>
             </PopoverContent>
           </Popover>
+
+          {/* Navigation Menu */}
           <div className="px-2">
             <p className="text-muted-foreground text-xs mb-2">MENU LINKS</p>
             <Separator className="mb-2" />
@@ -342,11 +411,11 @@ const MenuOptions = ({
                         return (
                           <CommandItem
                             key={sidebarOptions.id}
-                            className="md:w-[320px] w-full"
+                            className="md:w-[270px] w-full"
                           >
                             <Link
                               href={sidebarOptions.link}
-                              className="flex items-center gap-3 hover:bg-transparent rounded-md transition-all md-w-full w-[290px]"
+                              className="flex items-center gap-3 hover:bg-transparent rounded-md transition-all md-w-full w-[240px]"
                             >
                               {val}
                               <span>{sidebarOptions.name}</span>
@@ -360,9 +429,16 @@ const MenuOptions = ({
             </nav>
           </div>
         </div>
-        <div className="flex items-end justify-end md:mt-0 mt-10">
+   
+        {/* User Button */}
+        <div
+          className={clsx(
+            "flex items-center justify-end md:mt-0 mt-10",
+            isCollapsed ? "mt-auto" : ""
+          )}
+        >
           <UserButton
-            showName
+            showName={!isCollapsed}
             afterSignOutUrl="/"
             appearance={{
               elements: {
@@ -391,7 +467,9 @@ const MenuOptions = ({
                 Limit Reached
               </AlertDialogTitle>
               <AlertDialogDescription className="mt-2">
-                You have reached the maximum number of subaccounts allowed for your current plan. Please upgrade your current plan to align your needs.
+                You have reached the maximum number of subaccounts allowed for
+                your current plan. Please upgrade your current plan to align
+                your needs.
               </AlertDialogDescription>
             </AlertDialogHeader>
             {/* List of features or benefits of upgrading */}
@@ -412,7 +490,7 @@ const MenuOptions = ({
               <AlertDialogAction
                 className="bg-blue-700 text-white"
                 onClick={() => {
-                  // Redirect to the billing page or handle upgrade logic  
+                  // Redirect to the billing page or handle upgrade logic
                   window.location.href = `/agency/${user?.Agency?.id}/billing`;
                 }}
               >
