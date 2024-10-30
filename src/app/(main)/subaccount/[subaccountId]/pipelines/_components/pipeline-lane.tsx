@@ -33,6 +33,7 @@ import CustomModal from "@/components/global/custom-modal";
 import TicketForm from "@/components/forms/ticket-form";
 import PipelineTicket from "./pipeline-ticket";
 import { Button } from "@/components/ui/button";
+import { useSidebarContext } from "@/providers/sidebar-provider";
 
 interface PipelaneLaneProps {
   setAllTickets: Dispatch<SetStateAction<TicketWithTags>>;
@@ -59,6 +60,7 @@ const PipelineLane: React.FC<PipelaneLaneProps> = ({
 }) => {
   const { setOpen } = useModal();
   const router = useRouter();
+  const { isCollapsed } = useSidebarContext(); // Get sidebar state
 
   const amt = new Intl.NumberFormat(undefined, {
     style: "currency",
@@ -132,7 +134,10 @@ const PipelineLane: React.FC<PipelaneLaneProps> = ({
         //so, manually push it around to make it work.
         if (snapshot.isDragging) {
           //@ts-ignore
-          const offset = { x: 250, y: -5 };
+          const offset = {
+            x: isCollapsed ? 60 : 250, // Adjust offset based on sidebar state
+            y: -5
+          };
           //@ts-ignore
           const x = provided.draggableProps.style?.left - offset.x;
           //@ts-ignore
