@@ -245,30 +245,30 @@ const FilterPopover: React.FC<FilterPopoverProps> = ({
                         "p-2 rounded-sm flex items-center gap-2 cursor-pointer transition-all duration-200",
                         {
                           // Unselected state - lighter background with colored text
-                          "bg-[#57acea]/10 text-[#3aa6f4]":
+                          "bg-[#376fc2]/10 !text-[#2d70a0]":
                             tag.color === "BLUE",
-                          "bg-[#ffac7e]/10 text-[#ffac7e]":
+                          "!bg-[#ffac7e]/10 !text-[#ffac7e]":
                             tag.color === "ORANGE",
-                          "bg-rose-500/10 text-rose-500": tag.color === "ROSE",
-                          "bg-emerald-400/10 text-emerald-400":
+                          "!bg-rose-500/10 !text-rose-500": tag.color === "ROSE",
+                          "!bg-emerald-400/30 !text-emerald-400":
                             tag.color === "GREEN",
-                          "bg-purple-400/10 text-purple-400":
+                          "!bg-purple-400/10 !text-purple-400":
                             tag.color === "PURPLE",
 
                           // Selected state - full color background with white text
-                          "bg-[#2d68d6] !text-white":
+                          "!bg-[#2d68d6] !text-slate-100":
                             selectedTags.includes(tag.id) &&
                             tag.color === "BLUE",
-                          "bg-[#db682a] text-white":
+                          "!bg-[#db682a] !text-slate-100":
                             selectedTags.includes(tag.id) &&
                             tag.color === "ORANGE",
-                          "bg-[#f42f2f] text-white":
+                          "!bg-[#f42f2f] !text-slate-100":
                             selectedTags.includes(tag.id) &&
                             tag.color === "ROSE",
-                          "bg-[#23ac95] text-white":
+                          "!bg-[#14917c] !text-slate-100":
                             selectedTags.includes(tag.id) &&
                             tag.color === "GREEN",
-                          "bg-[#8628d3] text-white":
+                          "!bg-[#8628d3] !text-slate-100":
                             selectedTags.includes(tag.id) &&
                             tag.color === "PURPLE",
                         }
