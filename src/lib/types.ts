@@ -100,6 +100,8 @@ export type NotificationWithUser =
         role: Role;
         agencyId: string | null;
       };
+      isRead: boolean;
+      ticketId: string | null;
     } & Notification)[]
   | undefined;
 
@@ -169,7 +171,6 @@ export const LaneFormSchema = z.object({
   name: z.string().min(1, "Lane name is required"),
 });
 
-  
 export type TicketWithTags = Prisma.PromiseReturnType<
   typeof getTicketsWithTags
 >;

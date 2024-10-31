@@ -57,16 +57,20 @@ export const saveActivityLogsNotification = async ({
   agencyId,
   description,
   subaccountId,
+  isRead = false,
+  ticketId,
+  assignedUserId,
 }: {
   agencyId?: string;
   description: string;
   subaccountId?: string;
+  isRead?: boolean;
+  ticketId?: string;
+  assignedUserId?: string;
 }) => {
-  console.log("Starting saveActivityLogsNotification");
   const authUser = await currentUser();
   let userData;
   if (!authUser) {
-    console.log("No authUser found, finding user by subaccountId");
     const response = await db.user.findFirst({
       where: {
         Agency: {
@@ -110,49 +114,61 @@ export const saveActivityLogsNotification = async ({
 
   try {
     if (subaccountId) {
-      console.log("Creating notification with subaccountId");
-      await db.notification.create({
-        data: {
-          notification: `${userData.name} | ${description}`,
-          User: {
-            connect: {
-              id: userData.id,
-            },
-          },
-          Agency: {
-            connect: {
-              id: foundAgencyId,
-            },
-          },
-          SubAccount: {
-            connect: { id: subaccountId },
+      // Create notification data with proper Prisma type
+      const notificationData: Prisma.NotificationCreateInput = {
+        notification: `${userData.name} | ${description}`,
+        isRead,
+        // If ticketId exists, create a relation to the Ticket model
+        ...(ticketId && { ticket: { connect: { id: ticketId } } }), // Connect to ticket using proper Prisma relation
+        // Connect to User model - either assignedUser or current user
+        User: {
+          connect: {
+            id: assignedUserId || userData.id,
           },
         },
+        // Connect to Agency model
+        Agency: {
+          connect: {
+            id: foundAgencyId!,
+          },
+        },
+        // Connect to SubAccount model
+        SubAccount: {
+          connect: { id: subaccountId },
+        },
+      };
+
+      console.log("Creating notification with data:", notificationData);
+      const createdNotification = await db.notification.create({
+        data: notificationData,
       });
-      console.log("Notification created with subaccountId");
+      console.log("Created notification:", createdNotification);
     } else {
-      console.log("Creating notification without subaccountId");
-      await db.notification.create({
-        data: {
-          notification: `${userData.name} | ${description}`,
-          User: {
-            connect: {
-              id: userData.id,
-            },
-          },
-          Agency: {
-            connect: {
-              id: foundAgencyId,
-            },
+      const notificationData: Prisma.NotificationCreateInput = {
+        notification: `${userData.name} | ${description}`,
+        isRead,
+        ...(ticketId && { ticket: { connect: { id: ticketId } } }),
+        User: {
+          connect: {
+            id: assignedUserId || userData.id,
           },
         },
+        Agency: {
+          connect: {
+            id: foundAgencyId!,
+          },
+        },
+      };
+
+      const createdNotification = await db.notification.create({
+        data: notificationData,
       });
-      console.log("Notification created without subaccountId");
+      console.log("Created notification:", createdNotification);
     }
   } catch (error) {
     console.error("Error saving notification:", error);
   }
-};
+}
 
 export const createTeamUser = async (agencyId: string, user: User) => {
   if (user.role === "AGENCY_OWNER") {
@@ -327,10 +343,18 @@ export const getNotificationAndUser = async (agencyId: string) => {
   try {
     const response = await db.notification.findMany({
       where: { agencyId },
-      include: { User: true },
-      orderBy: {
-        createdAt: "desc",
+      include: {
+        User: true,
+        ticket: true, // Include ticket data
       },
+       orderBy: [
+        {
+          ticketId: 'desc', // Put ticket notifications first
+        },
+        {
+          createdAt: 'desc',
+        },
+      ],
     });
     return response;
   } catch (error) {

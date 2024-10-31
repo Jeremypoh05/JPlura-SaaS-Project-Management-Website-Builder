@@ -23,6 +23,7 @@ import {
   Edit,
   LinkIcon,
   MoreHorizontalIcon,
+  PinIcon,
   Trash,
   User2,
 } from "lucide-react";
@@ -55,6 +56,7 @@ import {
 import { toast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge"; // Ensure you import the Badge component
+import { useSidebarContext } from "@/providers/sidebar-provider";
 
 type Props = {
   setAllTickets: Dispatch<SetStateAction<TicketWithTags>>;
@@ -93,6 +95,7 @@ const PipelineTicket = ({
 }: Props) => {
   const router = useRouter();
   const { setOpen, data } = useModal();
+  const { isCollapsed } = useSidebarContext(); // Get sidebar state
   const [isHovered, setIsHovered] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [timeLeft, setTimeLeft] = useState<string | null>(null); // State for time left
@@ -196,13 +199,15 @@ const PipelineTicket = ({
           if (hoursLeft > 0) {
             // If there's at least one hour left, show hours and minutes
             setTimeLeft(
-              `⚠️ ${hoursLeft} hour${hoursLeft !== 1 ? "s" : ""
+              `⚠️ ${hoursLeft} hour${
+                hoursLeft !== 1 ? "s" : ""
               } and ${minutesLeft} minute${minutesLeft !== 1 ? "s" : ""} left`
             );
           } else if (minutesLeft > 0) {
             // Show minutes and seconds if minutes are left
             setTimeLeft(
-              `⚠️ ${minutesLeft} minute${minutesLeft !== 1 ? "s" : ""
+              `⚠️ ${minutesLeft} minute${
+                minutesLeft !== 1 ? "s" : ""
               } and ${secondsLeft} second${secondsLeft !== 1 ? "s" : ""} left`
             );
           } else if (secondsLeft > 0) {
@@ -272,7 +277,10 @@ const PipelineTicket = ({
     <Draggable draggableId={ticket.id.toString()} index={index}>
       {(provided, snapshot) => {
         if (snapshot.isDragging) {
-          const offset = { x: 256, y: 0 };
+          const offset = {
+            x: isCollapsed ? 56 : 256, // Adjust offset based on sidebar state
+            y: 0,
+          };
           //@ts-ignore
           const x = provided.draggableProps.style?.left - offset.x;
           //@ts-ignore
@@ -293,30 +301,44 @@ const PipelineTicket = ({
             <AlertDialog>
               <DropdownMenu>
                 <Card
-                  className={`pipeline-ticket mt-4 mb-5 !shadow-sm !shadow-slate-200/50 ${daysLeft !== null &&
-                      daysLeft <= effectiveWarningThreshold &&
-                      !isOverdue &&
-                      !ticket.completed
+                  className={`pipeline-ticket mt-4 mb-5 !shadow-sm !shadow-slate-200/50 relative ${
+                    daysLeft !== null &&
+                    daysLeft <= effectiveWarningThreshold &&
+                    !isOverdue &&
+                    !ticket.completed
                       ? "border border-yellow-500"
                       : ""
-                    }
+                  }
                        ${isOverdue && !ticket.completed ? "border-red-500" : ""}
-    rounded-lg `}
+                        rounded-lg `}
                   onMouseMove={handleMouseMove}
                 >
+                  {/* Show pin icon only if ticket is pinned */}
+                  {ticket.isPinned && (
+                    <div className="absolute -top-4 -right-4 transform rotate-45 transition-transform hover:scale-110 z-10">
+                      <div className="relative">
+                        <div className="absolute inset-0 bg-orange-400 rounded-full blur-sm"></div>
+                        <div className="relative bg-gradient-to-br from-red-400 to-red-600 rounded-full p-2 shadow-lg">
+                          <PinIcon size={14} className="text-white" />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Status Badges */}
                   {ticket.completed ? (
-                    <div className="flex justify-end p-2 text-xs items-center border-b-2 rounded-sm">
-                      <Badge className="badge bg-green-700 ml-auto text-center text-zinc-300 flex justify-center items-center w-[100px]">
+                    <div className="flex justify-end p-2 text-xs items-center border-b border-slate-200 dark:border-slate-700 rounded-sm">
+                      <Badge className="badge bg-green-700 ml-auto text-center text-slate-100 dark:text-zinc-300 flex justify-center items-center w-[100px]">
                         COMPLETED
                       </Badge>
                     </div>
                   ) : (
                     (isOverdue || timeLeft) && (
-                      <div className="flex justify-end p-2 text-xs items-center border-b-2 rounded-sm">
+                        <div className="flex justify-end p-2 text-xs items-center border-b border-slate-200 dark:border-slate-700 rounded-sm">
                         {isOverdue ? (
                           <Badge
                             variant="destructive"
-                            className="ml-auto text-center text-zinc-300 flex justify-center items-center w-[100px]"
+                            className="ml-auto text-center text-slate-100 dark:text-zinc-300 flex justify-center items-center w-[100px]"
                           >
                             OVERDUE
                           </Badge>
@@ -326,6 +348,8 @@ const PipelineTicket = ({
                       </div>
                     )
                   )}
+
+                  {/* Card Content */}
                   <CardHeader className="card-header">
                     <CardTitle className="flex items-start justify-between">
                       <span className="text-base w-full">{ticket.name}</span>
@@ -335,7 +359,7 @@ const PipelineTicket = ({
                     </CardTitle>
                     <div className="flex items-center gap-2 border-amber-500 border rounded-lg p-1">
                       <Clock2 className="text-amber-500 " />
-                      <span className="text-zinc-300 text-xs">
+                      <span className="text-zinc-700 dark:text-zinc-300 text-xs">
                         {`${formatDate(ticket.startDate)} - ${formatDate(
                           ticket.dueDate
                         )}`}
@@ -412,8 +436,8 @@ const PipelineTicket = ({
                           className={
                             ticket.assignedUserId
                               ? getAvatarColor(
-                                ticket.Assigned?.name || "Assigned User"
-                              )
+                                  ticket.Assigned?.name || "Assigned User"
+                                )
                               : "bg-primary"
                           }
                         >

@@ -126,9 +126,12 @@ Table Ticket {
   Customer Contact
   assignedUserId String
   Assigned User
+  isPinned Boolean [not null, default: false]
+  pinnedAt DateTime
   startDate DateTime
   dueDate DateTime
   completed Boolean [not null, default: false]
+  Notifications Notification [not null]
 }
 
 Table Contact {
@@ -219,6 +222,9 @@ Table Notification {
   agencyId String [not null]
   subAccountId String
   userId String [not null]
+  isRead Boolean [not null, default: false]
+  ticketId String
+  ticket Ticket
   User User [not null]
   Agency Agency [not null]
   SubAccount SubAccount
@@ -338,6 +344,8 @@ Ref: AgencySidebarOption.agencyId > Agency.id [delete: Cascade]
 Ref: SubAccountSidebarOption.subAccountId > SubAccount.id [delete: Cascade]
 
 Ref: Invitation.agencyId > Agency.id [delete: Cascade]
+
+Ref: Notification.ticketId > Ticket.id
 
 Ref: Notification.userId > User.id [delete: Cascade]
 

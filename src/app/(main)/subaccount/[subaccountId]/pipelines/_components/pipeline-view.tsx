@@ -84,6 +84,29 @@ const PipelineView = ({
     setAllLanes(lanes);
   }, [lanes]);
 
+
+  //sorted lanes 
+  useEffect(() => {
+    const sortedLanes = lanes.map(lane => ({
+      ...lane,
+      Tickets: [...lane.Tickets].sort((a, b) => {
+        // First priority: Pin status
+        if (a.isPinned && !b.isPinned) return -1;  // If A is pinned but B isn't, A goes first
+        if (!a.isPinned && b.isPinned) return 1;  // If B is pinned but A isn't, B goes first
+
+        // Second priority: If both tickets are pinned, sort by pinnedAt date
+        if (a.isPinned && b.isPinned) {
+          // More recently pinned tickets go on top
+          return new Date(b.pinnedAt!).getTime() - new Date(a.pinnedAt!).getTime();
+        }
+
+        // If neither ticket is pinned, maintain original order
+        return a.order - b.order;
+      })
+    }));
+    setAllLanes(sortedLanes); // Update lanes state with sorted tickets
+  }, [lanes]); // Re-run when lanes data changes
+
   // Extract unique tags and count their occurrences across all tickets
   //useMemo used to optimize performance by memoizing values, recalculates a value only when one of its dependencies changes. 
   //Without useMemo, every re-render of the component would cause this tag calculation logic to execute again,
@@ -236,8 +259,7 @@ const PipelineView = ({
   //The ticketsFromAllLanes array is used to display all the tickets across all the lanes, and the allTickets state variable is used to keep track of the current state of the tickets array, so that any updates to the tickets can be reflected in the UI.
   const [allTickets, setAllTickets] = useState(ticketsFromAllLanes);
 
-  console.log("All tickets", allTickets);
-
+  // console.log("All tickets", allTickets);
   const handleAddLane = () => {
     setOpen(
       <CustomModal

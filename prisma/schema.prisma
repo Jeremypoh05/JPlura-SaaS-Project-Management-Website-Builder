@@ -198,9 +198,15 @@ model Ticket {
   assignedUserId String?
   Assigned       User?   @relation(fields: [assignedUserId], references: [id], onDelete: SetNull)
 
+  isPinned    Boolean   @default(false)// Track if ticket is pinned or not, defaults to false
+  pinnedAt    DateTime?  // Optional timestamp for when ticket was pinned, used for ordering pinned tickets
+
   startDate      DateTime?  
   dueDate        DateTime?  
   completed Boolean @default(false)
+
+  Notifications Notification[] 
+
 
   @@index([laneId])
   @@index([customerId])
@@ -331,6 +337,9 @@ model Notification {
   agencyId     String
   subAccountId String?
   userId       String
+  isRead       Boolean   @default(false)
+  ticketId     String?
+  ticket       Ticket?   @relation(fields: [ticketId], references: [id])
 
   User       User        @relation(fields: [userId], references: [id], onDelete: Cascade) //the notification can only have only one user 
   Agency     Agency      @relation(fields: [agencyId], references: [id], onDelete: Cascade) //the notification can only have only one agency 
@@ -339,6 +348,7 @@ model Notification {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  @@index([ticketId])
   @@index([agencyId])
   @@index([subAccountId])
   @@index([userId])

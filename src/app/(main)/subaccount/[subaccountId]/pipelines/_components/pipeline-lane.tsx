@@ -70,7 +70,7 @@ const PipelineLane: React.FC<PipelaneLaneProps> = ({
   //Everytime the ticket change, only then we create a lane amount to get and recalculate our lane amount.
   //The useMemo hook is used to memorize the laneAmt function, which means it will only be executed when the tickets array changes.
   const laneAmt = useMemo(() => {
-    console.log(tickets);
+    // console.log(tickets);
     return tickets.reduce(
       // If the value property is not present or is not a number, it defaults to 0. The result is then returned and used to display the total value of the tickets in the lane.
       (sum, ticket) => sum + (Number(ticket?.value) || 0),

@@ -43,6 +43,7 @@ import {
   ChevronsUpDownIcon,
   User2,
   Calendar as CalendarIcon,
+  PinIcon,
 } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { Button } from "../ui/button";
@@ -56,6 +57,7 @@ import {
 import { cn } from "@/lib/utils";
 import Loading from "../global/loading";
 import TagCreator from "../global/tag-creator";
+import { currentUser } from "@clerk/nextjs";
 
 type Props = {
   laneId: string;
@@ -90,6 +92,8 @@ const TicketForm = ({ laneId, subaccountId, getNewTicket, triggerConfetti }: Pro
   const [completed, setCompleted] = useState(
     defaultData.ticket?.completed || false
   );
+  // State to track if ticket is pinned, initialized from existing ticket data or false
+  const [isPinned, setIsPinned] = useState(defaultData.ticket?.isPinned || false);
 
   const handleStartDateChange = (date: Date | undefined) => {
     // Update the start date state with the new date
@@ -145,7 +149,6 @@ const TicketForm = ({ laneId, subaccountId, getNewTicket, triggerConfetti }: Pro
     if (subaccountId) {
       const fetchData = async () => {
         const response = await getSubAccountTeamMembers(subaccountId);
-        console.log(response);
         if (response) setAllTeamMembers(response);
       };
       fetchData();
@@ -215,8 +218,8 @@ const TicketForm = ({ laneId, subaccountId, getNewTicket, triggerConfetti }: Pro
     const finalStartDate = showStartDate
       ? startDate
       : ticketExists && defaultData.ticket?.startDate
-      ? new Date(defaultData.ticket?.startDate)
-      : currentDate; // Use current date if no start date is selected
+        ? new Date(defaultData.ticket?.startDate)
+        : currentDate; // Use current date if no start date is selected
     /*
      Condition 1: showStartDate
       If showStartDate is true, it means the user has checked the checkbox to indicate they want to set a start date. In this case, finalStartDate is set to the current value of startDate.
@@ -230,8 +233,8 @@ const TicketForm = ({ laneId, subaccountId, getNewTicket, triggerConfetti }: Pro
     const finalDueDate = showDueDate
       ? dueDate
       : ticketExists && defaultData.ticket?.dueDate
-      ? new Date(defaultData.ticket?.dueDate)
-      : null; // Use existing date or null if it doesn't exist
+        ? new Date(defaultData.ticket?.dueDate)
+        : null; // Use existing date or null if it doesn't exist
 
     try {
       const response = await upsertTicket(
@@ -243,20 +246,48 @@ const TicketForm = ({ laneId, subaccountId, getNewTicket, triggerConfetti }: Pro
           startDate: finalStartDate ? finalStartDate.toISOString() : null,
           dueDate: finalDueDate ? finalDueDate.toISOString() : null,
           completed: completed,
+          isPinned: isPinned, // Current pin state
+          pinnedAt: isPinned ? (defaultData.ticket?.pinnedAt || new Date().toISOString()) : null, // If pinned, use existing pinnedAt or set new timestamp, // If unpinned, set to null
           ...(contact ? { customerId: contact } : {}),
         },
         tags
       );
 
+      if (!response) {
+        throw new Error('Failed to create/update ticket');
+      }
+
+      // Create the general activity log
       await saveActivityLogsNotification({
         agencyId: undefined,
-        description: `Updated a ticket | ${response?.name}`,
+        description: `Updated ticket | ${response.name}`,
         subaccountId,
       });
+
+      // Only create assignment notification if:
+      // 1. There's a new assignee (assignedTo exists)
+      // 2. AND either:
+      //    - It's a new ticket (no defaultData.ticket)
+      //    - OR the assignee has changed from the previous one
+      if (assignedTo &&
+        (!defaultData.ticket || defaultData.ticket.assignedUserId !== assignedTo)) {
+        const assigneeName = allTeamMembers.find(member => member.id === assignedTo)?.name || "team member";
+
+        // Create notification for ticket assignment
+        await saveActivityLogsNotification({
+          agencyId: undefined,
+          description: `has assigned ticket: ${response.name} to |${assigneeName}|`,
+          subaccountId,
+          assignedUserId: assignedTo, //ensures the notification goes to assigned user
+          isRead: false,
+          ticketId: response.id //Link notification to the ticket
+        });
+      }
+
       // Call triggerConfetti if the ticket is marked as completed  
       if (completed) {
         triggerConfetti();
-      }  
+      }
 
       toast({
         title: "Success",
@@ -265,6 +296,7 @@ const TicketForm = ({ laneId, subaccountId, getNewTicket, triggerConfetti }: Pro
       if (response) getNewTicket(response);
       router.refresh();
     } catch (error) {
+      console.error('Error saving ticket:', error);
       toast({
         variant: "destructive",
         title: "Oppse!",
@@ -291,9 +323,36 @@ const TicketForm = ({ laneId, subaccountId, getNewTicket, triggerConfetti }: Pro
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-black dark:text-white ">
-                    Ticket Name
-                  </FormLabel>
+                  <div className="flex items-center justify-between gap-4">
+                    <FormLabel className="text-black dark:text-white ">
+                      Ticket Name
+                    </FormLabel>
+                    <div className="flex items-center gap-2">
+                      <Checkbox
+                        id="pinned"
+                        className="border-[1px] border-primary data-[state=checked]:bg-primary data-[state=checked]:text-white"
+                        checked={isPinned} // Controlled component, shows current pin state
+                        onCheckedChange={(checked) => {
+                          if (typeof checked === "boolean") {
+                            setIsPinned(checked); // Update pin state when checkbox changes
+                          }
+                        }}
+                      />
+                      <FormLabel
+                        htmlFor="pinned"
+                        className="flex items-center gap-2 text-sm cursor-pointer"
+                      >
+                        <PinIcon
+                          size={14}
+                          className={cn(
+                            "rotate-45 transition-colors",
+                            isPinned ? "text-primary" : "text-muted-foreground"
+                          )}
+                        />
+                        Pin Ticket
+                      </FormLabel>
+                    </div>
+                  </div>
                   <FormControl>
                     <Input placeholder="Name" {...field} />
                   </FormControl>
@@ -333,15 +392,13 @@ const TicketForm = ({ laneId, subaccountId, getNewTicket, triggerConfetti }: Pro
             <h3>Date & Time</h3>
             <div className="!bg-secondary flex flex-col gap-4 rounded-md border border-input px-5 pb-4 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50">
               <div
-                className={`flex items-center justify-end gap-2 mt-4 border-2 rounded-md ml-auto w-[170px] p-2 ${
-                  completed ? "border-green-500" : "border-rose-500"
-                }`}
+                className={`flex items-center justify-end gap-2 mt-4 border-2 rounded-md ml-auto w-[170px] p-2 ${completed ? "border-green-500" : "border-rose-500"
+                  }`}
               >
                 <Checkbox
                   id="completed"
-                  className={`${
-                    completed ? "border-green-500" : "border-rose-500"
-                  }`}
+                  className={`${completed ? "border-green-500" : "border-rose-500"
+                    }`}
                   checked={completed}
                   onCheckedChange={(checked) => {
                     if (typeof checked === "boolean") {
@@ -350,9 +407,8 @@ const TicketForm = ({ laneId, subaccountId, getNewTicket, triggerConfetti }: Pro
                   }}
                 />
                 <FormLabel
-                  className={`mt-[2px] ${
-                    completed ? "text-white" : "text-muted-foreground"
-                  }`}
+                  className={`mt-[2px] ${completed ? "text-white" : "text-muted-foreground"
+                    }`}
                   htmlFor="completed"
                 >
                   Mark as Completed
