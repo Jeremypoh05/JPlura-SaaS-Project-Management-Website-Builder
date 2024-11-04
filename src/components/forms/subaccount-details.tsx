@@ -80,6 +80,7 @@ const SubAccountDetails: React.FC<SubAccountDetailsProps> = ({
   const [suggestion, setSuggestion] = useState("");
 
   const form = useForm<z.infer<typeof formSchema>>({
+    mode: "onChange",
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: details?.name,
