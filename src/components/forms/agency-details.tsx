@@ -82,6 +82,7 @@ const FormSchema = z.object({
     message: "Please enter a valid country.",
   }),
   agencyLogo: z.string().min(1),
+  goal: z.number().min(1).default(5),
 });
 
 const AgencyDetails = ({ data }: Props) => {
@@ -106,6 +107,7 @@ const AgencyDetails = ({ data }: Props) => {
       state: data?.state,
       country: data?.country,
       agencyLogo: data?.agencyLogo,
+      goal: data?.goal || 5,
     },
   });
 
@@ -123,7 +125,9 @@ const AgencyDetails = ({ data }: Props) => {
     const result = countryList.includes(value);
     if (!result) {
       const suggestedCountry = fuse.search(value)?.[0]?.item;
-      setSuggestion(suggestedCountry ? `Did you mean "${suggestedCountry}"?` : "");
+      setSuggestion(
+        suggestedCountry ? `Did you mean "${suggestedCountry}"?` : ""
+      );
     } else {
       setSuggestion("");
     }
@@ -131,7 +135,7 @@ const AgencyDetails = ({ data }: Props) => {
 
   const handleSubmit = async (values: z.infer<typeof FormSchema>) => {
     validateCountry(values.country);
-    
+
     if (suggestion) {
       toast({
         variant: "destructive",
@@ -171,7 +175,6 @@ const AgencyDetails = ({ data }: Props) => {
 
         //responsible for creating a new Stripe customer when an agency is being created or updated with customerId
         //fetch API to send a POST request to the /api/stripe/create-customer endpoint with the necessary customer data.
-
         const customerResponse = await fetch("/api/stripe/create-customer", {
           method: "POST",
           headers: {
@@ -212,8 +215,11 @@ const AgencyDetails = ({ data }: Props) => {
         updatedAt: new Date(),
         companyEmail: values.companyEmail,
         connectAccountId: "",
-        goal: 5,
+        goal: values.goal,
       };
+
+      // Check if goal has changed (only for existing agencies)
+      const hasGoalChanged = data?.id && data.goal !== values.goal;
 
       // Check if data.id is not present, indicating a new agency creation
       if (!data?.id) {
@@ -223,10 +229,19 @@ const AgencyDetails = ({ data }: Props) => {
           title: "Created Agency",
           description: "Your agency has been successfully created.",
         });
-        if (data?.id) return router.refresh(); //might unnecessary
       } else {
         // Update existing agency
         await updateAgencyDetails(data.id, agencyData);
+
+        // ADDED: Save activity log if goal changed
+        if (hasGoalChanged) {
+          await saveActivityLogsNotification({
+            agencyId: data.id,
+            description: `Updated the agency goal to | ${values.goal} Sub Account`,
+            subaccountId: undefined,
+          });
+        }
+
         toast({
           title: "Updated Agency",
           description: "Your agency details have been successfully updated.",
@@ -453,30 +468,32 @@ const AgencyDetails = ({ data }: Props) => {
               />
               {/*Set up goal for the agency */}
               {data?.id && (
-                <div className="flex flex-col gap-2">
-                  <FormLabel>Create A Goal</FormLabel>
-                  <FormDescription>
-                    ✨ Create a goal for your agency. As your business grows
-                    your goals grow too so don&rsquo;t forget to set the bar
-                    higher!
-                  </FormDescription>
-                  <NumberInput
-                    defaultValue={data.goal}
-                    onValueChange={async (val: number) => {
-                      if (!data?.id) return;
-                      await updateAgencyDetails(data.id, { goal: val });
-                      await saveActivityLogsNotification({
-                        agencyId: data.id,
-                        description: `Updated the agency goal to | ${val} Sub Account`,
-                        subaccountId: undefined,
-                      });
-                      router.refresh();
-                    }}
-                    min={1}
-                    className="bg-background !border !border-input"
-                    placeholder="Sub Account Goal"
-                  />
-                </div>
+                <FormField
+                  control={form.control}
+                  name="goal"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-col gap-2">
+                      <FormLabel>Create A Goal</FormLabel>
+                      <FormDescription>
+                        ✨ Create a goal for your agency. As your business grows
+                        your goals grow too so don&rsquo;t forget to set the bar
+                        higher!
+                      </FormDescription>
+                      <FormControl>
+                        <NumberInput
+                          value={field.value}
+                          onValueChange={(val: number) => {
+                            field.onChange(val);
+                          }}
+                          min={1}
+                          className="bg-background !border !border-input"
+                          placeholder="Sub Account Goal"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
               )}
               <Button type="submit" disabled={isLoading}>
                 {isLoading ? <Loading /> : "Save Agency Information"}
