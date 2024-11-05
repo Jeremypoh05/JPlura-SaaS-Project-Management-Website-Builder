@@ -116,7 +116,6 @@ const MenuOptions = ({
 
   const sidebarOrder = [
     "Dashboard",
-    "Launchpad",
     "Billing",
     "Settings",
     "Sub Accounts",

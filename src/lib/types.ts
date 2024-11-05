@@ -226,7 +226,7 @@ export type PricesList = Stripe.ApiList<Stripe.Price>;
 export const CreateFunnelFormSchema = z.object({
   name: z.string().min(1),
   description: z.string(),
-  subDomainName: z.string().optional(),
+  subDomainName: z.string().min(1),
   favicon: z.string().optional(),
   published: z.boolean().default(false),
 });

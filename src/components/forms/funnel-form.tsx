@@ -39,7 +39,7 @@ const FunnelForm: React.FC<CreateFunnelProps> = ({
   const { setClose } = useModal();
   const router = useRouter();
   const form = useForm<z.infer<typeof CreateFunnelFormSchema>>({
-    mode: "onChange",
+    mode: "onSubmit",
     resolver: zodResolver(CreateFunnelFormSchema),
     defaultValues: {
       name: defaultData?.name || "",
@@ -109,6 +109,7 @@ const FunnelForm: React.FC<CreateFunnelProps> = ({
                   <FormControl>
                     <Input placeholder="Name" {...field} />
                   </FormControl>
+                  <FormMessage />
                 </FormItem>
               )}
             />
@@ -125,6 +126,7 @@ const FunnelForm: React.FC<CreateFunnelProps> = ({
                       {...field}
                     />
                   </FormControl>
+                  <FormMessage />
                 </FormItem>
               )}
             />
@@ -138,6 +140,7 @@ const FunnelForm: React.FC<CreateFunnelProps> = ({
                   <FormControl>
                     <Input placeholder="Sub domain for funnel" {...field} />
                   </FormControl>
+                  <FormMessage />
                 </FormItem>
               )}
             />
