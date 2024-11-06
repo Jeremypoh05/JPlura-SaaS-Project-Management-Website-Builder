@@ -191,7 +191,7 @@ const FunnelEditorNavigation = ({
           description: funnelData.description || "", // Use empty string if null  
           liveProducts: funnelData.liveProducts || "", // Use empty string if null  
           published: isPublishedState,
-          subDomainName: funnelData.subDomainName || undefined, // Use undefined if null  
+          subDomainName: funnelData.subDomainName || "", // Use undefined if null  
           favicon: funnelData.favicon || undefined, // Use undefined if null  
         },
         funnelId
