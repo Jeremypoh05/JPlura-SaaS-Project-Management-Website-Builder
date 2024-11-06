@@ -62,8 +62,8 @@ type Props = {
   sidebarOpt: AgencySidebarOption[] | SubAccountSidebarOption[];
   sidebarLogo: string;
   details:
-    | UserWithAgency["Agency"]
-    | (SubAccount & { SidebarOption: SubAccountSidebarOption[] });
+  | UserWithAgency["Agency"]
+  | (SubAccount & { SidebarOption: SubAccountSidebarOption[] });
   user: UserWithAgency;
   id: string;
 };
@@ -90,8 +90,8 @@ const MenuOptions = ({
     ? currentPlan === "price_1PQ8HWRqpSbtJ03827K2PbCM"
       ? Infinity // Unlimited Plan
       : currentPlan === "price_1PQ8HVRqpSbtJ038LxC6uWrX"
-      ? 3 // Basic Plan
-      : 1 // Default to 1 subaccount if no plan
+        ? 3 // Basic Plan
+        : 1 // Default to 1 subaccount if no plan
     : 1; // Default to 1 subaccount if no plan
 
   const handleCollapse = (e: React.MouseEvent) => {
@@ -310,11 +310,32 @@ const MenuOptions = ({
                   <CommandGroup heading="Sub Accounts">
                     {!!sortedSubAccounts // Use sortedSubAccounts instead of subAccounts
                       ? sortedSubAccounts.map((subaccount) => (
-                          <CommandItem
-                            className="!bg-transparent mb-1 border border-border rounded-md hover:!bg-muted cursor-pointer transition-all"
-                            key={subaccount.id}
-                          >
-                            {defaultOpen ? (
+                        <CommandItem
+                          className="!bg-transparent mb-1 border border-border rounded-md hover:!bg-muted cursor-pointer transition-all"
+                          key={subaccount.id}
+                        >
+                          {defaultOpen ? (
+                            <Link
+                              href={`/subaccount/${subaccount.id}`}
+                              className="flex gap-4 w-full h-full"
+                            >
+                              <div className="relative w-16">
+                                <Image
+                                  src={subaccount.subAccountLogo}
+                                  alt="subaccount Logo"
+                                  fill
+                                  className="rounded-md object-contain"
+                                />
+                              </div>
+                              <div className="flex flex-col flex-1 text-xs">
+                                {subaccount.name}
+                                <span className="text-muted-foreground font-medium text-xs">
+                                  {subaccount.address}
+                                </span>
+                              </div>
+                            </Link>
+                          ) : (
+                            <SheetClose asChild>
                               <Link
                                 href={`/subaccount/${subaccount.id}`}
                                 className="flex gap-4 w-full h-full"
@@ -334,46 +355,25 @@ const MenuOptions = ({
                                   </span>
                                 </div>
                               </Link>
-                            ) : (
-                              <SheetClose asChild>
-                                <Link
-                                  href={`/subaccount/${subaccount.id}`}
-                                  className="flex gap-4 w-full h-full"
-                                >
-                                  <div className="relative w-16">
-                                    <Image
-                                      src={subaccount.subAccountLogo}
-                                      alt="subaccount Logo"
-                                      fill
-                                      className="rounded-md object-contain"
-                                    />
-                                  </div>
-                                  <div className="flex flex-col flex-1 text-xs">
-                                    {subaccount.name}
-                                    <span className="text-muted-foreground font-medium text-xs">
-                                      {subaccount.address}
-                                    </span>
-                                  </div>
-                                </Link>
-                              </SheetClose>
-                            )}
-                          </CommandItem>
-                        ))
+                            </SheetClose>
+                          )}
+                        </CommandItem>
+                      ))
                       : "No Accounts"}
                   </CommandGroup>
                 </CommandList>
                 {(user?.role === "AGENCY_OWNER" ||
                   user?.role === "AGENCY_ADMIN") && (
-                  <SheetClose>
-                    <Button
-                      className="w-full flex gap-2 bg-blue-700/30 hover:bg-blue-700/10"
-                      onClick={handleCreateSubaccount}
-                    >
-                      <PlusCircleIcon size={15} />
-                      Create Sub Account
-                    </Button>
-                  </SheetClose>
-                )}
+                    <SheetClose>
+                      <Button
+                        className="w-full flex gap-2 bg-blue-700/30 hover:bg-blue-700/10"
+                        onClick={handleCreateSubaccount}
+                      >
+                        <PlusCircleIcon size={15} />
+                        Create Sub Account
+                      </Button>
+                    </SheetClose>
+                  )}
               </Command>
             </PopoverContent>
           </Popover>
@@ -428,7 +428,7 @@ const MenuOptions = ({
             </nav>
           </div>
         </div>
-   
+
         {/* User Button */}
         <div
           className={clsx(
@@ -436,18 +436,20 @@ const MenuOptions = ({
             isCollapsed ? "mt-auto" : ""
           )}
         >
-          <UserButton
-            showName={!isCollapsed}
-            afterSignOutUrl="/"
-            appearance={{
-              elements: {
-                avatarBox: "h-[40px] w-[40px]",
-                userButtonPopoverActionButton__signOut: {
-                  display: "none",
+          <div className="fixed mt-20">
+            <UserButton
+              showName={!isCollapsed}
+              afterSignOutUrl="/"
+              appearance={{
+                elements: {
+                  avatarBox: "h-[40px] w-[40px]",
+                  userButtonPopoverActionButton__signOut: {
+                    display: "none",
+                  },
                 },
-              },
-            }}
-          />
+              }}
+            />
+          </div>
         </div>
       </SheetContent>
 
