@@ -170,6 +170,24 @@ export const saveActivityLogsNotification = async ({
   }
 }
 
+export const updateNotificationsAsRead = async (userId: string) => {
+  try {
+    const response = await db.notification.updateMany({
+      where: {
+        userId: userId,
+        isRead: false,  // Only update unread notifications
+      },
+      data: {
+        isRead: true
+      }
+    });
+    return response;
+  } catch (error) {
+    console.error('Error updating notifications:', error);
+    throw error;
+  }
+};
+
 export const createTeamUser = async (agencyId: string, user: User) => {
   if (user.role === "AGENCY_OWNER") {
     return null; //means that they have already have access
@@ -305,11 +323,6 @@ export const upsertAgency = async (agency: Agency, price?: Plan) => {
               link: `/agency/${agency.id}`,
             },
             {
-              name: "Launchpad",
-              icon: "clipboardIcon",
-              link: `/agency/${agency.id}/launchpad`,
-            },
-            {
               name: "Billing",
               icon: "payment",
               link: `/agency/${agency.id}/billing`,
@@ -422,11 +435,6 @@ export const upsertSubAccount = async (subAccount: SubAccount) => {
           },
           SidebarOption: {
             create: [
-              {
-                name: "Launchpad",
-                icon: "clipboardIcon",
-                link: `/subaccount/${subAccount.id}/launchpad`,
-              },
               {
                 name: "Settings",
                 icon: "settings",
