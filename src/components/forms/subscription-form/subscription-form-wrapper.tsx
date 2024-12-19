@@ -100,7 +100,7 @@ const SubscriptionFormWrapper = ({ customerId, planExists }: Props) => {
         setClose();
         setTimeout(() => {
           window.location.reload();
-        }, 2000);  
+        }, 4000);  
       }
     };
     console.log("created secret", createSecret);
