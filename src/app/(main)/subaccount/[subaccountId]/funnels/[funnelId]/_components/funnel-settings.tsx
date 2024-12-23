@@ -40,7 +40,7 @@ const FunnelSettings: React.FC<FunnelSettingsProps> = async ({
 
     return (
         <div className="flex gap-4 flex-col xl:!flex-row">
-            <Card className="flex-1 flex-shrink">
+            {/* <Card className="flex-1 flex-shrink">
                 <CardHeader>
                     <CardTitle>Funnel Products</CardTitle>
                     <CardDescription>
@@ -60,7 +60,7 @@ const FunnelSettings: React.FC<FunnelSettingsProps> = async ({
                         )}
                     </>
                 </CardContent>
-            </Card>
+            </Card> */}
 
             <FunnelForm subAccountId={subaccountId} defaultData={defaultData} />
         </div>

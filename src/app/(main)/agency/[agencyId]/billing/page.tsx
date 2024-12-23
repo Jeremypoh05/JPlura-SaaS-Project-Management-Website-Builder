@@ -56,7 +56,7 @@ const Billing = async ({ params }: Props) => {
   //fetches the charges for a specific customer (identified by the agencySubscription?.customerId)
   //from the Stripe API using the stripe.charges.list method.
   const charges = await stripe.charges.list({
-    limit: 50,
+    limit: 100,
     customer: agencySubscription?.customerId,
   });
 

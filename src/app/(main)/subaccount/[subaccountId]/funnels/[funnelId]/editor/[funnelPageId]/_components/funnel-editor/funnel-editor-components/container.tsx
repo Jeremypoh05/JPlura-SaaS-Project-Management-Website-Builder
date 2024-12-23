@@ -281,7 +281,7 @@ const Container = ({ element }: Props) => {
         "h-full": type === "__body", // Applying full height for __body type.
         "overflow-y-scroll custom-scrollbar overflow-x-hidden ":
           type === "__body", // Applying overflow auto for __body type.
-        "mb-[30px]": !state.editor.liveMode,
+        "mb-[100px]": !state.editor.liveMode && type !== "container" && type !== "video",
         "flex flex-col md:!flex-row": type === "2Col", // Applying flex layout for 2Col type.
         "!border-blue-500":
           state.editor.selectedElement.id === id &&
