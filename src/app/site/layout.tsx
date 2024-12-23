@@ -8,7 +8,7 @@ const layout = ({ children }: {
     return (
         <ClerkProvider appearance={{ baseTheme: dark }}>
         <main className="h-full">
-            <Navigation />
+        <Navigation />
             {children}
         </main>
         </ClerkProvider>

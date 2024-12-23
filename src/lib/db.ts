@@ -6,7 +6,17 @@ declare global {
 }
 
 // --- The global prisma is only there to ensure hot reloading does not create new PrismaClient instances.----
-export const db = globalThis.prisma || new PrismaClient();
+export const db =
+  globalThis.prisma ||
+  new PrismaClient(
+  //   {
+  //   //keep the original datasource url
+  //   datasources: {
+  //     db: {
+  //       url: process.env.DATABASE_URL,
+  //     },
+  //   },
+  // }
+);
 
 if (process.env.NODE_ENV !== "production") globalThis.prisma = db;
- 
