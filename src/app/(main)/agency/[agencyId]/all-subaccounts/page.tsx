@@ -55,7 +55,7 @@ const AllSubaccountsPage = ({ params }: Props) => {
   const currentPlan = user.Agency?.Subscription?.plan; // Get the current plan  
   const maxSubaccounts = currentPlan ?
     (currentPlan === "price_1PQ8HWRqpSbtJ03827K2PbCM" ? Infinity : // Unlimited Plan  
-      currentPlan === "price_1PQ8HVRqpSbtJ038LxC6uWrX" ? 4 : // Basic Plan  
+      currentPlan === "price_1PQ8HVRqpSbtJ038LxC6uWrX" ? 5 : // Basic Plan  
         2) // Default to 1 subaccount if no plan  
     : 2; // Default to 1 subaccount if no plan  
 
