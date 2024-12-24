@@ -688,7 +688,7 @@ export default async function Home() {
                     ))}
                 </div>
                 <Link
-                  href={`/agency?plan=${card.id}`}
+                  href="/agency"
                   className={clsx(
                     "w-full text-center p-2 rounded-md transition duration-300 ",
                     {
@@ -710,34 +710,54 @@ export default async function Home() {
       {/* FAQ Section */}
       <section className="flex flex-col gap-4 justify-center items-center mt-20 pt-20 pb-20 bg-secondary/30">
         <div className="container">
-          <h2 className="text-4xl font-bold text-center mb-10">
-            Frequently Asked Questions
-          </h2>
-          <Accordion
-            type="single"
-            collapsible
-            className="w-full max-w-3xl mx-auto"
-          >
+          <h2 className="text-4xl font-bold text-center mb-10">Frequently Asked Questions</h2>
+          <Accordion type="single" collapsible className="w-full max-w-3xl mx-auto">
             <AccordionItem value="item-1">
               <AccordionTrigger>What is JPlura?</AccordionTrigger>
               <AccordionContent>
-                JPlura is a comprehensive SaaS platform that helps agencies
-                manage their clients, projects, and websites all in one place.
+                JPlura is a comprehensive SaaS platform that helps agencies manage their clients, projects, and websites all in one place.
               </AccordionContent>
             </AccordionItem>
             <AccordionItem value="item-2">
-              <AccordionTrigger>
-                How does the white-labeling work?
-              </AccordionTrigger>
+              <AccordionTrigger>What features does JPlura offer?</AccordionTrigger>
               <AccordionContent>
-                {`Our white-labeling feature allows you to customize the platform with your agency's branding, including logos and colors.`}
+                JPlura offers features like project management, client tracking, website building, advanced analytics, and real-time notifications to streamline your agency operations.
               </AccordionContent>
             </AccordionItem>
             <AccordionItem value="item-3">
-              <AccordionTrigger>{`What's included in the free plan?`}</AccordionTrigger>
+              <AccordionTrigger>How can I create sub-accounts?</AccordionTrigger>
               <AccordionContent>
-                The free plan includes basic features to help you get started,
-                including client management and basic website building tools.
+                You can create new sub-accounts easily from the sub-account page after logging in. Just enter the required details and define the roles for each user.
+              </AccordionContent>
+            </AccordionItem>
+            <AccordionItem value="item-4">
+              <AccordionTrigger>What is the media bucket used for?</AccordionTrigger>
+              <AccordionContent>
+                The media bucket is a versatile tool for storing and managing images and other media that can be used in your website builder and funnel pages.
+              </AccordionContent>
+            </AccordionItem>
+            <AccordionItem value="item-5">
+              <AccordionTrigger>How do I track project workflows?</AccordionTrigger>
+              <AccordionContent>
+                You can track project workflows using the Kanban-style board in the pipelines section, where you can drag and drop tasks, set due dates, and assign members.
+              </AccordionContent>
+            </AccordionItem>
+            <AccordionItem value="item-6">
+              <AccordionTrigger>Can I customize the dashboard?</AccordionTrigger>
+              <AccordionContent>
+                Yes, each sub-account has its own isolated dashboard that can be customized with light or dark themes and filtered notifications.
+              </AccordionContent>
+            </AccordionItem>
+            <AccordionItem value="item-7">
+              <AccordionTrigger>What kind of analytics does JPlura provide?</AccordionTrigger>
+              <AccordionContent>
+                JPlura provides advanced analytics, including performance tracking and insights on client values linked to projects, helping you understand potential earnings.
+              </AccordionContent>
+            </AccordionItem>
+            <AccordionItem value="item-8">
+              <AccordionTrigger>Is there customer support available?</AccordionTrigger>
+              <AccordionContent>
+                Yes, we provide customer support to assist you with any questions or issues you may encounter while using JPlura.
               </AccordionContent>
             </AccordionItem>
           </Accordion>
@@ -775,6 +795,14 @@ export default async function Home() {
           </Card>
         </div>
       </section>
+
+      {/* Footer Section */}
+      <footer className="bg-background text-muted-foreground py-4">
+        <div className="container text-center">
+          <p>&copy; {new Date().getFullYear()} JPlura. All rights reserved.</p>
+          <p>Follow us on <a href="#" className="text-primary">Twitter</a>, <a href="#" className="text-primary">Facebook</a>, and <a href="#" className="text-primary">LinkedIn</a>.</p>
+        </div>
+      </footer> 
     </>
   );
 }
