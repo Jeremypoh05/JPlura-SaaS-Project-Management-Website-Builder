@@ -71,7 +71,7 @@ export default async function Home() {
         viewport={{ once: true, margin: "-100px" }}
         variants={fadeInUp}
         className="your-existing-classes"> */}
-      <section className="h-full w-full mt-[-70px] md:mt-[130px] relative flex items-center justify-center flex-col">
+      <section id="" className="h-full w-full mt-[-70px] md:mt-[130px] relative flex items-center justify-center flex-col">
         {/* vertical and horizontal lines design (background) */}
         <div
           className="absolute bottom-0 left-0 right-0 top-0 
@@ -103,7 +103,7 @@ export default async function Home() {
 
       {/* About Section - Combined Transform Your Agency + About JPlura */}
       {/* About Section */}
-      <section className="relative flex flex-col gap-4 justify-center items-center mt-10 md:mt-52 pb-20 bg-gradient-to-b from-background via-secondary/10 to-background">
+      <section id="about" className="relative flex flex-col gap-4 justify-center items-center mt-10 md:mt-52 pb-20 bg-gradient-to-b from-background via-secondary/10 to-background">
         <div className="container max-w-6xl px-8">
           <div className="flex flex-col lg:flex-row items-start gap-12 lg:gap-16">
             <div className="flex-1 space-y-8">
@@ -338,7 +338,7 @@ export default async function Home() {
 
       {/* Features Sections */}
       {/* Agency & Subaccount Dashboard Feature */}
-      <section className="relative flex flex-col gap-4 md:gap-8 justify-center items-center pt-20 pb-20 bg-gradient-to-b from-background via-primary/5 to-background">
+      <section id="features" className="relative flex flex-col gap-4 md:gap-8 justify-center items-center pt-20 pb-20 bg-gradient-to-b from-background via-primary/5 to-background">
         <div className="container max-w-6xl px-8">
           <div className="flex flex-col lg:flex-row items-center gap-8 lg:gap-20">
             <div className="flex-1 space-y-6">
@@ -592,7 +592,7 @@ export default async function Home() {
         </div>
       </section>
 
-      <section className="flex justify-center items-center flex-col gap-4 md:!mt-[100px] mt-[-80px]">
+      <section id="pricing" className="flex justify-center items-center flex-col gap-4 md:!mt-[100px] mt-[-80px]">
         <h2 className="text-4xl text-center">Choose what fits your right</h2>
         <p className="text-muted-foreground text-center">
           Our straightforward pricing plans are tailored to meet your needs. If
@@ -708,7 +708,7 @@ export default async function Home() {
       </section>
 
       {/* FAQ Section */}
-      <section className="flex flex-col gap-4 justify-center items-center mt-20 pt-20 pb-20 bg-secondary/30">
+      <section id="faq" className="flex flex-col gap-4 justify-center items-center mt-20 pt-20 pb-20 bg-secondary/30">
         <div className="container">
           <h2 className="text-4xl font-bold text-center mb-10">Frequently Asked Questions</h2>
           <Accordion type="single" collapsible className="w-full max-w-3xl mx-auto">
@@ -765,7 +765,7 @@ export default async function Home() {
       </section>
 
       {/* Contact Section */}
-      <section className="relative flex flex-col gap-4 justify-center items-center pt-20 pb-20">
+      <section id="contact" className="relative flex flex-col gap-4 justify-center items-center pt-20 pb-20">
         <div className="container max-w-4xl">
           <Card>
             <CardHeader>

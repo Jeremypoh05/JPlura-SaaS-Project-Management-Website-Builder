@@ -24,12 +24,27 @@ const Navigation = ({ user }: Props) => {
       </aside>
       <nav className="hidden md:block absolute left-[50%] top-[50%] transform translate-x-[-50%] translate-y-[-50%]">
         <ul className="flex items-center justify-center gap-8">
-          <Link href={"#"}>Pricing</Link>
-          <Link href={"#"}>About</Link>
-          <Link href={"#"}>Documentation</Link>
-          <Link href={"#"}>Features</Link>
+          <li>
+            <Link href={"#"}>Home</Link>
+          </li>
+          <li>
+            <Link href={"#features"}>Features</Link>
+          </li>
+          <li>
+            <Link href={"#pricing"}>Pricing</Link>
+          </li>
+          <li>
+            <Link href={"#about"}>About</Link>
+          </li>
+          <li>
+            <Link href={"#faq"}>FAQ</Link>
+          </li> 
+          <li>
+            <Link href={"#contact"}>Contact</Link>
+          </li>  
         </ul>
       </nav>
+      {/* Right side with login button */}  
       <aside className="flex gap-2 items-center">
         {/*log in toggle*/}
         <Link
