@@ -218,8 +218,15 @@ const InfoBar = ({ notifications, role, className, subAccountId }: Props) => {
         )}
       >
         <div className="flex items-center gap-2 ml-auto">
-          <Sheet>
-            <SheetTrigger onClick={markNotificationsAsRead}>
+          <Sheet 
+            onOpenChange={(open) => {
+              // Only mark as read when closing the sheet
+              if (!open) {
+                markNotificationsAsRead();
+              }
+            }}
+          >
+            <SheetTrigger>
               <TooltipProvider delayDuration={100}>
                 <Tooltip>
                   <TooltipTrigger asChild>
@@ -261,6 +268,7 @@ const InfoBar = ({ notifications, role, className, subAccountId }: Props) => {
                       "flex flex-col gap-y-2 pb-3",
                       notification.ticketId &&
                         notification.userId === currentUser?.id &&
+                      !readNotifications.has(notification.id) &&
                         "bg-blue-500/10 border-l-4 border-blue-500 p-2",
                       !readNotifications.has(notification.id) &&
                         "bg-muted/50 border-l-4 border-primary p-2"
